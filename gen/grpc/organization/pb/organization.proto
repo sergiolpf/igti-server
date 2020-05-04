@@ -1,0 +1,116 @@
+// Code generated with goa v3.1.1, DO NOT EDIT.
+//
+// organization protocol buffer definition
+//
+// Command:
+// $ goa gen guide.me/design
+
+syntax = "proto3";
+
+package organization;
+
+option go_package = "organizationpb";
+
+// The Organization service makes it possible to view, add or remove
+// Organizations.
+service Organization {
+	// List all stored Organizations
+	rpc List (ListRequest) returns (StoredOrganizationCollection);
+	// Show Organization by ID
+	rpc Show (ShowRequest) returns (ShowResponse);
+	// Add new bottle and return its ID.
+	rpc Add (AddRequest) returns (AddResponse);
+	// Remove Organization from storage
+	rpc Remove (RemoveRequest) returns (RemoveResponse);
+	// Add n number of Organizations and return their IDs. This is a multipart
+// request and each part has field name 'organization' and contains the encoded
+// organization info to be added.
+	rpc MultiAdd (MultiAddRequest) returns (MultiAddResponse);
+	// Update Organizations with the given IDs. This is a multipart request and
+// each part has field name 'organizations' and contains the encoded
+// Organizations info to be updated. The IDs in the query parameter is mapped
+// to each part in the request.
+	rpc MultiUpdate (MultiUpdateRequest) returns (MultiUpdateResponse);
+}
+
+message ListRequest {
+}
+
+message StoredOrganizationCollection {
+	repeated StoredOrganization field = 1;
+}
+// A StoredOrganization describes an Organization retrieved by the Organization
+// service.
+message StoredOrganization {
+	// ID is the unique id of the Organization.
+	string id = 1;
+	// Name of Organization
+	string name = 2;
+	// Company website URL
+	string url = 3;
+}
+
+message ShowNotFoundError {
+	// Message of error
+	string message_ = 1;
+	// ID of missing Organization
+	string id = 2;
+}
+
+message ShowRequest {
+	// ID of the Organization to show
+	string id = 1;
+}
+
+message ShowResponse {
+	// ID is the unique id of the Organization.
+	string id = 1;
+	// Name of Organization
+	string name = 2;
+	// Company website URL
+	string url = 3;
+}
+
+message AddRequest {
+	// Name of Organization
+	string name = 1;
+	// Company website URL
+	string url = 2;
+}
+
+message AddResponse {
+	string field = 1;
+}
+
+message RemoveRequest {
+	// ID of Organization to remove
+	string id = 1;
+}
+
+message RemoveResponse {
+}
+
+message MultiAddRequest {
+	repeated Organization1 field = 1;
+}
+// Organization describes an Organization to be stored.
+message Organization1 {
+	// Name of Organization
+	string name = 1;
+	// Company website URL
+	string url = 2;
+}
+
+message MultiAddResponse {
+	repeated string field = 1;
+}
+
+message MultiUpdateRequest {
+	// IDs of the Organizations to be updated
+	repeated string ids = 1;
+	// Array of bottle info that matches the ids attribute
+	repeated Organization1 organizations = 2;
+}
+
+message MultiUpdateResponse {
+}

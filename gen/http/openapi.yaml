@@ -1,0 +1,329 @@
+swagger: "2.0"
+info:
+  title: Guideme Services
+  description: HTTP service for managing the organizations and tutorials.
+  version: ""
+host: localhost:8000
+consumes:
+- application/json
+- application/xml
+- application/gob
+produces:
+- application/json
+- application/xml
+- application/gob
+paths:
+  /organization:
+    get:
+      tags:
+      - organization
+      summary: list organization
+      description: List all stored Organizations
+      operationId: organization#list
+      responses:
+        "200":
+          description: OK response.
+          schema:
+            $ref: '#/definitions/OrganizationStoredOrganizationResponseTinyCollection'
+      schemes:
+      - http
+    post:
+      tags:
+      - organization
+      summary: add organization
+      description: Add new bottle and return its ID.
+      operationId: organization#add
+      parameters:
+      - name: AddRequestBody
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/OrganizationAddRequestBody'
+          required:
+          - name
+          - url
+      responses:
+        "201":
+          description: Created response.
+          schema:
+            type: string
+      schemes:
+      - http
+  /organization/{id}:
+    get:
+      tags:
+      - organization
+      summary: show organization
+      description: Show Organization by ID
+      operationId: organization#show
+      parameters:
+      - name: view
+        in: query
+        description: View to render
+        required: false
+        type: string
+        enum:
+        - default
+        - tiny
+      - name: id
+        in: path
+        description: ID of the Organization to show
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK response.
+          schema:
+            $ref: '#/definitions/OrganizationShowResponseBody'
+        "404":
+          description: Not Found response.
+          schema:
+            $ref: '#/definitions/OrganizationShowNotFoundResponseBody'
+            required:
+            - message
+            - id
+      schemes:
+      - http
+    delete:
+      tags:
+      - organization
+      summary: remove organization
+      description: Remove Organization from storage
+      operationId: organization#remove
+      parameters:
+      - name: id
+        in: path
+        description: ID of Organization to remove
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content response.
+      schemes:
+      - http
+  /organization/multi_add:
+    post:
+      tags:
+      - organization
+      summary: multi_add organization
+      description: Add n number of Organizations and return their IDs. This is a multipart
+        request and each part has field name 'organization' and contains the encoded
+        organization info to be added.
+      operationId: organization#multi_add
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: array
+        in: formData
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/OrganizationRequestBody'
+      responses:
+        "200":
+          description: OK response.
+          schema:
+            type: array
+            items:
+              type: string
+              example: Minima itaque vitae.
+      schemes:
+      - http
+  /organization/multi_update:
+    put:
+      tags:
+      - organization
+      summary: multi_update organization
+      description: Update Organizations with the given IDs. This is a multipart request
+        and each part has field name 'organizations' and contains the encoded Organizations
+        info to be updated. The IDs in the query parameter is mapped to each part
+        in the request.
+      operationId: organization#multi_update
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: ids
+        in: query
+        description: IDs of the Organizations to be updated
+        required: true
+        type: array
+        items:
+          type: string
+        collectionFormat: multi
+      - name: multi_update_request_body
+        in: formData
+        required: true
+        schema:
+          $ref: '#/definitions/OrganizationMultiUpdateRequestBody'
+          required:
+          - organizations
+      responses:
+        "204":
+          description: No Content response.
+      schemes:
+      - http
+  /swagger/swagger.json:
+    get:
+      tags:
+      - swagger
+      summary: Download gen/http/openapi.json
+      description: JSON document containing the API swagger definition
+      operationId: swagger#/swagger/swagger.json
+      responses:
+        "200":
+          description: File downloaded
+          schema:
+            type: file
+      schemes:
+      - http
+definitions:
+  OrganizationAddRequestBody:
+    title: OrganizationAddRequestBody
+    type: object
+    properties:
+      name:
+        type: string
+        description: Name of Organization
+        example: Blue's Cuvee
+        maxLength: 100
+      url:
+        type: string
+        description: Company website URL
+        example: http://www.google.com/
+        pattern: (?i)^(https?|ftp)://[^\s/$.?#].[^\s]*$
+    example:
+      name: Blue's Cuvee
+      url: http://www.google.com/
+    required:
+    - name
+    - url
+  OrganizationMultiUpdateRequestBody:
+    title: OrganizationMultiUpdateRequestBody
+    type: object
+    properties:
+      organizations:
+        type: array
+        items:
+          $ref: '#/definitions/OrganizationRequestBody'
+        description: Array of bottle info that matches the ids attribute
+        example:
+        - name: Blue's Cuvee
+          url: http://www.google.com/
+        - name: Blue's Cuvee
+          url: http://www.google.com/
+    example:
+      organizations:
+      - name: Blue's Cuvee
+        url: http://www.google.com/
+      - name: Blue's Cuvee
+        url: http://www.google.com/
+      - name: Blue's Cuvee
+        url: http://www.google.com/
+    required:
+    - organizations
+  OrganizationRequestBody:
+    title: OrganizationRequestBody
+    type: object
+    properties:
+      name:
+        type: string
+        description: Name of Organization
+        example: Blue's Cuvee
+        maxLength: 100
+      url:
+        type: string
+        description: Company website URL
+        example: http://www.google.com/
+        pattern: (?i)^(https?|ftp)://[^\s/$.?#].[^\s]*$
+    description: Organization describes an Organization to be stored.
+    example:
+      name: Blue's Cuvee
+      url: http://www.google.com/
+    required:
+    - name
+    - url
+  OrganizationShowNotFoundResponseBody:
+    title: OrganizationShowNotFoundResponseBody
+    type: object
+    properties:
+      id:
+        type: string
+        description: ID of missing Organization
+        example: Possimus deleniti magni quia id.
+      message:
+        type: string
+        description: Message of error
+        example: Organization 1 not found
+    description: Organization not found
+    example:
+      id: Corporis hic est doloremque saepe ex.
+      message: Organization 1 not found
+    required:
+    - message
+    - id
+  OrganizationShowResponseBody:
+    title: 'Mediatype identifier: application/vnd.goa.guide.me.stored-organization;
+      view=default'
+    type: object
+    properties:
+      id:
+        type: string
+        description: ID is the unique id of the Organization.
+        example: 123abc
+      name:
+        type: string
+        description: Name of Organization
+        example: Blue's Cuvee
+        maxLength: 100
+      url:
+        type: string
+        description: Company website URL
+        example: http://www.google.com/
+        pattern: (?i)^(https?|ftp)://[^\s/$.?#].[^\s]*$
+    description: ShowResponseBody result type (default view)
+    example:
+      id: 123abc
+      name: Blue's Cuvee
+      url: http://www.google.com/
+    required:
+    - id
+    - name
+    - url
+  OrganizationStoredOrganizationResponseTinyCollection:
+    title: 'Mediatype identifier: application/vnd.goa.guide.me.stored-organization;
+      type=collection; view=tiny'
+    type: array
+    items:
+      $ref: '#/definitions/StoredOrganizationResponseTiny'
+    description: OrganizationStoredOrganizationResponseTinyCollection is the result
+      type for an array of StoredOrganizationResponseTiny (default view)
+    example:
+    - id: 123abc
+      name: Blue's Cuvee
+      url: http://www.google.com/
+    - id: 123abc
+      name: Blue's Cuvee
+      url: http://www.google.com/
+  StoredOrganizationResponseTiny:
+    title: 'Mediatype identifier: application/vnd.goa.guide.me.stored-organization;
+      view=default'
+    type: object
+    properties:
+      id:
+        type: string
+        description: ID is the unique id of the Organization.
+        example: 123abc
+      name:
+        type: string
+        description: Name of Organization
+        example: Blue's Cuvee
+        maxLength: 100
+    description: A StoredOrganization describes an Organization retrieved by the Organization
+      service. (tiny view) (default view)
+    example:
+      id: 123abc
+      name: Blue's Cuvee
+    required:
+    - id
+    - name
