@@ -9,12 +9,10 @@ package client
 
 import (
 	"context"
-	"mime/multipart"
 	"net/http"
 
 	goahttp "goa.design/goa/v3/http"
 	goa "goa.design/goa/v3/pkg"
-	organization "guide.me/gen/organization"
 )
 
 // Client lists the organization service endpoint HTTP clients.
@@ -31,13 +29,8 @@ type Client struct {
 	// Remove Doer is the HTTP client used to make requests to the remove endpoint.
 	RemoveDoer goahttp.Doer
 
-	// MultiAdd Doer is the HTTP client used to make requests to the multi_add
-	// endpoint.
-	MultiAddDoer goahttp.Doer
-
-	// MultiUpdate Doer is the HTTP client used to make requests to the
-	// multi_update endpoint.
-	MultiUpdateDoer goahttp.Doer
+	// Update Doer is the HTTP client used to make requests to the update endpoint.
+	UpdateDoer goahttp.Doer
 
 	// RestoreResponseBody controls whether the response bodies are reset after
 	// decoding so they can be read again.
@@ -48,14 +41,6 @@ type Client struct {
 	encoder func(*http.Request) goahttp.Encoder
 	decoder func(*http.Response) goahttp.Decoder
 }
-
-// OrganizationMultiAddEncoderFunc is the type to encode multipart request for
-// the "organization" service "multi_add" endpoint.
-type OrganizationMultiAddEncoderFunc func(*multipart.Writer, []*organization.Organization) error
-
-// OrganizationMultiUpdateEncoderFunc is the type to encode multipart request
-// for the "organization" service "multi_update" endpoint.
-type OrganizationMultiUpdateEncoderFunc func(*multipart.Writer, *organization.MultiUpdatePayload) error
 
 // NewClient instantiates HTTP clients for all the organization service servers.
 func NewClient(
@@ -71,8 +56,7 @@ func NewClient(
 		ShowDoer:            doer,
 		AddDoer:             doer,
 		RemoveDoer:          doer,
-		MultiAddDoer:        doer,
-		MultiUpdateDoer:     doer,
+		UpdateDoer:          doer,
 		RestoreResponseBody: restoreBody,
 		scheme:              scheme,
 		host:                host,
@@ -167,15 +151,15 @@ func (c *Client) Remove() goa.Endpoint {
 	}
 }
 
-// MultiAdd returns an endpoint that makes HTTP requests to the organization
-// service multi_add server.
-func (c *Client) MultiAdd(organizationMultiAddEncoderFn OrganizationMultiAddEncoderFunc) goa.Endpoint {
+// Update returns an endpoint that makes HTTP requests to the organization
+// service update server.
+func (c *Client) Update() goa.Endpoint {
 	var (
-		encodeRequest  = EncodeMultiAddRequest(NewOrganizationMultiAddEncoder(organizationMultiAddEncoderFn))
-		decodeResponse = DecodeMultiAddResponse(c.decoder, c.RestoreResponseBody)
+		encodeRequest  = EncodeUpdateRequest(c.encoder)
+		decodeResponse = DecodeUpdateResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildMultiAddRequest(ctx, v)
+		req, err := c.BuildUpdateRequest(ctx, v)
 		if err != nil {
 			return nil, err
 		}
@@ -183,33 +167,9 @@ func (c *Client) MultiAdd(organizationMultiAddEncoderFn OrganizationMultiAddEnco
 		if err != nil {
 			return nil, err
 		}
-		resp, err := c.MultiAddDoer.Do(req)
+		resp, err := c.UpdateDoer.Do(req)
 		if err != nil {
-			return nil, goahttp.ErrRequestError("organization", "multi_add", err)
-		}
-		return decodeResponse(resp)
-	}
-}
-
-// MultiUpdate returns an endpoint that makes HTTP requests to the organization
-// service multi_update server.
-func (c *Client) MultiUpdate(organizationMultiUpdateEncoderFn OrganizationMultiUpdateEncoderFunc) goa.Endpoint {
-	var (
-		encodeRequest  = EncodeMultiUpdateRequest(NewOrganizationMultiUpdateEncoder(organizationMultiUpdateEncoderFn))
-		decodeResponse = DecodeMultiUpdateResponse(c.decoder, c.RestoreResponseBody)
-	)
-	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildMultiUpdateRequest(ctx, v)
-		if err != nil {
-			return nil, err
-		}
-		err = encodeRequest(req, v)
-		if err != nil {
-			return nil, err
-		}
-		resp, err := c.MultiUpdateDoer.Do(req)
-		if err != nil {
-			return nil, goahttp.ErrRequestError("organization", "multi_update", err)
+			return nil, goahttp.ErrRequestError("organization", "update", err)
 		}
 		return decodeResponse(resp)
 	}

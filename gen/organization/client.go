@@ -15,23 +15,21 @@ import (
 
 // Client is the "organization" service client.
 type Client struct {
-	ListEndpoint        goa.Endpoint
-	ShowEndpoint        goa.Endpoint
-	AddEndpoint         goa.Endpoint
-	RemoveEndpoint      goa.Endpoint
-	MultiAddEndpoint    goa.Endpoint
-	MultiUpdateEndpoint goa.Endpoint
+	ListEndpoint   goa.Endpoint
+	ShowEndpoint   goa.Endpoint
+	AddEndpoint    goa.Endpoint
+	RemoveEndpoint goa.Endpoint
+	UpdateEndpoint goa.Endpoint
 }
 
 // NewClient initializes a "organization" service client given the endpoints.
-func NewClient(list, show, add, remove, multiAdd, multiUpdate goa.Endpoint) *Client {
+func NewClient(list, show, add, remove, update goa.Endpoint) *Client {
 	return &Client{
-		ListEndpoint:        list,
-		ShowEndpoint:        show,
-		AddEndpoint:         add,
-		RemoveEndpoint:      remove,
-		MultiAddEndpoint:    multiAdd,
-		MultiUpdateEndpoint: multiUpdate,
+		ListEndpoint:   list,
+		ShowEndpoint:   show,
+		AddEndpoint:    add,
+		RemoveEndpoint: remove,
+		UpdateEndpoint: update,
 	}
 }
 
@@ -47,7 +45,7 @@ func (c *Client) List(ctx context.Context) (res StoredOrganizationCollection, er
 
 // Show calls the "show" endpoint of the "organization" service.
 // Show may return the following errors:
-//	- "not_found" (type *OrgNotFound): Organization not found
+//	- "not_found" (type *NotFound): Organization not found
 //	- error: internal error
 func (c *Client) Show(ctx context.Context, p *ShowPayload) (res *StoredOrganization, err error) {
 	var ires interface{}
@@ -70,25 +68,15 @@ func (c *Client) Add(ctx context.Context, p *Organization) (res string, err erro
 
 // Remove calls the "remove" endpoint of the "organization" service.
 // Remove may return the following errors:
-//	- "not_found" (type *OrgNotFound): Organization not found
+//	- "not_found" (type *NotFound): Organization not found
 //	- error: internal error
 func (c *Client) Remove(ctx context.Context, p *RemovePayload) (err error) {
 	_, err = c.RemoveEndpoint(ctx, p)
 	return
 }
 
-// MultiAdd calls the "multi_add" endpoint of the "organization" service.
-func (c *Client) MultiAdd(ctx context.Context, p []*Organization) (res []string, err error) {
-	var ires interface{}
-	ires, err = c.MultiAddEndpoint(ctx, p)
-	if err != nil {
-		return
-	}
-	return ires.([]string), nil
-}
-
-// MultiUpdate calls the "multi_update" endpoint of the "organization" service.
-func (c *Client) MultiUpdate(ctx context.Context, p *MultiUpdatePayload) (err error) {
-	_, err = c.MultiUpdateEndpoint(ctx, p)
+// Update calls the "update" endpoint of the "organization" service.
+func (c *Client) Update(ctx context.Context, p *StoredOrganization) (err error) {
+	_, err = c.UpdateEndpoint(ctx, p)
 	return
 }

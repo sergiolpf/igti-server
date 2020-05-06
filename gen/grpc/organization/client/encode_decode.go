@@ -154,61 +154,25 @@ func EncodeRemoveRequest(ctx context.Context, v interface{}, md *metadata.MD) (i
 	return NewRemoveRequest(payload), nil
 }
 
-// BuildMultiAddFunc builds the remote method to invoke for "organization"
-// service "multi_add" endpoint.
-func BuildMultiAddFunc(grpccli organizationpb.OrganizationClient, cliopts ...grpc.CallOption) goagrpc.RemoteFunc {
+// BuildUpdateFunc builds the remote method to invoke for "organization"
+// service "update" endpoint.
+func BuildUpdateFunc(grpccli organizationpb.OrganizationClient, cliopts ...grpc.CallOption) goagrpc.RemoteFunc {
 	return func(ctx context.Context, reqpb interface{}, opts ...grpc.CallOption) (interface{}, error) {
 		for _, opt := range cliopts {
 			opts = append(opts, opt)
 		}
 		if reqpb != nil {
-			return grpccli.MultiAdd(ctx, reqpb.(*organizationpb.MultiAddRequest), opts...)
+			return grpccli.Update(ctx, reqpb.(*organizationpb.UpdateRequest), opts...)
 		}
-		return grpccli.MultiAdd(ctx, &organizationpb.MultiAddRequest{}, opts...)
+		return grpccli.Update(ctx, &organizationpb.UpdateRequest{}, opts...)
 	}
 }
 
-// EncodeMultiAddRequest encodes requests sent to organization multi_add
-// endpoint.
-func EncodeMultiAddRequest(ctx context.Context, v interface{}, md *metadata.MD) (interface{}, error) {
-	payload, ok := v.([]*organization.Organization)
+// EncodeUpdateRequest encodes requests sent to organization update endpoint.
+func EncodeUpdateRequest(ctx context.Context, v interface{}, md *metadata.MD) (interface{}, error) {
+	payload, ok := v.(*organization.StoredOrganization)
 	if !ok {
-		return nil, goagrpc.ErrInvalidType("organization", "multi_add", "[]*organization.Organization", v)
+		return nil, goagrpc.ErrInvalidType("organization", "update", "*organization.StoredOrganization", v)
 	}
-	return NewMultiAddRequest(payload), nil
-}
-
-// DecodeMultiAddResponse decodes responses from the organization multi_add
-// endpoint.
-func DecodeMultiAddResponse(ctx context.Context, v interface{}, hdr, trlr metadata.MD) (interface{}, error) {
-	message, ok := v.(*organizationpb.MultiAddResponse)
-	if !ok {
-		return nil, goagrpc.ErrInvalidType("organization", "multi_add", "*organizationpb.MultiAddResponse", v)
-	}
-	res := NewMultiAddResult(message)
-	return res, nil
-}
-
-// BuildMultiUpdateFunc builds the remote method to invoke for "organization"
-// service "multi_update" endpoint.
-func BuildMultiUpdateFunc(grpccli organizationpb.OrganizationClient, cliopts ...grpc.CallOption) goagrpc.RemoteFunc {
-	return func(ctx context.Context, reqpb interface{}, opts ...grpc.CallOption) (interface{}, error) {
-		for _, opt := range cliopts {
-			opts = append(opts, opt)
-		}
-		if reqpb != nil {
-			return grpccli.MultiUpdate(ctx, reqpb.(*organizationpb.MultiUpdateRequest), opts...)
-		}
-		return grpccli.MultiUpdate(ctx, &organizationpb.MultiUpdateRequest{}, opts...)
-	}
-}
-
-// EncodeMultiUpdateRequest encodes requests sent to organization multi_update
-// endpoint.
-func EncodeMultiUpdateRequest(ctx context.Context, v interface{}, md *metadata.MD) (interface{}, error) {
-	payload, ok := v.(*organization.MultiUpdatePayload)
-	if !ok {
-		return nil, goagrpc.ErrInvalidType("organization", "multi_update", "*organization.MultiUpdatePayload", v)
-	}
-	return NewMultiUpdateRequest(payload), nil
+	return NewUpdateRequest(payload), nil
 }

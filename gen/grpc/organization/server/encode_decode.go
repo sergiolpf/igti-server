@@ -139,64 +139,31 @@ func DecodeRemoveRequest(ctx context.Context, v interface{}, md metadata.MD) (in
 	return payload, nil
 }
 
-// EncodeMultiAddResponse encodes responses from the "organization" service
-// "multi_add" endpoint.
-func EncodeMultiAddResponse(ctx context.Context, v interface{}, hdr, trlr *metadata.MD) (interface{}, error) {
-	result, ok := v.([]string)
-	if !ok {
-		return nil, goagrpc.ErrInvalidType("organization", "multi_add", "[]string", v)
-	}
-	resp := NewMultiAddResponse(result)
+// EncodeUpdateResponse encodes responses from the "organization" service
+// "update" endpoint.
+func EncodeUpdateResponse(ctx context.Context, v interface{}, hdr, trlr *metadata.MD) (interface{}, error) {
+	resp := NewUpdateResponse()
 	return resp, nil
 }
 
-// DecodeMultiAddRequest decodes requests sent to "organization" service
-// "multi_add" endpoint.
-func DecodeMultiAddRequest(ctx context.Context, v interface{}, md metadata.MD) (interface{}, error) {
+// DecodeUpdateRequest decodes requests sent to "organization" service "update"
+// endpoint.
+func DecodeUpdateRequest(ctx context.Context, v interface{}, md metadata.MD) (interface{}, error) {
 	var (
-		message *organizationpb.MultiAddRequest
+		message *organizationpb.UpdateRequest
 		ok      bool
 	)
 	{
-		if message, ok = v.(*organizationpb.MultiAddRequest); !ok {
-			return nil, goagrpc.ErrInvalidType("organization", "multi_add", "*organizationpb.MultiAddRequest", v)
+		if message, ok = v.(*organizationpb.UpdateRequest); !ok {
+			return nil, goagrpc.ErrInvalidType("organization", "update", "*organizationpb.UpdateRequest", v)
 		}
-		if err := ValidateMultiAddRequest(message); err != nil {
+		if err := ValidateUpdateRequest(message); err != nil {
 			return nil, err
 		}
 	}
-	var payload []*organization.Organization
+	var payload *organization.StoredOrganization
 	{
-		payload = NewMultiAddPayload(message)
-	}
-	return payload, nil
-}
-
-// EncodeMultiUpdateResponse encodes responses from the "organization" service
-// "multi_update" endpoint.
-func EncodeMultiUpdateResponse(ctx context.Context, v interface{}, hdr, trlr *metadata.MD) (interface{}, error) {
-	resp := NewMultiUpdateResponse()
-	return resp, nil
-}
-
-// DecodeMultiUpdateRequest decodes requests sent to "organization" service
-// "multi_update" endpoint.
-func DecodeMultiUpdateRequest(ctx context.Context, v interface{}, md metadata.MD) (interface{}, error) {
-	var (
-		message *organizationpb.MultiUpdateRequest
-		ok      bool
-	)
-	{
-		if message, ok = v.(*organizationpb.MultiUpdateRequest); !ok {
-			return nil, goagrpc.ErrInvalidType("organization", "multi_update", "*organizationpb.MultiUpdateRequest", v)
-		}
-		if err := ValidateMultiUpdateRequest(message); err != nil {
-			return nil, err
-		}
-	}
-	var payload *organization.MultiUpdatePayload
-	{
-		payload = NewMultiUpdatePayload(message)
+		payload = NewUpdatePayload(message)
 	}
 	return payload, nil
 }

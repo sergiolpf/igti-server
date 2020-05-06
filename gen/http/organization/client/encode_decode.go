@@ -11,7 +11,6 @@ import (
 	"bytes"
 	"context"
 	"io/ioutil"
-	"mime/multipart"
 	"net/http"
 	"net/url"
 
@@ -123,7 +122,7 @@ func EncodeShowRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.R
 // organization show endpoint. restoreBody controls whether the response body
 // should be restored after having been read.
 // DecodeShowResponse may return the following errors:
-//	- "not_found" (type *organization.OrgNotFound): http.StatusNotFound
+//	- "not_found" (type *organization.NotFound): http.StatusNotFound
 //	- error: internal error
 func DecodeShowResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
@@ -296,96 +295,13 @@ func DecodeRemoveResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 	}
 }
 
-// BuildMultiAddRequest instantiates a HTTP request object with method and path
-// set to call the "organization" service "multi_add" endpoint
-func (c *Client) BuildMultiAddRequest(ctx context.Context, v interface{}) (*http.Request, error) {
-	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: MultiAddOrganizationPath()}
-	req, err := http.NewRequest("POST", u.String(), nil)
-	if err != nil {
-		return nil, goahttp.ErrInvalidURL("organization", "multi_add", u.String(), err)
-	}
-	if ctx != nil {
-		req = req.WithContext(ctx)
-	}
-
-	return req, nil
-}
-
-// EncodeMultiAddRequest returns an encoder for requests sent to the
-// organization multi_add server.
-func EncodeMultiAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
-	return func(req *http.Request, v interface{}) error {
-		p, ok := v.([]*organization.Organization)
-		if !ok {
-			return goahttp.ErrInvalidType("organization", "multi_add", "[]*organization.Organization", v)
-		}
-		if err := encoder(req).Encode(p); err != nil {
-			return goahttp.ErrEncodingError("organization", "multi_add", err)
-		}
-		return nil
-	}
-}
-
-// NewOrganizationMultiAddEncoder returns an encoder to encode the multipart
-// request for the "organization" service "multi_add" endpoint.
-func NewOrganizationMultiAddEncoder(encoderFn OrganizationMultiAddEncoderFunc) func(r *http.Request) goahttp.Encoder {
-	return func(r *http.Request) goahttp.Encoder {
-		body := &bytes.Buffer{}
-		mw := multipart.NewWriter(body)
-		return goahttp.EncodingFunc(func(v interface{}) error {
-			p := v.([]*organization.Organization)
-			if err := encoderFn(mw, p); err != nil {
-				return err
-			}
-			r.Body = ioutil.NopCloser(body)
-			r.Header.Set("Content-Type", mw.FormDataContentType())
-			return mw.Close()
-		})
-	}
-}
-
-// DecodeMultiAddResponse returns a decoder for responses returned by the
-// organization multi_add endpoint. restoreBody controls whether the response
-// body should be restored after having been read.
-func DecodeMultiAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
-	return func(resp *http.Response) (interface{}, error) {
-		if restoreBody {
-			b, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-			resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
-			defer func() {
-				resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
-			}()
-		} else {
-			defer resp.Body.Close()
-		}
-		switch resp.StatusCode {
-		case http.StatusOK:
-			var (
-				body []string
-				err  error
-			)
-			err = decoder(resp).Decode(&body)
-			if err != nil {
-				return nil, goahttp.ErrDecodingError("organization", "multi_add", err)
-			}
-			return body, nil
-		default:
-			body, _ := ioutil.ReadAll(resp.Body)
-			return nil, goahttp.ErrInvalidResponse("organization", "multi_add", resp.StatusCode, string(body))
-		}
-	}
-}
-
-// BuildMultiUpdateRequest instantiates a HTTP request object with method and
-// path set to call the "organization" service "multi_update" endpoint
-func (c *Client) BuildMultiUpdateRequest(ctx context.Context, v interface{}) (*http.Request, error) {
-	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: MultiUpdateOrganizationPath()}
+// BuildUpdateRequest instantiates a HTTP request object with method and path
+// set to call the "organization" service "update" endpoint
+func (c *Client) BuildUpdateRequest(ctx context.Context, v interface{}) (*http.Request, error) {
+	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: UpdateOrganizationPath()}
 	req, err := http.NewRequest("PUT", u.String(), nil)
 	if err != nil {
-		return nil, goahttp.ErrInvalidURL("organization", "multi_update", u.String(), err)
+		return nil, goahttp.ErrInvalidURL("organization", "update", u.String(), err)
 	}
 	if ctx != nil {
 		req = req.WithContext(ctx)
@@ -394,48 +310,26 @@ func (c *Client) BuildMultiUpdateRequest(ctx context.Context, v interface{}) (*h
 	return req, nil
 }
 
-// EncodeMultiUpdateRequest returns an encoder for requests sent to the
-// organization multi_update server.
-func EncodeMultiUpdateRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+// EncodeUpdateRequest returns an encoder for requests sent to the organization
+// update server.
+func EncodeUpdateRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
 	return func(req *http.Request, v interface{}) error {
-		p, ok := v.(*organization.MultiUpdatePayload)
+		p, ok := v.(*organization.StoredOrganization)
 		if !ok {
-			return goahttp.ErrInvalidType("organization", "multi_update", "*organization.MultiUpdatePayload", v)
+			return goahttp.ErrInvalidType("organization", "update", "*organization.StoredOrganization", v)
 		}
-		values := req.URL.Query()
-		for _, value := range p.Ids {
-			values.Add("ids", value)
-		}
-		req.URL.RawQuery = values.Encode()
-		if err := encoder(req).Encode(p); err != nil {
-			return goahttp.ErrEncodingError("organization", "multi_update", err)
+		body := NewUpdateRequestBody(p)
+		if err := encoder(req).Encode(&body); err != nil {
+			return goahttp.ErrEncodingError("organization", "update", err)
 		}
 		return nil
 	}
 }
 
-// NewOrganizationMultiUpdateEncoder returns an encoder to encode the multipart
-// request for the "organization" service "multi_update" endpoint.
-func NewOrganizationMultiUpdateEncoder(encoderFn OrganizationMultiUpdateEncoderFunc) func(r *http.Request) goahttp.Encoder {
-	return func(r *http.Request) goahttp.Encoder {
-		body := &bytes.Buffer{}
-		mw := multipart.NewWriter(body)
-		return goahttp.EncodingFunc(func(v interface{}) error {
-			p := v.(*organization.MultiUpdatePayload)
-			if err := encoderFn(mw, p); err != nil {
-				return err
-			}
-			r.Body = ioutil.NopCloser(body)
-			r.Header.Set("Content-Type", mw.FormDataContentType())
-			return mw.Close()
-		})
-	}
-}
-
-// DecodeMultiUpdateResponse returns a decoder for responses returned by the
-// organization multi_update endpoint. restoreBody controls whether the
-// response body should be restored after having been read.
-func DecodeMultiUpdateResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
+// DecodeUpdateResponse returns a decoder for responses returned by the
+// organization update endpoint. restoreBody controls whether the response body
+// should be restored after having been read.
+func DecodeUpdateResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {
 			b, err := ioutil.ReadAll(resp.Body)
@@ -454,7 +348,7 @@ func DecodeMultiUpdateResponse(decoder func(*http.Response) goahttp.Decoder, res
 			return nil, nil
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
-			return nil, goahttp.ErrInvalidResponse("organization", "multi_update", resp.StatusCode, string(body))
+			return nil, goahttp.ErrInvalidResponse("organization", "update", resp.StatusCode, string(body))
 		}
 	}
 }
@@ -465,30 +359,6 @@ func DecodeMultiUpdateResponse(decoder func(*http.Response) goahttp.Decoder, res
 func unmarshalStoredOrganizationResponseToOrganizationviewsStoredOrganizationView(v *StoredOrganizationResponse) *organizationviews.StoredOrganizationView {
 	res := &organizationviews.StoredOrganizationView{
 		ID:   v.ID,
-		Name: v.Name,
-		URL:  v.URL,
-	}
-
-	return res
-}
-
-// marshalOrganizationOrganizationToOrganizationRequestBody builds a value of
-// type *OrganizationRequestBody from a value of type
-// *organization.Organization.
-func marshalOrganizationOrganizationToOrganizationRequestBody(v *organization.Organization) *OrganizationRequestBody {
-	res := &OrganizationRequestBody{
-		Name: v.Name,
-		URL:  v.URL,
-	}
-
-	return res
-}
-
-// marshalOrganizationRequestBodyToOrganizationOrganization builds a value of
-// type *organization.Organization from a value of type
-// *OrganizationRequestBody.
-func marshalOrganizationRequestBodyToOrganizationOrganization(v *OrganizationRequestBody) *organization.Organization {
-	res := &organization.Organization{
 		Name: v.Name,
 		URL:  v.URL,
 	}

@@ -19,12 +19,11 @@ import (
 
 // Server implements the organizationpb.OrganizationServer interface.
 type Server struct {
-	ListH        goagrpc.UnaryHandler
-	ShowH        goagrpc.UnaryHandler
-	AddH         goagrpc.UnaryHandler
-	RemoveH      goagrpc.UnaryHandler
-	MultiAddH    goagrpc.UnaryHandler
-	MultiUpdateH goagrpc.UnaryHandler
+	ListH   goagrpc.UnaryHandler
+	ShowH   goagrpc.UnaryHandler
+	AddH    goagrpc.UnaryHandler
+	RemoveH goagrpc.UnaryHandler
+	UpdateH goagrpc.UnaryHandler
 }
 
 // ErrorNamer is an interface implemented by generated error structs that
@@ -36,12 +35,11 @@ type ErrorNamer interface {
 // New instantiates the server struct with the organization service endpoints.
 func New(e *organization.Endpoints, uh goagrpc.UnaryHandler) *Server {
 	return &Server{
-		ListH:        NewListHandler(e.List, uh),
-		ShowH:        NewShowHandler(e.Show, uh),
-		AddH:         NewAddHandler(e.Add, uh),
-		RemoveH:      NewRemoveHandler(e.Remove, uh),
-		MultiAddH:    NewMultiAddHandler(e.MultiAdd, uh),
-		MultiUpdateH: NewMultiUpdateHandler(e.MultiUpdate, uh),
+		ListH:   NewListHandler(e.List, uh),
+		ShowH:   NewShowHandler(e.Show, uh),
+		AddH:    NewAddHandler(e.Add, uh),
+		RemoveH: NewRemoveHandler(e.Remove, uh),
+		UpdateH: NewUpdateHandler(e.Update, uh),
 	}
 }
 
@@ -85,7 +83,7 @@ func (s *Server) Show(ctx context.Context, message *organizationpb.ShowRequest) 
 		if en, ok := err.(ErrorNamer); ok {
 			switch en.ErrorName() {
 			case "not_found":
-				er := err.(*organization.OrgNotFound)
+				er := err.(*organization.NotFound)
 				return nil, goagrpc.NewStatusError(codes.NotFound, err, NewShowNotFoundError(er))
 			}
 		}
@@ -136,44 +134,23 @@ func (s *Server) Remove(ctx context.Context, message *organizationpb.RemoveReque
 	return resp.(*organizationpb.RemoveResponse), nil
 }
 
-// NewMultiAddHandler creates a gRPC handler which serves the "organization"
-// service "multi_add" endpoint.
-func NewMultiAddHandler(endpoint goa.Endpoint, h goagrpc.UnaryHandler) goagrpc.UnaryHandler {
+// NewUpdateHandler creates a gRPC handler which serves the "organization"
+// service "update" endpoint.
+func NewUpdateHandler(endpoint goa.Endpoint, h goagrpc.UnaryHandler) goagrpc.UnaryHandler {
 	if h == nil {
-		h = goagrpc.NewUnaryHandler(endpoint, DecodeMultiAddRequest, EncodeMultiAddResponse)
+		h = goagrpc.NewUnaryHandler(endpoint, DecodeUpdateRequest, EncodeUpdateResponse)
 	}
 	return h
 }
 
-// MultiAdd implements the "MultiAdd" method in
-// organizationpb.OrganizationServer interface.
-func (s *Server) MultiAdd(ctx context.Context, message *organizationpb.MultiAddRequest) (*organizationpb.MultiAddResponse, error) {
-	ctx = context.WithValue(ctx, goa.MethodKey, "multi_add")
+// Update implements the "Update" method in organizationpb.OrganizationServer
+// interface.
+func (s *Server) Update(ctx context.Context, message *organizationpb.UpdateRequest) (*organizationpb.UpdateResponse, error) {
+	ctx = context.WithValue(ctx, goa.MethodKey, "update")
 	ctx = context.WithValue(ctx, goa.ServiceKey, "organization")
-	resp, err := s.MultiAddH.Handle(ctx, message)
+	resp, err := s.UpdateH.Handle(ctx, message)
 	if err != nil {
 		return nil, goagrpc.EncodeError(err)
 	}
-	return resp.(*organizationpb.MultiAddResponse), nil
-}
-
-// NewMultiUpdateHandler creates a gRPC handler which serves the "organization"
-// service "multi_update" endpoint.
-func NewMultiUpdateHandler(endpoint goa.Endpoint, h goagrpc.UnaryHandler) goagrpc.UnaryHandler {
-	if h == nil {
-		h = goagrpc.NewUnaryHandler(endpoint, DecodeMultiUpdateRequest, EncodeMultiUpdateResponse)
-	}
-	return h
-}
-
-// MultiUpdate implements the "MultiUpdate" method in
-// organizationpb.OrganizationServer interface.
-func (s *Server) MultiUpdate(ctx context.Context, message *organizationpb.MultiUpdateRequest) (*organizationpb.MultiUpdateResponse, error) {
-	ctx = context.WithValue(ctx, goa.MethodKey, "multi_update")
-	ctx = context.WithValue(ctx, goa.ServiceKey, "organization")
-	resp, err := s.MultiUpdateH.Handle(ctx, message)
-	if err != nil {
-		return nil, goagrpc.EncodeError(err)
-	}
-	return resp.(*organizationpb.MultiUpdateResponse), nil
+	return resp.(*organizationpb.UpdateResponse), nil
 }

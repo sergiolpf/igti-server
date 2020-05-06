@@ -6,7 +6,6 @@ import (
 
 	goahttp "goa.design/goa/v3/http"
 	goa "goa.design/goa/v3/pkg"
-	guideme "guide.me"
 	cli "guide.me/gen/http/cli/guideme"
 )
 
@@ -28,8 +27,6 @@ func doHTTP(scheme, host string, timeout int, debug bool) (goa.Endpoint, interfa
 		goahttp.RequestEncoder,
 		goahttp.ResponseDecoder,
 		debug,
-		guideme.OrganizationMultiAddEncoderFunc,
-		guideme.OrganizationMultiUpdateEncoderFunc,
 	)
 }
 

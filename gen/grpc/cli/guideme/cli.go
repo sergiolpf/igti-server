@@ -15,6 +15,7 @@ import (
 	goa "goa.design/goa/v3/pkg"
 	grpc "google.golang.org/grpc"
 	organizationc "guide.me/gen/grpc/organization/client"
+	walkthroughc "guide.me/gen/grpc/walkthrough/client"
 )
 
 // UsageCommands returns the set of commands and sub-commands using the format
@@ -22,13 +23,17 @@ import (
 //    command (subcommand1|subcommand2|...)
 //
 func UsageCommands() string {
-	return `organization (list|show|add|remove|multi-add|multi-update)
+	return `organization (list|show|add|remove|update)
+walkthrough (list|show|add|remove|update)
 `
 }
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
 	return os.Args[0] + ` organization list` + "\n" +
+		os.Args[0] + ` walkthrough list --message '{
+      "id": "Voluptatem est ipsa mollitia in atque."
+   }'` + "\n" +
 		""
 }
 
@@ -50,19 +55,40 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 		organizationRemoveFlags       = flag.NewFlagSet("remove", flag.ExitOnError)
 		organizationRemoveMessageFlag = organizationRemoveFlags.String("message", "", "")
 
-		organizationMultiAddFlags       = flag.NewFlagSet("multi-add", flag.ExitOnError)
-		organizationMultiAddMessageFlag = organizationMultiAddFlags.String("message", "", "")
+		organizationUpdateFlags       = flag.NewFlagSet("update", flag.ExitOnError)
+		organizationUpdateMessageFlag = organizationUpdateFlags.String("message", "", "")
 
-		organizationMultiUpdateFlags       = flag.NewFlagSet("multi-update", flag.ExitOnError)
-		organizationMultiUpdateMessageFlag = organizationMultiUpdateFlags.String("message", "", "")
+		walkthroughFlags = flag.NewFlagSet("walkthrough", flag.ContinueOnError)
+
+		walkthroughListFlags       = flag.NewFlagSet("list", flag.ExitOnError)
+		walkthroughListMessageFlag = walkthroughListFlags.String("message", "", "")
+
+		walkthroughShowFlags       = flag.NewFlagSet("show", flag.ExitOnError)
+		walkthroughShowMessageFlag = walkthroughShowFlags.String("message", "", "")
+		walkthroughShowViewFlag    = walkthroughShowFlags.String("view", "", "")
+
+		walkthroughAddFlags       = flag.NewFlagSet("add", flag.ExitOnError)
+		walkthroughAddMessageFlag = walkthroughAddFlags.String("message", "", "")
+
+		walkthroughRemoveFlags       = flag.NewFlagSet("remove", flag.ExitOnError)
+		walkthroughRemoveMessageFlag = walkthroughRemoveFlags.String("message", "", "")
+
+		walkthroughUpdateFlags       = flag.NewFlagSet("update", flag.ExitOnError)
+		walkthroughUpdateMessageFlag = walkthroughUpdateFlags.String("message", "", "")
 	)
 	organizationFlags.Usage = organizationUsage
 	organizationListFlags.Usage = organizationListUsage
 	organizationShowFlags.Usage = organizationShowUsage
 	organizationAddFlags.Usage = organizationAddUsage
 	organizationRemoveFlags.Usage = organizationRemoveUsage
-	organizationMultiAddFlags.Usage = organizationMultiAddUsage
-	organizationMultiUpdateFlags.Usage = organizationMultiUpdateUsage
+	organizationUpdateFlags.Usage = organizationUpdateUsage
+
+	walkthroughFlags.Usage = walkthroughUsage
+	walkthroughListFlags.Usage = walkthroughListUsage
+	walkthroughShowFlags.Usage = walkthroughShowUsage
+	walkthroughAddFlags.Usage = walkthroughAddUsage
+	walkthroughRemoveFlags.Usage = walkthroughRemoveUsage
+	walkthroughUpdateFlags.Usage = walkthroughUpdateUsage
 
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		return nil, nil, err
@@ -81,6 +107,8 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 		switch svcn {
 		case "organization":
 			svcf = organizationFlags
+		case "walkthrough":
+			svcf = walkthroughFlags
 		default:
 			return nil, nil, fmt.Errorf("unknown service %q", svcn)
 		}
@@ -110,11 +138,27 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 			case "remove":
 				epf = organizationRemoveFlags
 
-			case "multi-add":
-				epf = organizationMultiAddFlags
+			case "update":
+				epf = organizationUpdateFlags
 
-			case "multi-update":
-				epf = organizationMultiUpdateFlags
+			}
+
+		case "walkthrough":
+			switch epn {
+			case "list":
+				epf = walkthroughListFlags
+
+			case "show":
+				epf = walkthroughShowFlags
+
+			case "add":
+				epf = walkthroughAddFlags
+
+			case "remove":
+				epf = walkthroughRemoveFlags
+
+			case "update":
+				epf = walkthroughUpdateFlags
 
 			}
 
@@ -153,12 +197,28 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 			case "remove":
 				endpoint = c.Remove()
 				data, err = organizationc.BuildRemovePayload(*organizationRemoveMessageFlag)
-			case "multi-add":
-				endpoint = c.MultiAdd()
-				data, err = organizationc.BuildMultiAddPayload(*organizationMultiAddMessageFlag)
-			case "multi-update":
-				endpoint = c.MultiUpdate()
-				data, err = organizationc.BuildMultiUpdatePayload(*organizationMultiUpdateMessageFlag)
+			case "update":
+				endpoint = c.Update()
+				data, err = organizationc.BuildUpdatePayload(*organizationUpdateMessageFlag)
+			}
+		case "walkthrough":
+			c := walkthroughc.NewClient(cc, opts...)
+			switch epn {
+			case "list":
+				endpoint = c.List()
+				data, err = walkthroughc.BuildListPayload(*walkthroughListMessageFlag)
+			case "show":
+				endpoint = c.Show()
+				data, err = walkthroughc.BuildShowPayload(*walkthroughShowMessageFlag, *walkthroughShowViewFlag)
+			case "add":
+				endpoint = c.Add()
+				data, err = walkthroughc.BuildAddPayload(*walkthroughAddMessageFlag)
+			case "remove":
+				endpoint = c.Remove()
+				data, err = walkthroughc.BuildRemovePayload(*walkthroughRemoveMessageFlag)
+			case "update":
+				endpoint = c.Update()
+				data, err = walkthroughc.BuildUpdatePayload(*walkthroughUpdateMessageFlag)
 			}
 		}
 	}
@@ -181,8 +241,7 @@ COMMAND:
     show: Show Organization by ID
     add: Add new bottle and return its ID.
     remove: Remove Organization from storage
-    multi-add: Add n number of Organizations and return their IDs. This is a multipart request and each part has field name 'organization' and contains the encoded organization info to be added.
-    multi-update: Update Organizations with the given IDs. This is a multipart request and each part has field name 'organizations' and contains the encoded Organizations info to be updated. The IDs in the query parameter is mapped to each part in the request.
+    update: Update organization with the given IDs.
 
 Additional help:
     %s organization COMMAND --help
@@ -207,8 +266,8 @@ Show Organization by ID
 
 Example:
     `+os.Args[0]+` organization show --message '{
-      "id": "Velit est culpa."
-   }' --view "default"
+      "id": "Quo aut molestiae laudantium aliquam non."
+   }' --view "tiny"
 `, os.Args[0])
 }
 
@@ -220,7 +279,7 @@ Add new bottle and return its ID.
 
 Example:
     `+os.Args[0]+` organization add --message '{
-      "name": "Blue\'s Cuvee",
+      "name": "Creating a new request in netflix!",
       "url": "http://www.google.com/"
    }'
 `, os.Args[0])
@@ -234,71 +293,115 @@ Remove Organization from storage
 
 Example:
     `+os.Args[0]+` organization remove --message '{
-      "id": "Rem delectus."
+      "id": "Quas nemo et fuga dolorem illo nulla."
    }'
 `, os.Args[0])
 }
 
-func organizationMultiAddUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] organization multi-add -message JSON
+func organizationUpdateUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] organization update -message JSON
 
-Add n number of Organizations and return their IDs. This is a multipart request and each part has field name 'organization' and contains the encoded organization info to be added.
+Update organization with the given IDs.
     -message JSON: 
 
 Example:
-    `+os.Args[0]+` organization multi-add --message '{
-      "field": [
-         {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
-         },
-         {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
-         },
-         {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
-         },
-         {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
-         }
-      ]
+    `+os.Args[0]+` organization update --message '{
+      "id": "123abc",
+      "name": "Creating a new request in netflix!",
+      "url": "http://www.google.com/"
    }'
 `, os.Args[0])
 }
 
-func organizationMultiUpdateUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] organization multi-update -message JSON
+// walkthroughUsage displays the usage of the walkthrough command and its
+// subcommands.
+func walkthroughUsage() {
+	fmt.Fprintf(os.Stderr, `The walkthrough service makes it possible to view, add, modify or remove walkthroughs.
+Usage:
+    %s [globalflags] walkthrough COMMAND [flags]
 
-Update Organizations with the given IDs. This is a multipart request and each part has field name 'organizations' and contains the encoded Organizations info to be updated. The IDs in the query parameter is mapped to each part in the request.
+COMMAND:
+    list: List all stored walkthrough for a given organization
+    show: Show Walkthrough by ID
+    add: Add new Tutorial and return its ID.
+    remove: Remove Walkthrough from storage
+    update: Update Walkthrough with the given IDs.
+
+Additional help:
+    %s walkthrough COMMAND --help
+`, os.Args[0], os.Args[0])
+}
+func walkthroughListUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] walkthrough list -message JSON
+
+List all stored walkthrough for a given organization
     -message JSON: 
 
 Example:
-    `+os.Args[0]+` organization multi-update --message '{
-      "ids": [
-         "Recusandae corporis fugit non.",
-         "Asperiores maxime."
-      ],
-      "organizations": [
-         {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
-         },
-         {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
-         },
-         {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
-         },
-         {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
-         }
-      ]
+    `+os.Args[0]+` walkthrough list --message '{
+      "id": "Voluptatem est ipsa mollitia in atque."
+   }'
+`, os.Args[0])
+}
+
+func walkthroughShowUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] walkthrough show -message JSON -view STRING
+
+Show Walkthrough by ID
+    -message JSON: 
+    -view STRING: 
+
+Example:
+    `+os.Args[0]+` walkthrough show --message '{
+      "id": "Non commodi asperiores."
+   }' --view "tiny"
+`, os.Args[0])
+}
+
+func walkthroughAddUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] walkthrough add -message JSON
+
+Add new Tutorial and return its ID.
+    -message JSON: 
+
+Example:
+    `+os.Args[0]+` walkthrough add --message '{
+      "baseURL": "http://www.google.com/",
+      "name": "How to create a new process using the exception condition.",
+      "organization": "Et alias distinctio minima debitis consequatur consectetur.",
+      "publishedURL": "Ex enim minima itaque vitae.",
+      "status": "draft | published"
+   }'
+`, os.Args[0])
+}
+
+func walkthroughRemoveUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] walkthrough remove -message JSON
+
+Remove Walkthrough from storage
+    -message JSON: 
+
+Example:
+    `+os.Args[0]+` walkthrough remove --message '{
+      "id": "Debitis et dicta corporis est aut ea."
+   }'
+`, os.Args[0])
+}
+
+func walkthroughUpdateUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] walkthrough update -message JSON
+
+Update Walkthrough with the given IDs.
+    -message JSON: 
+
+Example:
+    `+os.Args[0]+` walkthrough update --message '{
+      "baseURL": "http://www.google.com/",
+      "id": "123abc",
+      "name": "How to create a new process using the exception condition.",
+      "organization": "Voluptas voluptas animi deserunt excepturi.",
+      "publishedURL": "Enim repudiandae dolores ratione perspiciatis.",
+      "status": "draft | published"
    }'
 `, os.Args[0])
 }

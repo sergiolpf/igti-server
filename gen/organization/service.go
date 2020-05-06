@@ -10,7 +10,6 @@ package organization
 import (
 	"context"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	organizationviews "guide.me/gen/organization/views"
 )
 
@@ -28,15 +27,8 @@ type Service interface {
 	Add(context.Context, *Organization) (res string, err error)
 	// Remove Organization from storage
 	Remove(context.Context, *RemovePayload) (err error)
-	// Add n number of Organizations and return their IDs. This is a multipart
-	// request and each part has field name 'organization' and contains the encoded
-	// organization info to be added.
-	MultiAdd(context.Context, []*Organization) (res []string, err error)
-	// Update Organizations with the given IDs. This is a multipart request and
-	// each part has field name 'organizations' and contains the encoded
-	// Organizations info to be updated. The IDs in the query parameter is mapped
-	// to each part in the request.
-	MultiUpdate(context.Context, *MultiUpdatePayload) (err error)
+	// Update organization with the given IDs.
+	Update(context.Context, *StoredOrganization) (err error)
 }
 
 // ServiceName is the name of the service as defined in the design. This is the
@@ -47,7 +39,7 @@ const ServiceName = "organization"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [6]string{"list", "show", "add", "remove", "multi_add", "multi_update"}
+var MethodNames = [5]string{"list", "show", "add", "remove", "update"}
 
 // StoredOrganizationCollection is the result type of the organization service
 // list method.
@@ -65,7 +57,7 @@ type ShowPayload struct {
 // method.
 type StoredOrganization struct {
 	// ID is the unique id of the Organization.
-	ID primitive.ObjectId
+	ID string
 	// Name of Organization
 	Name string
 	// Company website URL
@@ -86,29 +78,20 @@ type RemovePayload struct {
 	ID string
 }
 
-// MultiUpdatePayload is the payload type of the organization service
-// multi_update method.
-type MultiUpdatePayload struct {
-	// IDs of the Organizations to be updated
-	Ids []string
-	// Array of bottle info that matches the ids attribute
-	Organizations []*Organization
-}
-
-type OrgNotFound struct {
+type NotFound struct {
 	// Message of error
 	Message string
-	// ID of missing Organization
+	// ID of missing element
 	ID string
 }
 
 // Error returns an error description.
-func (e *OrgNotFound) Error() string {
+func (e *NotFound) Error() string {
 	return ""
 }
 
-// ErrorName returns "OrgNotFound".
-func (e *OrgNotFound) ErrorName() string {
+// ErrorName returns "NotFound".
+func (e *NotFound) ErrorName() string {
 	return e.Message
 }
 

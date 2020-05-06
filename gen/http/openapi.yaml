@@ -101,63 +101,23 @@ paths:
           description: No Content response.
       schemes:
       - http
-  /organization/multi_add:
-    post:
-      tags:
-      - organization
-      summary: multi_add organization
-      description: Add n number of Organizations and return their IDs. This is a multipart
-        request and each part has field name 'organization' and contains the encoded
-        organization info to be added.
-      operationId: organization#multi_add
-      consumes:
-      - multipart/form-data
-      parameters:
-      - name: array
-        in: formData
-        required: true
-        schema:
-          type: array
-          items:
-            $ref: '#/definitions/OrganizationRequestBody'
-      responses:
-        "200":
-          description: OK response.
-          schema:
-            type: array
-            items:
-              type: string
-              example: Minima itaque vitae.
-      schemes:
-      - http
-  /organization/multi_update:
+  /organization/update:
     put:
       tags:
       - organization
-      summary: multi_update organization
-      description: Update Organizations with the given IDs. This is a multipart request
-        and each part has field name 'organizations' and contains the encoded Organizations
-        info to be updated. The IDs in the query parameter is mapped to each part
-        in the request.
-      operationId: organization#multi_update
-      consumes:
-      - multipart/form-data
+      summary: update organization
+      description: Update organization with the given IDs.
+      operationId: organization#update
       parameters:
-      - name: ids
-        in: query
-        description: IDs of the Organizations to be updated
-        required: true
-        type: array
-        items:
-          type: string
-        collectionFormat: multi
-      - name: multi_update_request_body
-        in: formData
+      - name: UpdateRequestBody
+        in: body
         required: true
         schema:
-          $ref: '#/definitions/OrganizationMultiUpdateRequestBody'
+          $ref: '#/definitions/OrganizationUpdateRequestBody'
           required:
-          - organizations
+          - id
+          - name
+          - url
       responses:
         "204":
           description: No Content response.
@@ -177,6 +137,105 @@ paths:
             type: file
       schemes:
       - http
+  /walkthrough:
+    post:
+      tags:
+      - walkthrough
+      summary: add walkthrough
+      description: Add new Tutorial and return its ID.
+      operationId: walkthrough#add
+      parameters:
+      - name: AddRequestBody
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/WalkthroughAddRequestBody'
+          required:
+          - name
+          - baseURL
+          - organization
+      responses:
+        "201":
+          description: Created response.
+          schema:
+            type: string
+      schemes:
+      - http
+  /walkthrough/{id}:
+    get:
+      tags:
+      - walkthrough
+      summary: show walkthrough
+      description: Show Walkthrough by ID
+      operationId: walkthrough#show
+      parameters:
+      - name: view
+        in: query
+        description: View to render
+        required: false
+        type: string
+        enum:
+        - default
+        - tiny
+      - name: id
+        in: path
+        description: ID of the Walkthrough to show
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK response.
+          schema:
+            $ref: '#/definitions/WalkthroughShowResponseBody'
+        "404":
+          description: Not Found response.
+          schema:
+            $ref: '#/definitions/WalkthroughShowNotFoundResponseBody'
+            required:
+            - message
+            - id
+      schemes:
+      - http
+    delete:
+      tags:
+      - walkthrough
+      summary: remove walkthrough
+      description: Remove Walkthrough from storage
+      operationId: walkthrough#remove
+      parameters:
+      - name: id
+        in: path
+        description: ID of Walkthrough to remove
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content response.
+      schemes:
+      - http
+  /walkthrough/update:
+    put:
+      tags:
+      - walkthrough
+      summary: update walkthrough
+      description: Update Walkthrough with the given IDs.
+      operationId: walkthrough#update
+      parameters:
+      - name: UpdateRequestBody
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/WalkthroughUpdateRequestBody'
+          required:
+          - id
+          - name
+          - baseURL
+          - organization
+      responses:
+        "204":
+          description: No Content response.
+      schemes:
+      - http
 definitions:
   OrganizationAddRequestBody:
     title: OrganizationAddRequestBody
@@ -185,60 +244,15 @@ definitions:
       name:
         type: string
         description: Name of Organization
-        example: Blue's Cuvee
-        maxLength: 100
+        example: Creating a new request in netflix!
+        maxLength: 200
       url:
         type: string
         description: Company website URL
         example: http://www.google.com/
         pattern: (?i)^(https?|ftp)://[^\s/$.?#].[^\s]*$
     example:
-      name: Blue's Cuvee
-      url: http://www.google.com/
-    required:
-    - name
-    - url
-  OrganizationMultiUpdateRequestBody:
-    title: OrganizationMultiUpdateRequestBody
-    type: object
-    properties:
-      organizations:
-        type: array
-        items:
-          $ref: '#/definitions/OrganizationRequestBody'
-        description: Array of bottle info that matches the ids attribute
-        example:
-        - name: Blue's Cuvee
-          url: http://www.google.com/
-        - name: Blue's Cuvee
-          url: http://www.google.com/
-    example:
-      organizations:
-      - name: Blue's Cuvee
-        url: http://www.google.com/
-      - name: Blue's Cuvee
-        url: http://www.google.com/
-      - name: Blue's Cuvee
-        url: http://www.google.com/
-    required:
-    - organizations
-  OrganizationRequestBody:
-    title: OrganizationRequestBody
-    type: object
-    properties:
-      name:
-        type: string
-        description: Name of Organization
-        example: Blue's Cuvee
-        maxLength: 100
-      url:
-        type: string
-        description: Company website URL
-        example: http://www.google.com/
-        pattern: (?i)^(https?|ftp)://[^\s/$.?#].[^\s]*$
-    description: Organization describes an Organization to be stored.
-    example:
-      name: Blue's Cuvee
+      name: Creating a new request in netflix!
       url: http://www.google.com/
     required:
     - name
@@ -249,16 +263,16 @@ definitions:
     properties:
       id:
         type: string
-        description: ID of missing Organization
-        example: Possimus deleniti magni quia id.
+        description: ID of missing element
+        example: Aut quia dolores unde et non quis.
       message:
         type: string
         description: Message of error
-        example: Organization 1 not found
+        example: Element 1 not found
     description: Organization not found
     example:
-      id: Corporis hic est doloremque saepe ex.
-      message: Organization 1 not found
+      id: Sit non unde est odit asperiores.
+      message: Element 1 not found
     required:
     - message
     - id
@@ -274,8 +288,8 @@ definitions:
       name:
         type: string
         description: Name of Organization
-        example: Blue's Cuvee
-        maxLength: 100
+        example: Creating a new request in netflix!
+        maxLength: 200
       url:
         type: string
         description: Company website URL
@@ -284,7 +298,7 @@ definitions:
     description: ShowResponseBody result type (default view)
     example:
       id: 123abc
-      name: Blue's Cuvee
+      name: Creating a new request in netflix!
       url: http://www.google.com/
     required:
     - id
@@ -300,11 +314,37 @@ definitions:
       type for an array of StoredOrganizationResponseTiny (default view)
     example:
     - id: 123abc
-      name: Blue's Cuvee
+      name: Creating a new request in netflix!
       url: http://www.google.com/
     - id: 123abc
-      name: Blue's Cuvee
+      name: Creating a new request in netflix!
       url: http://www.google.com/
+  OrganizationUpdateRequestBody:
+    title: OrganizationUpdateRequestBody
+    type: object
+    properties:
+      id:
+        type: string
+        description: ID is the unique id of the Organization.
+        example: 123abc
+      name:
+        type: string
+        description: Name of Organization
+        example: Creating a new request in netflix!
+        maxLength: 200
+      url:
+        type: string
+        description: Company website URL
+        example: http://www.google.com/
+        pattern: (?i)^(https?|ftp)://[^\s/$.?#].[^\s]*$
+    example:
+      id: 123abc
+      name: Creating a new request in netflix!
+      url: http://www.google.com/
+    required:
+    - id
+    - name
+    - url
   StoredOrganizationResponseTiny:
     title: 'Mediatype identifier: application/vnd.goa.guide.me.stored-organization;
       view=default'
@@ -317,13 +357,231 @@ definitions:
       name:
         type: string
         description: Name of Organization
-        example: Blue's Cuvee
-        maxLength: 100
+        example: Creating a new request in netflix!
+        maxLength: 200
     description: A StoredOrganization describes an Organization retrieved by the Organization
       service. (tiny view) (default view)
     example:
       id: 123abc
-      name: Blue's Cuvee
+      name: Creating a new request in netflix!
     required:
     - id
     - name
+  StoredWalkthroughResponseTiny:
+    title: 'Mediatype identifier: application/vnd.goa.guide.me.stored-walkthrough;
+      view=default'
+    type: object
+    properties:
+      baseURL:
+        type: string
+        description: base url for your tutorial to start from
+        example: http://www.google.com/
+        pattern: (?i)^(https?|ftp)://[^\s/$.?#].[^\s]*$
+      id:
+        type: string
+        description: ID is the unique id of the Walkthrough.
+        example: 123abc
+      name:
+        type: string
+        description: Name of the Tutorial
+        example: How to create a new process using the exception condition.
+        maxLength: 100
+      organization:
+        type: string
+        description: ID of the organization this tutorial belongs to
+        example: Eos earum fugiat quia assumenda odit.
+    description: A StoredWalkthrough describes a Walkthrough retrieved by the Walkthrough
+      service. (tiny view) (default view)
+    example:
+      baseURL: http://www.google.com/
+      id: 123abc
+      name: How to create a new process using the exception condition.
+      organization: Adipisci minima cum consequatur occaecati commodi laudantium.
+    required:
+    - id
+    - name
+    - baseURL
+    - organization
+  WalkthroughAddRequestBody:
+    title: WalkthroughAddRequestBody
+    type: object
+    properties:
+      baseURL:
+        type: string
+        description: base url for your tutorial to start from
+        example: http://www.google.com/
+        pattern: (?i)^(https?|ftp)://[^\s/$.?#].[^\s]*$
+      name:
+        type: string
+        description: Name of the Tutorial
+        example: How to create a new process using the exception condition.
+        maxLength: 100
+      organization:
+        type: string
+        description: ID of the organization this tutorial belongs to
+        example: Et explicabo omnis.
+      publishedURL:
+        type: string
+        description: Code to be added into an existing page to make it visible locally
+        example: Esse facere.
+      status:
+        type: string
+        description: 'Status of the walkthrough [draft|published] '
+        default: draft
+        example: draft | published
+        enum:
+        - draft
+        - completed
+        - removed
+    example:
+      baseURL: http://www.google.com/
+      name: How to create a new process using the exception condition.
+      organization: Aspernatur est.
+      publishedURL: Quo eligendi.
+      status: draft | published
+    required:
+    - name
+    - baseURL
+    - organization
+  WalkthroughShowNotFoundResponseBody:
+    title: WalkthroughShowNotFoundResponseBody
+    type: object
+    properties:
+      id:
+        type: string
+        description: ID of missing element
+        example: Quia aperiam illo.
+      message:
+        type: string
+        description: Message of error
+        example: Element 1 not found
+    description: Walkthrough not found
+    example:
+      id: Voluptates repudiandae corporis harum quae quia.
+      message: Element 1 not found
+    required:
+    - message
+    - id
+  WalkthroughShowResponseBody:
+    title: 'Mediatype identifier: application/vnd.goa.guide.me.stored-walkthrough;
+      view=default'
+    type: object
+    properties:
+      baseURL:
+        type: string
+        description: base url for your tutorial to start from
+        example: http://www.google.com/
+        pattern: (?i)^(https?|ftp)://[^\s/$.?#].[^\s]*$
+      id:
+        type: string
+        description: ID is the unique id of the Walkthrough.
+        example: 123abc
+      name:
+        type: string
+        description: Name of the Tutorial
+        example: How to create a new process using the exception condition.
+        maxLength: 100
+      organization:
+        type: string
+        description: ID of the organization this tutorial belongs to
+        example: Adipisci sint aut sed.
+      publishedURL:
+        type: string
+        description: Code to be added into an existing page to make it visible locally
+        example: Et omnis dignissimos maxime ea qui.
+      status:
+        type: string
+        description: 'Status of the walkthrough [draft|published] '
+        default: draft
+        example: draft | published
+        enum:
+        - draft
+        - completed
+        - removed
+    description: ShowResponseBody result type (default view)
+    example:
+      baseURL: http://www.google.com/
+      id: 123abc
+      name: How to create a new process using the exception condition.
+      organization: Et architecto omnis ab accusamus est veniam.
+      publishedURL: Repudiandae sed dolor.
+      status: draft | published
+    required:
+    - id
+    - name
+    - baseURL
+    - organization
+  WalkthroughStoredWalkthroughResponseTinyCollection:
+    title: 'Mediatype identifier: application/vnd.goa.guide.me.stored-walkthrough;
+      type=collection; view=tiny'
+    type: array
+    items:
+      $ref: '#/definitions/StoredWalkthroughResponseTiny'
+    description: WalkthroughStoredWalkthroughResponseTinyCollection is the result
+      type for an array of StoredWalkthroughResponseTiny (default view)
+    example:
+    - baseURL: http://www.google.com/
+      id: 123abc
+      name: How to create a new process using the exception condition.
+      organization: Omnis aut eius.
+      publishedURL: Molestias magnam omnis facere.
+      status: draft | published
+    - baseURL: http://www.google.com/
+      id: 123abc
+      name: How to create a new process using the exception condition.
+      organization: Omnis aut eius.
+      publishedURL: Molestias magnam omnis facere.
+      status: draft | published
+    - baseURL: http://www.google.com/
+      id: 123abc
+      name: How to create a new process using the exception condition.
+      organization: Omnis aut eius.
+      publishedURL: Molestias magnam omnis facere.
+      status: draft | published
+  WalkthroughUpdateRequestBody:
+    title: WalkthroughUpdateRequestBody
+    type: object
+    properties:
+      baseURL:
+        type: string
+        description: base url for your tutorial to start from
+        example: http://www.google.com/
+        pattern: (?i)^(https?|ftp)://[^\s/$.?#].[^\s]*$
+      id:
+        type: string
+        description: ID is the unique id of the Walkthrough.
+        example: 123abc
+      name:
+        type: string
+        description: Name of the Tutorial
+        example: How to create a new process using the exception condition.
+        maxLength: 100
+      organization:
+        type: string
+        description: ID of the organization this tutorial belongs to
+        example: Ratione eum.
+      publishedURL:
+        type: string
+        description: Code to be added into an existing page to make it visible locally
+        example: Esse aspernatur adipisci ipsa.
+      status:
+        type: string
+        description: 'Status of the walkthrough [draft|published] '
+        default: draft
+        example: draft | published
+        enum:
+        - draft
+        - completed
+        - removed
+    example:
+      baseURL: http://www.google.com/
+      id: 123abc
+      name: How to create a new process using the exception condition.
+      organization: Sequi dolor quam eum debitis debitis.
+      publishedURL: Sapiente odit eos praesentium ad.
+      status: draft | published
+    required:
+    - id
+    - name
+    - baseURL
+    - organization

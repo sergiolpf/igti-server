@@ -9,7 +9,6 @@ package server
 
 import (
 	"context"
-	"mime/multipart"
 	"net/http"
 
 	goahttp "goa.design/goa/v3/http"
@@ -19,13 +18,12 @@ import (
 
 // Server lists the organization service endpoint HTTP handlers.
 type Server struct {
-	Mounts      []*MountPoint
-	List        http.Handler
-	Show        http.Handler
-	Add         http.Handler
-	Remove      http.Handler
-	MultiAdd    http.Handler
-	MultiUpdate http.Handler
+	Mounts []*MountPoint
+	List   http.Handler
+	Show   http.Handler
+	Add    http.Handler
+	Remove http.Handler
+	Update http.Handler
 }
 
 // ErrorNamer is an interface implemented by generated error structs that
@@ -45,14 +43,6 @@ type MountPoint struct {
 	Pattern string
 }
 
-// OrganizationMultiAddDecoderFunc is the type to decode multipart request for
-// the "organization" service "multi_add" endpoint.
-type OrganizationMultiAddDecoderFunc func(*multipart.Reader, *[]*organization.Organization) error
-
-// OrganizationMultiUpdateDecoderFunc is the type to decode multipart request
-// for the "organization" service "multi_update" endpoint.
-type OrganizationMultiUpdateDecoderFunc func(*multipart.Reader, **organization.MultiUpdatePayload) error
-
 // New instantiates HTTP handlers for all the organization service endpoints
 // using the provided encoder and decoder. The handlers are mounted on the
 // given mux using the HTTP verb and path defined in the design. errhandler is
@@ -66,8 +56,6 @@ func New(
 	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
 	errhandler func(context.Context, http.ResponseWriter, error),
 	formatter func(err error) goahttp.Statuser,
-	organizationMultiAddDecoderFn OrganizationMultiAddDecoderFunc,
-	organizationMultiUpdateDecoderFn OrganizationMultiUpdateDecoderFunc,
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
@@ -75,15 +63,13 @@ func New(
 			{"Show", "GET", "/organization/{id}"},
 			{"Add", "POST", "/organization"},
 			{"Remove", "DELETE", "/organization/{id}"},
-			{"MultiAdd", "POST", "/organization/multi_add"},
-			{"MultiUpdate", "PUT", "/organization/multi_update"},
+			{"Update", "PUT", "/organization/update"},
 		},
-		List:        NewListHandler(e.List, mux, decoder, encoder, errhandler, formatter),
-		Show:        NewShowHandler(e.Show, mux, decoder, encoder, errhandler, formatter),
-		Add:         NewAddHandler(e.Add, mux, decoder, encoder, errhandler, formatter),
-		Remove:      NewRemoveHandler(e.Remove, mux, decoder, encoder, errhandler, formatter),
-		MultiAdd:    NewMultiAddHandler(e.MultiAdd, mux, NewOrganizationMultiAddDecoder(mux, organizationMultiAddDecoderFn), encoder, errhandler, formatter),
-		MultiUpdate: NewMultiUpdateHandler(e.MultiUpdate, mux, NewOrganizationMultiUpdateDecoder(mux, organizationMultiUpdateDecoderFn), encoder, errhandler, formatter),
+		List:   NewListHandler(e.List, mux, decoder, encoder, errhandler, formatter),
+		Show:   NewShowHandler(e.Show, mux, decoder, encoder, errhandler, formatter),
+		Add:    NewAddHandler(e.Add, mux, decoder, encoder, errhandler, formatter),
+		Remove: NewRemoveHandler(e.Remove, mux, decoder, encoder, errhandler, formatter),
+		Update: NewUpdateHandler(e.Update, mux, decoder, encoder, errhandler, formatter),
 	}
 }
 
@@ -96,8 +82,7 @@ func (s *Server) Use(m func(http.Handler) http.Handler) {
 	s.Show = m(s.Show)
 	s.Add = m(s.Add)
 	s.Remove = m(s.Remove)
-	s.MultiAdd = m(s.MultiAdd)
-	s.MultiUpdate = m(s.MultiUpdate)
+	s.Update = m(s.Update)
 }
 
 // Mount configures the mux to serve the organization endpoints.
@@ -106,8 +91,7 @@ func Mount(mux goahttp.Muxer, h *Server) {
 	MountShowHandler(mux, h.Show)
 	MountAddHandler(mux, h.Add)
 	MountRemoveHandler(mux, h.Remove)
-	MountMultiAddHandler(mux, h.MultiAdd)
-	MountMultiUpdateHandler(mux, h.MultiUpdate)
+	MountUpdateHandler(mux, h.Update)
 }
 
 // MountListHandler configures the mux to serve the "organization" service
@@ -307,21 +291,21 @@ func NewRemoveHandler(
 	})
 }
 
-// MountMultiAddHandler configures the mux to serve the "organization" service
-// "multi_add" endpoint.
-func MountMultiAddHandler(mux goahttp.Muxer, h http.Handler) {
+// MountUpdateHandler configures the mux to serve the "organization" service
+// "update" endpoint.
+func MountUpdateHandler(mux goahttp.Muxer, h http.Handler) {
 	f, ok := h.(http.HandlerFunc)
 	if !ok {
 		f = func(w http.ResponseWriter, r *http.Request) {
 			h.ServeHTTP(w, r)
 		}
 	}
-	mux.Handle("POST", "/organization/multi_add", f)
+	mux.Handle("PUT", "/organization/update", f)
 }
 
-// NewMultiAddHandler creates a HTTP handler which loads the HTTP request and
-// calls the "organization" service "multi_add" endpoint.
-func NewMultiAddHandler(
+// NewUpdateHandler creates a HTTP handler which loads the HTTP request and
+// calls the "organization" service "update" endpoint.
+func NewUpdateHandler(
 	endpoint goa.Endpoint,
 	mux goahttp.Muxer,
 	decoder func(*http.Request) goahttp.Decoder,
@@ -330,64 +314,13 @@ func NewMultiAddHandler(
 	formatter func(err error) goahttp.Statuser,
 ) http.Handler {
 	var (
-		decodeRequest  = DecodeMultiAddRequest(mux, decoder)
-		encodeResponse = EncodeMultiAddResponse(encoder)
+		decodeRequest  = DecodeUpdateRequest(mux, decoder)
+		encodeResponse = EncodeUpdateResponse(encoder)
 		encodeError    = goahttp.ErrorEncoder(encoder, formatter)
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
-		ctx = context.WithValue(ctx, goa.MethodKey, "multi_add")
-		ctx = context.WithValue(ctx, goa.ServiceKey, "organization")
-		payload, err := decodeRequest(r)
-		if err != nil {
-			if err := encodeError(ctx, w, err); err != nil {
-				errhandler(ctx, w, err)
-			}
-			return
-		}
-		res, err := endpoint(ctx, payload)
-		if err != nil {
-			if err := encodeError(ctx, w, err); err != nil {
-				errhandler(ctx, w, err)
-			}
-			return
-		}
-		if err := encodeResponse(ctx, w, res); err != nil {
-			errhandler(ctx, w, err)
-		}
-	})
-}
-
-// MountMultiUpdateHandler configures the mux to serve the "organization"
-// service "multi_update" endpoint.
-func MountMultiUpdateHandler(mux goahttp.Muxer, h http.Handler) {
-	f, ok := h.(http.HandlerFunc)
-	if !ok {
-		f = func(w http.ResponseWriter, r *http.Request) {
-			h.ServeHTTP(w, r)
-		}
-	}
-	mux.Handle("PUT", "/organization/multi_update", f)
-}
-
-// NewMultiUpdateHandler creates a HTTP handler which loads the HTTP request
-// and calls the "organization" service "multi_update" endpoint.
-func NewMultiUpdateHandler(
-	endpoint goa.Endpoint,
-	mux goahttp.Muxer,
-	decoder func(*http.Request) goahttp.Decoder,
-	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
-	errhandler func(context.Context, http.ResponseWriter, error),
-	formatter func(err error) goahttp.Statuser,
-) http.Handler {
-	var (
-		decodeRequest  = DecodeMultiUpdateRequest(mux, decoder)
-		encodeResponse = EncodeMultiUpdateResponse(encoder)
-		encodeError    = goahttp.ErrorEncoder(encoder, formatter)
-	)
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
-		ctx = context.WithValue(ctx, goa.MethodKey, "multi_update")
+		ctx = context.WithValue(ctx, goa.MethodKey, "update")
 		ctx = context.WithValue(ctx, goa.ServiceKey, "organization")
 		payload, err := decodeRequest(r)
 		if err != nil {

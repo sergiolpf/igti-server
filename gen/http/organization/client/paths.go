@@ -31,12 +31,7 @@ func RemoveOrganizationPath(id string) string {
 	return fmt.Sprintf("/organization/%v", id)
 }
 
-// MultiAddOrganizationPath returns the URL path to the organization service multi_add HTTP endpoint.
-func MultiAddOrganizationPath() string {
-	return "/organization/multi_add"
-}
-
-// MultiUpdateOrganizationPath returns the URL path to the organization service multi_update HTTP endpoint.
-func MultiUpdateOrganizationPath() string {
-	return "/organization/multi_update"
+// UpdateOrganizationPath returns the URL path to the organization service update HTTP endpoint.
+func UpdateOrganizationPath() string {
+	return "/organization/update"
 }

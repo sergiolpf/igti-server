@@ -25,7 +25,7 @@ func BuildShowPayload(organizationShowMessage string, organizationShowView strin
 		if organizationShowMessage != "" {
 			err = json.Unmarshal([]byte(organizationShowMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Velit est culpa.\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Quo aut molestiae laudantium aliquam non.\"\n   }'")
 			}
 		}
 	}
@@ -60,7 +60,7 @@ func BuildAddPayload(organizationAddMessage string) (*organization.Organization,
 		if organizationAddMessage != "" {
 			err = json.Unmarshal([]byte(organizationAddMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"name\": \"Blue\\'s Cuvee\",\n      \"url\": \"http://www.google.com/\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"name\": \"Creating a new request in netflix!\",\n      \"url\": \"http://www.google.com/\"\n   }'")
 			}
 		}
 	}
@@ -81,7 +81,7 @@ func BuildRemovePayload(organizationRemoveMessage string) (*organization.RemoveP
 		if organizationRemoveMessage != "" {
 			err = json.Unmarshal([]byte(organizationRemoveMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Rem delectus.\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Quas nemo et fuga dolorem illo nulla.\"\n   }'")
 			}
 		}
 	}
@@ -92,57 +92,23 @@ func BuildRemovePayload(organizationRemoveMessage string) (*organization.RemoveP
 	return v, nil
 }
 
-// BuildMultiAddPayload builds the payload for the organization multi_add
-// endpoint from CLI flags.
-func BuildMultiAddPayload(organizationMultiAddMessage string) ([]*organization.Organization, error) {
+// BuildUpdatePayload builds the payload for the organization update endpoint
+// from CLI flags.
+func BuildUpdatePayload(organizationUpdateMessage string) (*organization.StoredOrganization, error) {
 	var err error
-	var message organizationpb.MultiAddRequest
+	var message organizationpb.UpdateRequest
 	{
-		if organizationMultiAddMessage != "" {
-			err = json.Unmarshal([]byte(organizationMultiAddMessage), &message)
+		if organizationUpdateMessage != "" {
+			err = json.Unmarshal([]byte(organizationUpdateMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"field\": [\n         {\n            \"name\": \"Blue\\'s Cuvee\",\n            \"url\": \"http://www.google.com/\"\n         },\n         {\n            \"name\": \"Blue\\'s Cuvee\",\n            \"url\": \"http://www.google.com/\"\n         },\n         {\n            \"name\": \"Blue\\'s Cuvee\",\n            \"url\": \"http://www.google.com/\"\n         },\n         {\n            \"name\": \"Blue\\'s Cuvee\",\n            \"url\": \"http://www.google.com/\"\n         }\n      ]\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"123abc\",\n      \"name\": \"Creating a new request in netflix!\",\n      \"url\": \"http://www.google.com/\"\n   }'")
 			}
 		}
 	}
-	v := make([]*organization.Organization, len(message.Field))
-	for i, val := range message.Field {
-		v[i] = &organization.Organization{
-			Name: val.Name,
-			URL:  val.Url,
-		}
-	}
-	return v, nil
-}
-
-// BuildMultiUpdatePayload builds the payload for the organization multi_update
-// endpoint from CLI flags.
-func BuildMultiUpdatePayload(organizationMultiUpdateMessage string) (*organization.MultiUpdatePayload, error) {
-	var err error
-	var message organizationpb.MultiUpdateRequest
-	{
-		if organizationMultiUpdateMessage != "" {
-			err = json.Unmarshal([]byte(organizationMultiUpdateMessage), &message)
-			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"ids\": [\n         \"Recusandae corporis fugit non.\",\n         \"Asperiores maxime.\"\n      ],\n      \"organizations\": [\n         {\n            \"name\": \"Blue\\'s Cuvee\",\n            \"url\": \"http://www.google.com/\"\n         },\n         {\n            \"name\": \"Blue\\'s Cuvee\",\n            \"url\": \"http://www.google.com/\"\n         },\n         {\n            \"name\": \"Blue\\'s Cuvee\",\n            \"url\": \"http://www.google.com/\"\n         },\n         {\n            \"name\": \"Blue\\'s Cuvee\",\n            \"url\": \"http://www.google.com/\"\n         }\n      ]\n   }'")
-			}
-		}
-	}
-	v := &organization.MultiUpdatePayload{}
-	if message.Ids != nil {
-		v.Ids = make([]string, len(message.Ids))
-		for i, val := range message.Ids {
-			v.Ids[i] = val
-		}
-	}
-	if message.Organizations != nil {
-		v.Organizations = make([]*organization.Organization, len(message.Organizations))
-		for i, val := range message.Organizations {
-			v.Organizations[i] = &organization.Organization{
-				Name: val.Name,
-				URL:  val.Url,
-			}
-		}
+	v := &organization.StoredOrganization{
+		ID:   message.Id,
+		Name: message.Name,
+		URL:  message.Url,
 	}
 
 	return v, nil
