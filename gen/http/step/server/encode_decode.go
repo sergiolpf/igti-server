@@ -22,9 +22,9 @@ import (
 // list endpoint.
 func EncodeListResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(stepviews.StoredWalkthroughCollection)
+		res := v.(*stepviews.StoredSteps)
 		enc := encoder(ctx, w)
-		body := NewStoredWalkthroughResponseTinyCollection(res.Projected)
+		body := NewListResponseBody(res.Projected)
 		w.WriteHeader(http.StatusOK)
 		return enc.Encode(body)
 	}
@@ -43,83 +43,6 @@ func DecodeListRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.De
 		payload := NewListPayload(id)
 
 		return payload, nil
-	}
-}
-
-// EncodeShowResponse returns an encoder for responses returned by the step
-// show endpoint.
-func EncodeShowResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
-	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(*stepviews.StoredWalkthrough)
-		w.Header().Set("goa-view", res.View)
-		enc := encoder(ctx, w)
-		var body interface{}
-		switch res.View {
-		case "default", "":
-			body = NewShowResponseBody(res.Projected)
-		case "tiny":
-			body = NewShowResponseBodyTiny(res.Projected)
-		}
-		w.WriteHeader(http.StatusOK)
-		return enc.Encode(body)
-	}
-}
-
-// DecodeShowRequest returns a decoder for requests sent to the step show
-// endpoint.
-func DecodeShowRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
-	return func(r *http.Request) (interface{}, error) {
-		var (
-			id   string
-			view *string
-			err  error
-
-			params = mux.Vars(r)
-		)
-		id = params["id"]
-		viewRaw := r.URL.Query().Get("view")
-		if viewRaw != "" {
-			view = &viewRaw
-		}
-		if view != nil {
-			if !(*view == "default" || *view == "tiny") {
-				err = goa.MergeErrors(err, goa.InvalidEnumValueError("view", *view, []interface{}{"default", "tiny"}))
-			}
-		}
-		if err != nil {
-			return nil, err
-		}
-		payload := NewShowPayload(id, view)
-
-		return payload, nil
-	}
-}
-
-// EncodeShowError returns an encoder for errors returned by the show step
-// endpoint.
-func EncodeShowError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder, formatter func(err error) goahttp.Statuser) func(context.Context, http.ResponseWriter, error) error {
-	encodeError := goahttp.ErrorEncoder(encoder, formatter)
-	return func(ctx context.Context, w http.ResponseWriter, v error) error {
-		en, ok := v.(ErrorNamer)
-		if !ok {
-			return encodeError(ctx, w, v)
-		}
-		switch en.ErrorName() {
-		case "not_found":
-			res := v.(*step.ElementNotFound)
-			enc := encoder(ctx, w)
-			var body interface{}
-			if formatter != nil {
-				body = formatter(res)
-			} else {
-				body = NewShowNotFoundResponseBody(res)
-			}
-			w.Header().Set("goa-error", "not_found")
-			w.WriteHeader(http.StatusNotFound)
-			return enc.Encode(body)
-		default:
-			return encodeError(ctx, w, v)
-		}
 	}
 }
 
@@ -154,7 +77,7 @@ func DecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Dec
 		if err != nil {
 			return nil, err
 		}
-		payload := NewAddWalkthrough(&body)
+		payload := NewAddSteps(&body)
 
 		return payload, nil
 	}
@@ -213,46 +136,38 @@ func DecodeUpdateRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 		if err != nil {
 			return nil, err
 		}
-		payload := NewUpdateStoredWalkthrough(&body)
+		payload := NewUpdateStoredSteps(&body)
 
 		return payload, nil
 	}
 }
 
-// EncodePublishResponse returns an encoder for responses returned by the step
-// publish endpoint.
-func EncodePublishResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
-	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		w.WriteHeader(http.StatusNoContent)
+// marshalStepviewsStepViewToStepResponseBody builds a value of type
+// *StepResponseBody from a value of type *stepviews.StepView.
+func marshalStepviewsStepViewToStepResponseBody(v *stepviews.StepView) *StepResponseBody {
+	res := &StepResponseBody{
+		Targetid: *v.Targetid,
+		Type:     *v.Type,
+		Value:    *v.Value,
+		Sequence: *v.Sequence,
+		Action:   *v.Action,
+	}
+
+	return res
+}
+
+// unmarshalStepRequestBodyToStepStep builds a value of type *step.Step from a
+// value of type *StepRequestBody.
+func unmarshalStepRequestBodyToStepStep(v *StepRequestBody) *step.Step {
+	if v == nil {
 		return nil
 	}
-}
-
-// DecodePublishRequest returns a decoder for requests sent to the step publish
-// endpoint.
-func DecodePublishRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
-	return func(r *http.Request) (interface{}, error) {
-		var (
-			id string
-
-			params = mux.Vars(r)
-		)
-		id = params["id"]
-		payload := NewPublishPayload(id)
-
-		return payload, nil
-	}
-}
-
-// marshalStepviewsStoredWalkthroughViewToStoredWalkthroughResponseTiny builds
-// a value of type *StoredWalkthroughResponseTiny from a value of type
-// *stepviews.StoredWalkthroughView.
-func marshalStepviewsStoredWalkthroughViewToStoredWalkthroughResponseTiny(v *stepviews.StoredWalkthroughView) *StoredWalkthroughResponseTiny {
-	res := &StoredWalkthroughResponseTiny{
-		ID:           *v.ID,
-		Name:         *v.Name,
-		BaseURL:      *v.BaseURL,
-		Organization: *v.Organization,
+	res := &step.Step{
+		Targetid: *v.Targetid,
+		Type:     *v.Type,
+		Value:    *v.Value,
+		Sequence: *v.Sequence,
+		Action:   *v.Action,
 	}
 
 	return res

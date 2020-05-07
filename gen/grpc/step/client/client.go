@@ -11,7 +11,6 @@ import (
 	"context"
 
 	goagrpc "goa.design/goa/v3/grpc"
-	goapb "goa.design/goa/v3/grpc/pb"
 	goa "goa.design/goa/v3/pkg"
 	"google.golang.org/grpc"
 	steppb "guide.me/gen/grpc/step/pb"
@@ -41,29 +40,6 @@ func (c *Client) List() goa.Endpoint {
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {
 			return nil, goa.Fault(err.Error())
-		}
-		return res, nil
-	}
-}
-
-// Show calls the "Show" function in steppb.StepClient interface.
-func (c *Client) Show() goa.Endpoint {
-	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		inv := goagrpc.NewInvoker(
-			BuildShowFunc(c.grpccli, c.opts...),
-			EncodeShowRequest,
-			DecodeShowResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			resp := goagrpc.DecodeError(err)
-			switch message := resp.(type) {
-			case *steppb.ShowNotFoundError:
-				return nil, NewShowNotFoundError(message)
-			case *goapb.ErrorResponse:
-				return nil, goagrpc.NewServiceError(message)
-			default:
-				return nil, goa.Fault(err.Error())
-			}
 		}
 		return res, nil
 	}
@@ -105,21 +81,6 @@ func (c *Client) Update() goa.Endpoint {
 		inv := goagrpc.NewInvoker(
 			BuildUpdateFunc(c.grpccli, c.opts...),
 			EncodeUpdateRequest,
-			nil)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			return nil, goa.Fault(err.Error())
-		}
-		return res, nil
-	}
-}
-
-// Publish calls the "Publish" function in steppb.StepClient interface.
-func (c *Client) Publish() goa.Endpoint {
-	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		inv := goagrpc.NewInvoker(
-			BuildPublishFunc(c.grpccli, c.opts...),
-			EncodePublishRequest,
 			nil)
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {

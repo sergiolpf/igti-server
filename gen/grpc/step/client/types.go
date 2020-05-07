@@ -8,8 +8,6 @@
 package client
 
 import (
-	"unicode/utf8"
-
 	goa "goa.design/goa/v3/pkg"
 	steppb "guide.me/gen/grpc/step/pb"
 	step "guide.me/gen/step"
@@ -27,81 +25,44 @@ func NewListRequest(payload *step.ListPayload) *steppb.ListRequest {
 
 // NewListResult builds the result type of the "list" endpoint of the "step"
 // service from the gRPC response type.
-func NewListResult(message *steppb.StoredWalkthroughCollection) stepviews.StoredWalkthroughCollectionView {
-	result := make([]*stepviews.StoredWalkthroughView, len(message.Field))
-	for i, val := range message.Field {
-		result[i] = &stepviews.StoredWalkthroughView{
-			ID:           &val.Id,
-			Name:         &val.Name,
-			BaseURL:      &val.BaseUrl,
-			Organization: &val.Organization,
-		}
-		if val.Status != "" {
-			result[i].Status = &val.Status
-		}
-		if val.PublishedUrl != "" {
-			result[i].PublishedURL = &val.PublishedUrl
-		}
-		if val.Status == "" {
-			var tmp string = "draft"
-			result[i].Status = &tmp
+func NewListResult(message *steppb.ListResponse) *stepviews.StoredStepsView {
+	result := &stepviews.StoredStepsView{
+		ID:   &message.Id,
+		WtID: &message.WtId,
+	}
+	if message.Steps != nil {
+		result.Steps = make([]*stepviews.StepView, len(message.Steps))
+		for i, val := range message.Steps {
+			result.Steps[i] = &stepviews.StepView{
+				Targetid: &val.Targetid,
+				Type:     &val.Type,
+				Value:    &val.Value,
+				Sequence: &val.Sequence,
+				Action:   &val.Action,
+			}
 		}
 	}
 	return result
-}
-
-// NewShowRequest builds the gRPC request type from the payload of the "show"
-// endpoint of the "step" service.
-func NewShowRequest(payload *step.ShowPayload) *steppb.ShowRequest {
-	message := &steppb.ShowRequest{
-		Id: payload.ID,
-	}
-	return message
-}
-
-// NewShowResult builds the result type of the "show" endpoint of the "step"
-// service from the gRPC response type.
-func NewShowResult(message *steppb.ShowResponse) *stepviews.StoredWalkthroughView {
-	result := &stepviews.StoredWalkthroughView{
-		ID:           &message.Id,
-		Name:         &message.Name,
-		BaseURL:      &message.BaseUrl,
-		Organization: &message.Organization,
-	}
-	if message.Status != "" {
-		result.Status = &message.Status
-	}
-	if message.PublishedUrl != "" {
-		result.PublishedURL = &message.PublishedUrl
-	}
-	if message.Status == "" {
-		var tmp string = "draft"
-		result.Status = &tmp
-	}
-	return result
-}
-
-// NewShowNotFoundError builds the error type of the "show" endpoint of the
-// "step" service from the gRPC error response type.
-func NewShowNotFoundError(message *steppb.ShowNotFoundError) *step.ElementNotFound {
-	er := &step.ElementNotFound{
-		Message: message.Message_,
-		ID:      message.Id,
-	}
-	return er
 }
 
 // NewAddRequest builds the gRPC request type from the payload of the "add"
 // endpoint of the "step" service.
-func NewAddRequest(payload *step.Walkthrough) *steppb.AddRequest {
-	message := &steppb.AddRequest{
-		Name:         payload.Name,
-		BaseUrl:      payload.BaseURL,
-		Status:       payload.Status,
-		Organization: payload.Organization,
+func NewAddRequest(payload *step.Steps) *steppb.AddRequest {
+	message := &steppb.AddRequest{}
+	if payload.WtID != nil {
+		message.WtId = *payload.WtID
 	}
-	if payload.PublishedURL != nil {
-		message.PublishedUrl = *payload.PublishedURL
+	if payload.Steps != nil {
+		message.Steps = make([]*steppb.Step1, len(payload.Steps))
+		for i, val := range payload.Steps {
+			message.Steps[i] = &steppb.Step1{
+				Targetid: val.Targetid,
+				Type:     val.Type,
+				Value:    val.Value,
+				Sequence: val.Sequence,
+				Action:   val.Action,
+			}
+		}
 	}
 	return message
 }
@@ -124,35 +85,34 @@ func NewRemoveRequest(payload *step.RemovePayload) *steppb.RemoveRequest {
 
 // NewUpdateRequest builds the gRPC request type from the payload of the
 // "update" endpoint of the "step" service.
-func NewUpdateRequest(payload *step.StoredWalkthrough) *steppb.UpdateRequest {
+func NewUpdateRequest(payload *step.StoredSteps) *steppb.UpdateRequest {
 	message := &steppb.UpdateRequest{
-		Id:           payload.ID,
-		Name:         payload.Name,
-		BaseUrl:      payload.BaseURL,
-		Status:       payload.Status,
-		Organization: payload.Organization,
+		Id:   payload.ID,
+		WtId: payload.WtID,
 	}
-	if payload.PublishedURL != nil {
-		message.PublishedUrl = *payload.PublishedURL
-	}
-	return message
-}
-
-// NewPublishRequest builds the gRPC request type from the payload of the
-// "publish" endpoint of the "step" service.
-func NewPublishRequest(payload *step.PublishPayload) *steppb.PublishRequest {
-	message := &steppb.PublishRequest{
-		Id: payload.ID,
+	if payload.Steps != nil {
+		message.Steps = make([]*steppb.Step1, len(payload.Steps))
+		for i, val := range payload.Steps {
+			message.Steps[i] = &steppb.Step1{
+				Targetid: val.Targetid,
+				Type:     val.Type,
+				Value:    val.Value,
+				Sequence: val.Sequence,
+				Action:   val.Action,
+			}
+		}
 	}
 	return message
 }
 
-// ValidateStoredWalkthroughCollection runs the validations defined on
-// StoredWalkthroughCollection.
-func ValidateStoredWalkthroughCollection(message *steppb.StoredWalkthroughCollection) (err error) {
-	for _, e := range message.Field {
+// ValidateListResponse runs the validations defined on ListResponse.
+func ValidateListResponse(message *steppb.ListResponse) (err error) {
+	if message.Steps == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("steps", "message"))
+	}
+	for _, e := range message.Steps {
 		if e != nil {
-			if err2 := ValidateStoredWalkthrough(e); err2 != nil {
+			if err2 := ValidateStep1(e); err2 != nil {
 				err = goa.MergeErrors(err, err2)
 			}
 		}
@@ -160,28 +120,13 @@ func ValidateStoredWalkthroughCollection(message *steppb.StoredWalkthroughCollec
 	return
 }
 
-// ValidateStoredWalkthrough runs the validations defined on StoredWalkthrough.
-func ValidateStoredWalkthrough(message *steppb.StoredWalkthrough) (err error) {
-	if utf8.RuneCountInString(message.Name) > 100 {
-		err = goa.MergeErrors(err, goa.InvalidLengthError("message.name", message.Name, utf8.RuneCountInString(message.Name), 100, false))
+// ValidateStep1 runs the validations defined on Step1.
+func ValidateStep1(message *steppb.Step1) (err error) {
+	if !(message.Type == "text" || message.Type == "picture") {
+		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.type", message.Type, []interface{}{"text", "picture"}))
 	}
-	err = goa.MergeErrors(err, goa.ValidatePattern("message.baseURL", message.BaseUrl, "(?i)^(https?|ftp)://[^\\s/$.?#].[^\\s]*$"))
-	if !(message.Status == "draft" || message.Status == "completed" || message.Status == "removed") {
-		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.status", message.Status, []interface{}{"draft", "completed", "removed"}))
-	}
-	return
-}
-
-// ValidateShowResponse runs the validations defined on ShowResponse.
-func ValidateShowResponse(message *steppb.ShowResponse) (err error) {
-	if utf8.RuneCountInString(message.Name) > 100 {
-		err = goa.MergeErrors(err, goa.InvalidLengthError("message.name", message.Name, utf8.RuneCountInString(message.Name), 100, false))
-	}
-	err = goa.MergeErrors(err, goa.ValidatePattern("message.baseURL", message.BaseUrl, "(?i)^(https?|ftp)://[^\\s/$.?#].[^\\s]*$"))
-	if message.Status != "" {
-		if !(message.Status == "draft" || message.Status == "completed" || message.Status == "removed") {
-			err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.status", message.Status, []interface{}{"draft", "completed", "removed"}))
-		}
+	if !(message.Action == "click" || message.Action == "next" || message.Action == "end") {
+		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.action", message.Action, []interface{}{"click", "next", "end"}))
 	}
 	return
 }

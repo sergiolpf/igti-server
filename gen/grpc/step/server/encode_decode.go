@@ -11,7 +11,6 @@ import (
 	"context"
 
 	goagrpc "goa.design/goa/v3/grpc"
-	goa "goa.design/goa/v3/pkg"
 	"google.golang.org/grpc/metadata"
 	steppb "guide.me/gen/grpc/step/pb"
 	step "guide.me/gen/step"
@@ -20,13 +19,13 @@ import (
 
 // EncodeListResponse encodes responses from the "step" service "list" endpoint.
 func EncodeListResponse(ctx context.Context, v interface{}, hdr, trlr *metadata.MD) (interface{}, error) {
-	vres, ok := v.(stepviews.StoredWalkthroughCollection)
+	vres, ok := v.(*stepviews.StoredSteps)
 	if !ok {
-		return nil, goagrpc.ErrInvalidType("step", "list", "stepviews.StoredWalkthroughCollection", v)
+		return nil, goagrpc.ErrInvalidType("step", "list", "*stepviews.StoredSteps", v)
 	}
 	result := vres.Projected
 	(*hdr).Append("goa-view", vres.View)
-	resp := NewStoredWalkthroughCollection(result)
+	resp := NewListResponse(result)
 	return resp, nil
 }
 
@@ -44,53 +43,6 @@ func DecodeListRequest(ctx context.Context, v interface{}, md metadata.MD) (inte
 	var payload *step.ListPayload
 	{
 		payload = NewListPayload(message)
-	}
-	return payload, nil
-}
-
-// EncodeShowResponse encodes responses from the "step" service "show" endpoint.
-func EncodeShowResponse(ctx context.Context, v interface{}, hdr, trlr *metadata.MD) (interface{}, error) {
-	vres, ok := v.(*stepviews.StoredWalkthrough)
-	if !ok {
-		return nil, goagrpc.ErrInvalidType("step", "show", "*stepviews.StoredWalkthrough", v)
-	}
-	result := vres.Projected
-	(*hdr).Append("goa-view", vres.View)
-	resp := NewShowResponse(result)
-	return resp, nil
-}
-
-// DecodeShowRequest decodes requests sent to "step" service "show" endpoint.
-func DecodeShowRequest(ctx context.Context, v interface{}, md metadata.MD) (interface{}, error) {
-	var (
-		view *string
-		err  error
-	)
-	{
-		if vals := md.Get("view"); len(vals) > 0 {
-			view = &vals[0]
-		}
-		if view != nil {
-			if !(*view == "default" || *view == "tiny") {
-				err = goa.MergeErrors(err, goa.InvalidEnumValueError("view", *view, []interface{}{"default", "tiny"}))
-			}
-		}
-	}
-	if err != nil {
-		return nil, err
-	}
-	var (
-		message *steppb.ShowRequest
-		ok      bool
-	)
-	{
-		if message, ok = v.(*steppb.ShowRequest); !ok {
-			return nil, goagrpc.ErrInvalidType("step", "show", "*steppb.ShowRequest", v)
-		}
-	}
-	var payload *step.ShowPayload
-	{
-		payload = NewShowPayload(message, view)
 	}
 	return payload, nil
 }
@@ -119,7 +71,7 @@ func DecodeAddRequest(ctx context.Context, v interface{}, md metadata.MD) (inter
 			return nil, err
 		}
 	}
-	var payload *step.Walkthrough
+	var payload *step.Steps
 	{
 		payload = NewAddPayload(message)
 	}
@@ -174,35 +126,9 @@ func DecodeUpdateRequest(ctx context.Context, v interface{}, md metadata.MD) (in
 			return nil, err
 		}
 	}
-	var payload *step.StoredWalkthrough
+	var payload *step.StoredSteps
 	{
 		payload = NewUpdatePayload(message)
-	}
-	return payload, nil
-}
-
-// EncodePublishResponse encodes responses from the "step" service "publish"
-// endpoint.
-func EncodePublishResponse(ctx context.Context, v interface{}, hdr, trlr *metadata.MD) (interface{}, error) {
-	resp := NewPublishResponse()
-	return resp, nil
-}
-
-// DecodePublishRequest decodes requests sent to "step" service "publish"
-// endpoint.
-func DecodePublishRequest(ctx context.Context, v interface{}, md metadata.MD) (interface{}, error) {
-	var (
-		message *steppb.PublishRequest
-		ok      bool
-	)
-	{
-		if message, ok = v.(*steppb.PublishRequest); !ok {
-			return nil, goagrpc.ErrInvalidType("step", "publish", "*steppb.PublishRequest", v)
-		}
-	}
-	var payload *step.PublishPayload
-	{
-		payload = NewPublishPayload(message)
 	}
 	return payload, nil
 }

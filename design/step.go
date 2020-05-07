@@ -1,6 +1,8 @@
 package design
 
-import . "goa.design/goa/v3/dsl"
+import (
+	. "goa.design/goa/v3/dsl"
+)
 
 var _ = Service("step", func() {
 	Description("The Step service makes it possible to view, add, modify or remove Steps of a Walkthrough.")
@@ -10,15 +12,15 @@ var _ = Service("step", func() {
 	})
 
 	Method("list", func() {
-		Description("List all stored walkthrough for a given organization")
+		Description("List all stored Steps for a given walkthrough")
 
 		Payload(func() {
-			Field(1, "id", String, "ID of Organization to search for ")
+			Field(1, "id", String, "ID of Walkthrough to search for steps ")
 			Required("id")
 		})
 
-		Result(CollectionOf(StoredWalkthrough), func() {
-			View("tiny")
+		Result(StoredSteps, func() {
+			View("default")
 		})
 
 		HTTP(func() {
@@ -31,40 +33,10 @@ var _ = Service("step", func() {
 		})
 	})
 
-	Method("show", func() {
-		Description("Show Walkthrough by ID")
-		Payload(func() {
-			Field(1, "id", String, "ID of the Walkthrough to show")
-			Field(2, "view", String, "View to render", func() {
-				Enum("default", "tiny")
-			})
-			Required("id")
-		})
-
-		Result(StoredWalkthrough)
-
-		Error("not_found", ElementNotFound, "Walkthrough not found")
-
-		HTTP(func() {
-			GET("/show/{id}")
-			Param("view")
-			Response(StatusOK)
-			Response("not_found", StatusNotFound)
-		})
-
-		GRPC(func() {
-			Metadata(func() {
-				Attribute("view")
-			})
-			Response(CodeOK)
-			Response("not_found", CodeNotFound)
-		})
-	})
-
 	Method("add", func() {
-		Description("Add new Tutorial and return its ID.")
+		Description("Add new Steps to walkthrough and return ID.")
 
-		Payload(Walkthrough)
+		Payload(Steps)
 
 		Result(String)
 
@@ -79,14 +51,14 @@ var _ = Service("step", func() {
 	})
 
 	Method("remove", func() {
-		Description("Remove Walkthrough from storage")
+		Description("Remove Steps from storage")
 
 		Payload(func() {
-			Field(1, "id", String, "ID of Walkthrough to remove")
+			Field(1, "id", String, "ID of Steps to remove")
 			Required("id")
 		})
 
-		Error("not_found", ElementNotFound, "Walkthrough not found")
+		Error("not_found", ElementNotFound, "Steps not found")
 
 		HTTP(func() {
 			DELETE("/{id}")
@@ -100,8 +72,8 @@ var _ = Service("step", func() {
 	})
 
 	Method("update", func() {
-		Description("Update Walkthrough with the given IDs.")
-		Payload(StoredWalkthrough)
+		Description("Update Steps with the given IDs.")
+		Payload(StoredSteps)
 
 		HTTP(func() {
 			PUT("/update")
@@ -111,21 +83,4 @@ var _ = Service("step", func() {
 			Response(CodeOK)
 		})
 	})
-
-	Method("publish", func() {
-		Description("Publishes Walkthrough with the given IDs.")
-		Payload(func() {
-			Field(1, "id", String, "ID of Walkthrough to be published")
-			Required("id")
-		})
-
-		HTTP(func() {
-			PUT("/publish/{id}")
-			Response(StatusNoContent)
-		})
-		GRPC(func() {
-			Response(CodeOK)
-		})
-	})
-
 })

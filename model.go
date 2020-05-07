@@ -1,6 +1,9 @@
 package guideme
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"guide.me/gen/step"
+)
 
 type OrganizationModel struct {
 	// ID is the unique id of the Organization.
@@ -24,4 +27,13 @@ type WalkthroughModel struct {
 	PublishedURL *string
 	// ID of the organization this tutorial belongs to
 	orgID primitive.ObjectID `bson:"orgId,omitempty"`
+}
+
+type StepsModel struct {
+	// ID is the unique id of the Steps.
+	ID primitive.ObjectID `bson:"_id,omitempty"`
+	// The id of the Walkthrough those steps belong to.
+	WtID primitive.ObjectID `bson:"wtid,omitempty"`
+	// List of steps for a given walkthrough.
+	Steps []*step.Step
 }

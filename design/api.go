@@ -85,7 +85,7 @@ var StoredWalkthrough = ResultType("application/vnd.goa.guide.me.stored-walkthro
 	Required("id", "name", "baseURL", "organization")
 })
 
-var StoredStep = ResultType("application/vnd.goa.guide.me.stored-steps", func() {
+var StoredSteps = ResultType("application/vnd.goa.guide.me.stored-steps", func() {
 	Description("A StoredStep describes all the Steps retrieved by the Steps service.")
 	Reference(Steps)
 	TypeName("StoredSteps")

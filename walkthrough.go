@@ -92,7 +92,8 @@ func (s *walkthroughsrvc) Remove(ctx context.Context, p *walkthrough.RemovePaylo
 // Update Walkthrough with the given IDs.
 func (s *walkthroughsrvc) Update(ctx context.Context, p *walkthrough.StoredWalkthrough) (err error) {
 	s.logger.Print("walkthrough.update")
-	return
+	err = s.db.UpdateWalkthrough(*p)
+	return err
 }
 
 // Publishes Walkthrough with the given IDs.

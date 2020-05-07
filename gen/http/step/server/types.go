@@ -8,8 +8,6 @@
 package server
 
 import (
-	"unicode/utf8"
-
 	goa "goa.design/goa/v3/pkg"
 	step "guide.me/gen/step"
 	stepviews "guide.me/gen/step/views"
@@ -18,138 +16,74 @@ import (
 // AddRequestBody is the type of the "step" service "add" endpoint HTTP request
 // body.
 type AddRequestBody struct {
-	// Name of the Tutorial
-	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
-	// base url for your tutorial to start from
-	BaseURL *string `form:"baseURL,omitempty" json:"baseURL,omitempty" xml:"baseURL,omitempty"`
-	// Status of the walkthrough [draft|published]
-	Status *string `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
-	// Code to be added into an existing page to make it visible locally
-	PublishedURL *string `form:"publishedURL,omitempty" json:"publishedURL,omitempty" xml:"publishedURL,omitempty"`
-	// ID of the organization this tutorial belongs to
-	Organization *string `form:"organization,omitempty" json:"organization,omitempty" xml:"organization,omitempty"`
+	// The id of the Walkthrough those steps belong to.
+	WtID *string `form:"wtId,omitempty" json:"wtId,omitempty" xml:"wtId,omitempty"`
+	// List of steps for a given walkthrough.
+	Steps []*StepRequestBody `form:"steps,omitempty" json:"steps,omitempty" xml:"steps,omitempty"`
 }
 
 // UpdateRequestBody is the type of the "step" service "update" endpoint HTTP
 // request body.
 type UpdateRequestBody struct {
-	// ID is the unique id of the Walkthrough.
+	// ID is the unique id of the Step.
 	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
-	// Name of the Tutorial
-	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
-	// base url for your tutorial to start from
-	BaseURL *string `form:"baseURL,omitempty" json:"baseURL,omitempty" xml:"baseURL,omitempty"`
-	// Status of the walkthrough [draft|published]
-	Status *string `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
-	// Code to be added into an existing page to make it visible locally
-	PublishedURL *string `form:"publishedURL,omitempty" json:"publishedURL,omitempty" xml:"publishedURL,omitempty"`
-	// ID of the organization this tutorial belongs to
-	Organization *string `form:"organization,omitempty" json:"organization,omitempty" xml:"organization,omitempty"`
+	// The id of the Walkthrough those steps belong to.
+	WtID *string `form:"wtId,omitempty" json:"wtId,omitempty" xml:"wtId,omitempty"`
+	// List of steps for a given walkthrough.
+	Steps []*StepRequestBody `form:"steps,omitempty" json:"steps,omitempty" xml:"steps,omitempty"`
 }
 
-// StoredWalkthroughResponseTinyCollection is the type of the "step" service
-// "list" endpoint HTTP response body.
-type StoredWalkthroughResponseTinyCollection []*StoredWalkthroughResponseTiny
-
-// ShowResponseBody is the type of the "step" service "show" endpoint HTTP
+// ListResponseBody is the type of the "step" service "list" endpoint HTTP
 // response body.
-type ShowResponseBody struct {
-	// ID is the unique id of the Walkthrough.
+type ListResponseBody struct {
+	// ID is the unique id of the Step.
 	ID string `form:"id" json:"id" xml:"id"`
-	// Name of the Tutorial
-	Name string `form:"name" json:"name" xml:"name"`
-	// base url for your tutorial to start from
-	BaseURL string `form:"baseURL" json:"baseURL" xml:"baseURL"`
-	// Status of the walkthrough [draft|published]
-	Status string `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
-	// Code to be added into an existing page to make it visible locally
-	PublishedURL *string `form:"publishedURL,omitempty" json:"publishedURL,omitempty" xml:"publishedURL,omitempty"`
-	// ID of the organization this tutorial belongs to
-	Organization string `form:"organization" json:"organization" xml:"organization"`
+	// The id of the Walkthrough those steps belong to.
+	WtID string `form:"wtId" json:"wtId" xml:"wtId"`
+	// List of steps for a given walkthrough.
+	Steps []*StepResponseBody `form:"steps" json:"steps" xml:"steps"`
 }
 
-// ShowResponseBodyTiny is the type of the "step" service "show" endpoint HTTP
-// response body.
-type ShowResponseBodyTiny struct {
-	// ID is the unique id of the Walkthrough.
-	ID string `form:"id" json:"id" xml:"id"`
-	// Name of the Tutorial
-	Name string `form:"name" json:"name" xml:"name"`
-	// base url for your tutorial to start from
-	BaseURL string `form:"baseURL" json:"baseURL" xml:"baseURL"`
-	// ID of the organization this tutorial belongs to
-	Organization string `form:"organization" json:"organization" xml:"organization"`
+// StepResponseBody is used to define fields on response body types.
+type StepResponseBody struct {
+	// A string representing the HTML ID of an element
+	Targetid string `form:"targetid" json:"targetid" xml:"targetid"`
+	// The type of step to be used
+	Type string `form:"type" json:"type" xml:"type"`
+	// The content of the message to be displayed
+	Value string `form:"value" json:"value" xml:"value"`
+	// The number in the sequence that the step belongs to.
+	Sequence int32 `form:"sequence" json:"sequence" xml:"sequence"`
+	// What action should trigger the next step
+	Action string `form:"action" json:"action" xml:"action"`
 }
 
-// ShowNotFoundResponseBody is the type of the "step" service "show" endpoint
-// HTTP response body for the "not_found" error.
-type ShowNotFoundResponseBody struct {
-	// Message of error
-	Message string `form:"message" json:"message" xml:"message"`
-	// ID of missing element
-	ID string `form:"id" json:"id" xml:"id"`
+// StepRequestBody is used to define fields on request body types.
+type StepRequestBody struct {
+	// A string representing the HTML ID of an element
+	Targetid *string `form:"targetid,omitempty" json:"targetid,omitempty" xml:"targetid,omitempty"`
+	// The type of step to be used
+	Type *string `form:"type,omitempty" json:"type,omitempty" xml:"type,omitempty"`
+	// The content of the message to be displayed
+	Value *string `form:"value,omitempty" json:"value,omitempty" xml:"value,omitempty"`
+	// The number in the sequence that the step belongs to.
+	Sequence *int32 `form:"sequence,omitempty" json:"sequence,omitempty" xml:"sequence,omitempty"`
+	// What action should trigger the next step
+	Action *string `form:"action,omitempty" json:"action,omitempty" xml:"action,omitempty"`
 }
 
-// StoredWalkthroughResponseTiny is used to define fields on response body
-// types.
-type StoredWalkthroughResponseTiny struct {
-	// ID is the unique id of the Walkthrough.
-	ID string `form:"id" json:"id" xml:"id"`
-	// Name of the Tutorial
-	Name string `form:"name" json:"name" xml:"name"`
-	// base url for your tutorial to start from
-	BaseURL string `form:"baseURL" json:"baseURL" xml:"baseURL"`
-	// ID of the organization this tutorial belongs to
-	Organization string `form:"organization" json:"organization" xml:"organization"`
-}
-
-// NewStoredWalkthroughResponseTinyCollection builds the HTTP response body
-// from the result of the "list" endpoint of the "step" service.
-func NewStoredWalkthroughResponseTinyCollection(res stepviews.StoredWalkthroughCollectionView) StoredWalkthroughResponseTinyCollection {
-	body := make([]*StoredWalkthroughResponseTiny, len(res))
-	for i, val := range res {
-		body[i] = marshalStepviewsStoredWalkthroughViewToStoredWalkthroughResponseTiny(val)
+// NewListResponseBody builds the HTTP response body from the result of the
+// "list" endpoint of the "step" service.
+func NewListResponseBody(res *stepviews.StoredStepsView) *ListResponseBody {
+	body := &ListResponseBody{
+		ID:   *res.ID,
+		WtID: *res.WtID,
 	}
-	return body
-}
-
-// NewShowResponseBody builds the HTTP response body from the result of the
-// "show" endpoint of the "step" service.
-func NewShowResponseBody(res *stepviews.StoredWalkthroughView) *ShowResponseBody {
-	body := &ShowResponseBody{
-		ID:           *res.ID,
-		Name:         *res.Name,
-		BaseURL:      *res.BaseURL,
-		PublishedURL: res.PublishedURL,
-		Organization: *res.Organization,
-	}
-	if res.Status != nil {
-		body.Status = *res.Status
-	}
-	if res.Status == nil {
-		body.Status = "draft"
-	}
-	return body
-}
-
-// NewShowResponseBodyTiny builds the HTTP response body from the result of the
-// "show" endpoint of the "step" service.
-func NewShowResponseBodyTiny(res *stepviews.StoredWalkthroughView) *ShowResponseBodyTiny {
-	body := &ShowResponseBodyTiny{
-		ID:           *res.ID,
-		Name:         *res.Name,
-		BaseURL:      *res.BaseURL,
-		Organization: *res.Organization,
-	}
-	return body
-}
-
-// NewShowNotFoundResponseBody builds the HTTP response body from the result of
-// the "show" endpoint of the "step" service.
-func NewShowNotFoundResponseBody(res *step.ElementNotFound) *ShowNotFoundResponseBody {
-	body := &ShowNotFoundResponseBody{
-		Message: res.Message,
-		ID:      res.ID,
+	if res.Steps != nil {
+		body.Steps = make([]*StepResponseBody, len(res.Steps))
+		for i, val := range res.Steps {
+			body.Steps[i] = marshalStepviewsStepViewToStepResponseBody(val)
+		}
 	}
 	return body
 }
@@ -162,28 +96,16 @@ func NewListPayload(id string) *step.ListPayload {
 	return v
 }
 
-// NewShowPayload builds a step service show endpoint payload.
-func NewShowPayload(id string, view *string) *step.ShowPayload {
-	v := &step.ShowPayload{}
-	v.ID = id
-	v.View = view
-
-	return v
-}
-
-// NewAddWalkthrough builds a step service add endpoint payload.
-func NewAddWalkthrough(body *AddRequestBody) *step.Walkthrough {
-	v := &step.Walkthrough{
-		Name:         *body.Name,
-		BaseURL:      *body.BaseURL,
-		PublishedURL: body.PublishedURL,
-		Organization: *body.Organization,
+// NewAddSteps builds a step service add endpoint payload.
+func NewAddSteps(body *AddRequestBody) *step.Steps {
+	v := &step.Steps{
+		WtID: body.WtID,
 	}
-	if body.Status != nil {
-		v.Status = *body.Status
-	}
-	if body.Status == nil {
-		v.Status = "draft"
+	if body.Steps != nil {
+		v.Steps = make([]*step.Step, len(body.Steps))
+		for i, val := range body.Steps {
+			v.Steps[i] = unmarshalStepRequestBodyToStepStep(val)
+		}
 	}
 
 	return v
@@ -197,55 +119,27 @@ func NewRemovePayload(id string) *step.RemovePayload {
 	return v
 }
 
-// NewUpdateStoredWalkthrough builds a step service update endpoint payload.
-func NewUpdateStoredWalkthrough(body *UpdateRequestBody) *step.StoredWalkthrough {
-	v := &step.StoredWalkthrough{
-		ID:           *body.ID,
-		Name:         *body.Name,
-		BaseURL:      *body.BaseURL,
-		PublishedURL: body.PublishedURL,
-		Organization: *body.Organization,
+// NewUpdateStoredSteps builds a step service update endpoint payload.
+func NewUpdateStoredSteps(body *UpdateRequestBody) *step.StoredSteps {
+	v := &step.StoredSteps{
+		ID:   *body.ID,
+		WtID: *body.WtID,
 	}
-	if body.Status != nil {
-		v.Status = *body.Status
+	v.Steps = make([]*step.Step, len(body.Steps))
+	for i, val := range body.Steps {
+		v.Steps[i] = unmarshalStepRequestBodyToStepStep(val)
 	}
-	if body.Status == nil {
-		v.Status = "draft"
-	}
-
-	return v
-}
-
-// NewPublishPayload builds a step service publish endpoint payload.
-func NewPublishPayload(id string) *step.PublishPayload {
-	v := &step.PublishPayload{}
-	v.ID = id
 
 	return v
 }
 
 // ValidateAddRequestBody runs the validations defined on AddRequestBody
 func ValidateAddRequestBody(body *AddRequestBody) (err error) {
-	if body.Name == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
-	}
-	if body.BaseURL == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("baseURL", "body"))
-	}
-	if body.Organization == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("organization", "body"))
-	}
-	if body.Name != nil {
-		if utf8.RuneCountInString(*body.Name) > 100 {
-			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", *body.Name, utf8.RuneCountInString(*body.Name), 100, false))
-		}
-	}
-	if body.BaseURL != nil {
-		err = goa.MergeErrors(err, goa.ValidatePattern("body.baseURL", *body.BaseURL, "(?i)^(https?|ftp)://[^\\s/$.?#].[^\\s]*$"))
-	}
-	if body.Status != nil {
-		if !(*body.Status == "draft" || *body.Status == "completed" || *body.Status == "removed") {
-			err = goa.MergeErrors(err, goa.InvalidEnumValueError("body.status", *body.Status, []interface{}{"draft", "completed", "removed"}))
+	for _, e := range body.Steps {
+		if e != nil {
+			if err2 := ValidateStepRequestBody(e); err2 != nil {
+				err = goa.MergeErrors(err, err2)
+			}
 		}
 	}
 	return
@@ -256,26 +150,47 @@ func ValidateUpdateRequestBody(body *UpdateRequestBody) (err error) {
 	if body.ID == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
 	}
-	if body.Name == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
+	if body.WtID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("wtId", "body"))
 	}
-	if body.BaseURL == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("baseURL", "body"))
+	if body.Steps == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("steps", "body"))
 	}
-	if body.Organization == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("organization", "body"))
-	}
-	if body.Name != nil {
-		if utf8.RuneCountInString(*body.Name) > 100 {
-			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", *body.Name, utf8.RuneCountInString(*body.Name), 100, false))
+	for _, e := range body.Steps {
+		if e != nil {
+			if err2 := ValidateStepRequestBody(e); err2 != nil {
+				err = goa.MergeErrors(err, err2)
+			}
 		}
 	}
-	if body.BaseURL != nil {
-		err = goa.MergeErrors(err, goa.ValidatePattern("body.baseURL", *body.BaseURL, "(?i)^(https?|ftp)://[^\\s/$.?#].[^\\s]*$"))
+	return
+}
+
+// ValidateStepRequestBody runs the validations defined on StepRequestBody
+func ValidateStepRequestBody(body *StepRequestBody) (err error) {
+	if body.Targetid == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("targetid", "body"))
 	}
-	if body.Status != nil {
-		if !(*body.Status == "draft" || *body.Status == "completed" || *body.Status == "removed") {
-			err = goa.MergeErrors(err, goa.InvalidEnumValueError("body.status", *body.Status, []interface{}{"draft", "completed", "removed"}))
+	if body.Type == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("type", "body"))
+	}
+	if body.Value == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("value", "body"))
+	}
+	if body.Sequence == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("sequence", "body"))
+	}
+	if body.Action == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("action", "body"))
+	}
+	if body.Type != nil {
+		if !(*body.Type == "text" || *body.Type == "picture") {
+			err = goa.MergeErrors(err, goa.InvalidEnumValueError("body.type", *body.Type, []interface{}{"text", "picture"}))
+		}
+	}
+	if body.Action != nil {
+		if !(*body.Action == "click" || *body.Action == "next" || *body.Action == "end") {
+			err = goa.MergeErrors(err, goa.InvalidEnumValueError("body.action", *body.Action, []interface{}{"click", "next", "end"}))
 		}
 	}
 	return

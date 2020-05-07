@@ -10,7 +10,6 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"unicode/utf8"
 
 	goa "goa.design/goa/v3/pkg"
 	step "guide.me/gen/step"
@@ -29,61 +28,24 @@ func BuildListPayload(stepListID string) (*step.ListPayload, error) {
 	return v, nil
 }
 
-// BuildShowPayload builds the payload for the step show endpoint from CLI
-// flags.
-func BuildShowPayload(stepShowID string, stepShowView string) (*step.ShowPayload, error) {
-	var err error
-	var id string
-	{
-		id = stepShowID
-	}
-	var view *string
-	{
-		if stepShowView != "" {
-			view = &stepShowView
-			if view != nil {
-				if !(*view == "default" || *view == "tiny") {
-					err = goa.MergeErrors(err, goa.InvalidEnumValueError("view", *view, []interface{}{"default", "tiny"}))
-				}
-			}
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-	v := &step.ShowPayload{}
-	v.ID = id
-	v.View = view
-
-	return v, nil
-}
-
 // BuildAddPayload builds the payload for the step add endpoint from CLI flags.
-func BuildAddPayload(stepAddBody string) (*step.Walkthrough, error) {
+func BuildAddPayload(stepAddBody string) (*step.Steps, error) {
 	var err error
 	var body AddRequestBody
 	{
 		err = json.Unmarshal([]byte(stepAddBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Nostrum veniam.\",\n      \"publishedURL\": \"Doloremque quo aut molestiae laudantium aliquam.\",\n      \"status\": \"draft | published\"\n   }'")
-		}
-		if utf8.RuneCountInString(body.Name) > 100 {
-			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", body.Name, utf8.RuneCountInString(body.Name), 100, false))
-		}
-		err = goa.MergeErrors(err, goa.ValidatePattern("body.baseURL", body.BaseURL, "(?i)^(https?|ftp)://[^\\s/$.?#].[^\\s]*$"))
-		if !(body.Status == "draft" || body.Status == "completed" || body.Status == "removed") {
-			err = goa.MergeErrors(err, goa.InvalidEnumValueError("body.status", body.Status, []interface{}{"draft", "completed", "removed"}))
-		}
-		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"steps\": [\n         {\n            \"action\": \"end\",\n            \"sequence\": 1779034664,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"end\",\n            \"sequence\": 1779034664,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"end\",\n            \"sequence\": 1779034664,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"end\",\n            \"sequence\": 1779034664,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         }\n      ],\n      \"wtId\": \"abc234235\"\n   }'")
 		}
 	}
-	v := &step.Walkthrough{
-		Name:         body.Name,
-		BaseURL:      body.BaseURL,
-		Status:       body.Status,
-		PublishedURL: body.PublishedURL,
-		Organization: body.Organization,
+	v := &step.Steps{
+		WtID: body.WtID,
+	}
+	if body.Steps != nil {
+		v.Steps = make([]*step.Step, len(body.Steps))
+		for i, val := range body.Steps {
+			v.Steps[i] = marshalStepRequestBodyToStepStep(val)
+		}
 	}
 
 	return v, nil
@@ -104,46 +66,38 @@ func BuildRemovePayload(stepRemoveID string) (*step.RemovePayload, error) {
 
 // BuildUpdatePayload builds the payload for the step update endpoint from CLI
 // flags.
-func BuildUpdatePayload(stepUpdateBody string) (*step.StoredWalkthrough, error) {
+func BuildUpdatePayload(stepUpdateBody string) (*step.StoredSteps, error) {
 	var err error
 	var body UpdateRequestBody
 	{
 		err = json.Unmarshal([]byte(stepUpdateBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"id\": \"123abc\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Fugit non.\",\n      \"publishedURL\": \"Tempore provident at fugit libero ut recusandae.\",\n      \"status\": \"draft | published\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"id\": \"123abc\",\n      \"steps\": [\n         {\n            \"action\": \"end\",\n            \"sequence\": 1779034664,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"end\",\n            \"sequence\": 1779034664,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"end\",\n            \"sequence\": 1779034664,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"end\",\n            \"sequence\": 1779034664,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         }\n      ],\n      \"wtId\": \"abc234235\"\n   }'")
 		}
-		if utf8.RuneCountInString(body.Name) > 100 {
-			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", body.Name, utf8.RuneCountInString(body.Name), 100, false))
+		if body.Steps == nil {
+			err = goa.MergeErrors(err, goa.MissingFieldError("steps", "body"))
 		}
-		err = goa.MergeErrors(err, goa.ValidatePattern("body.baseURL", body.BaseURL, "(?i)^(https?|ftp)://[^\\s/$.?#].[^\\s]*$"))
-		if !(body.Status == "draft" || body.Status == "completed" || body.Status == "removed") {
-			err = goa.MergeErrors(err, goa.InvalidEnumValueError("body.status", body.Status, []interface{}{"draft", "completed", "removed"}))
+		for _, e := range body.Steps {
+			if e != nil {
+				if err2 := ValidateStepRequestBody(e); err2 != nil {
+					err = goa.MergeErrors(err, err2)
+				}
+			}
 		}
 		if err != nil {
 			return nil, err
 		}
 	}
-	v := &step.StoredWalkthrough{
-		ID:           body.ID,
-		Name:         body.Name,
-		BaseURL:      body.BaseURL,
-		Status:       body.Status,
-		PublishedURL: body.PublishedURL,
-		Organization: body.Organization,
+	v := &step.StoredSteps{
+		ID:   body.ID,
+		WtID: body.WtID,
 	}
-
-	return v, nil
-}
-
-// BuildPublishPayload builds the payload for the step publish endpoint from
-// CLI flags.
-func BuildPublishPayload(stepPublishID string) (*step.PublishPayload, error) {
-	var id string
-	{
-		id = stepPublishID
+	if body.Steps != nil {
+		v.Steps = make([]*step.Step, len(body.Steps))
+		for i, val := range body.Steps {
+			v.Steps[i] = marshalStepRequestBodyToStepStep(val)
+		}
 	}
-	v := &step.PublishPayload{}
-	v.ID = id
 
 	return v, nil
 }

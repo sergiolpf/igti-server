@@ -41,7 +41,7 @@ type ListRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// ID of Organization to search for
+	// ID of Walkthrough to search for steps
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 }
 
@@ -84,16 +84,21 @@ func (x *ListRequest) GetId() string {
 	return ""
 }
 
-type StoredWalkthroughCollection struct {
+type ListResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Field []*StoredWalkthrough `protobuf:"bytes,1,rep,name=field,proto3" json:"field,omitempty"`
+	// ID is the unique id of the Step.
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// The id of the Walkthrough those steps belong to.
+	WtId string `protobuf:"bytes,2,opt,name=wt_id,json=wtId,proto3" json:"wt_id,omitempty"`
+	// List of steps for a given walkthrough.
+	Steps []*Step1 `protobuf:"bytes,3,rep,name=steps,proto3" json:"steps,omitempty"`
 }
 
-func (x *StoredWalkthroughCollection) Reset() {
-	*x = StoredWalkthroughCollection{}
+func (x *ListResponse) Reset() {
+	*x = ListResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_step_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -101,13 +106,13 @@ func (x *StoredWalkthroughCollection) Reset() {
 	}
 }
 
-func (x *StoredWalkthroughCollection) String() string {
+func (x *ListResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*StoredWalkthroughCollection) ProtoMessage() {}
+func (*ListResponse) ProtoMessage() {}
 
-func (x *StoredWalkthroughCollection) ProtoReflect() protoreflect.Message {
+func (x *ListResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_step_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -119,41 +124,52 @@ func (x *StoredWalkthroughCollection) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use StoredWalkthroughCollection.ProtoReflect.Descriptor instead.
-func (*StoredWalkthroughCollection) Descriptor() ([]byte, []int) {
+// Deprecated: Use ListResponse.ProtoReflect.Descriptor instead.
+func (*ListResponse) Descriptor() ([]byte, []int) {
 	return file_step_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *StoredWalkthroughCollection) GetField() []*StoredWalkthrough {
+func (x *ListResponse) GetId() string {
 	if x != nil {
-		return x.Field
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ListResponse) GetWtId() string {
+	if x != nil {
+		return x.WtId
+	}
+	return ""
+}
+
+func (x *ListResponse) GetSteps() []*Step1 {
+	if x != nil {
+		return x.Steps
 	}
 	return nil
 }
 
-// A StoredWalkthrough describes a Walkthrough retrieved by the Walkthrough
-// service.
-type StoredWalkthrough struct {
+// Step describes the basic details of your tutorials.
+type Step1 struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// ID is the unique id of the Walkthrough.
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// Name of the Tutorial
-	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	// base url for your tutorial to start from
-	BaseUrl string `protobuf:"bytes,3,opt,name=base_url,json=baseUrl,proto3" json:"base_url,omitempty"`
-	// Status of the walkthrough [draft|published]
-	Status string `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
-	// Code to be added into an existing page to make it visible locally
-	PublishedUrl string `protobuf:"bytes,5,opt,name=published_url,json=publishedUrl,proto3" json:"published_url,omitempty"`
-	// ID of the organization this tutorial belongs to
-	Organization string `protobuf:"bytes,6,opt,name=organization,proto3" json:"organization,omitempty"`
+	// A string representing the HTML ID of an element
+	Targetid string `protobuf:"bytes,1,opt,name=targetid,proto3" json:"targetid,omitempty"`
+	// The type of step to be used
+	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	// The content of the message to be displayed
+	Value string `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
+	// The number in the sequence that the step belongs to.
+	Sequence int32 `protobuf:"zigzag32,4,opt,name=sequence,proto3" json:"sequence,omitempty"`
+	// What action should trigger the next step
+	Action string `protobuf:"bytes,5,opt,name=action,proto3" json:"action,omitempty"`
 }
 
-func (x *StoredWalkthrough) Reset() {
-	*x = StoredWalkthrough{}
+func (x *Step1) Reset() {
+	*x = Step1{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_step_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -161,13 +177,13 @@ func (x *StoredWalkthrough) Reset() {
 	}
 }
 
-func (x *StoredWalkthrough) String() string {
+func (x *Step1) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*StoredWalkthrough) ProtoMessage() {}
+func (*Step1) ProtoMessage() {}
 
-func (x *StoredWalkthrough) ProtoReflect() protoreflect.Message {
+func (x *Step1) ProtoReflect() protoreflect.Message {
 	mi := &file_step_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -179,247 +195,42 @@ func (x *StoredWalkthrough) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use StoredWalkthrough.ProtoReflect.Descriptor instead.
-func (*StoredWalkthrough) Descriptor() ([]byte, []int) {
+// Deprecated: Use Step1.ProtoReflect.Descriptor instead.
+func (*Step1) Descriptor() ([]byte, []int) {
 	return file_step_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *StoredWalkthrough) GetId() string {
+func (x *Step1) GetTargetid() string {
 	if x != nil {
-		return x.Id
+		return x.Targetid
 	}
 	return ""
 }
 
-func (x *StoredWalkthrough) GetName() string {
+func (x *Step1) GetType() string {
 	if x != nil {
-		return x.Name
+		return x.Type
 	}
 	return ""
 }
 
-func (x *StoredWalkthrough) GetBaseUrl() string {
+func (x *Step1) GetValue() string {
 	if x != nil {
-		return x.BaseUrl
+		return x.Value
 	}
 	return ""
 }
 
-func (x *StoredWalkthrough) GetStatus() string {
+func (x *Step1) GetSequence() int32 {
 	if x != nil {
-		return x.Status
+		return x.Sequence
 	}
-	return ""
+	return 0
 }
 
-func (x *StoredWalkthrough) GetPublishedUrl() string {
+func (x *Step1) GetAction() string {
 	if x != nil {
-		return x.PublishedUrl
-	}
-	return ""
-}
-
-func (x *StoredWalkthrough) GetOrganization() string {
-	if x != nil {
-		return x.Organization
-	}
-	return ""
-}
-
-type ShowNotFoundError struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Message of error
-	Message_ string `protobuf:"bytes,1,opt,name=message_,json=message,proto3" json:"message_,omitempty"`
-	// ID of missing element
-	Id string `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
-}
-
-func (x *ShowNotFoundError) Reset() {
-	*x = ShowNotFoundError{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_step_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ShowNotFoundError) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ShowNotFoundError) ProtoMessage() {}
-
-func (x *ShowNotFoundError) ProtoReflect() protoreflect.Message {
-	mi := &file_step_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ShowNotFoundError.ProtoReflect.Descriptor instead.
-func (*ShowNotFoundError) Descriptor() ([]byte, []int) {
-	return file_step_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *ShowNotFoundError) GetMessage_() string {
-	if x != nil {
-		return x.Message_
-	}
-	return ""
-}
-
-func (x *ShowNotFoundError) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type ShowRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// ID of the Walkthrough to show
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-}
-
-func (x *ShowRequest) Reset() {
-	*x = ShowRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_step_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ShowRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ShowRequest) ProtoMessage() {}
-
-func (x *ShowRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_step_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ShowRequest.ProtoReflect.Descriptor instead.
-func (*ShowRequest) Descriptor() ([]byte, []int) {
-	return file_step_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *ShowRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type ShowResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// ID is the unique id of the Walkthrough.
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// Name of the Tutorial
-	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	// base url for your tutorial to start from
-	BaseUrl string `protobuf:"bytes,3,opt,name=base_url,json=baseUrl,proto3" json:"base_url,omitempty"`
-	// Status of the walkthrough [draft|published]
-	Status string `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
-	// Code to be added into an existing page to make it visible locally
-	PublishedUrl string `protobuf:"bytes,5,opt,name=published_url,json=publishedUrl,proto3" json:"published_url,omitempty"`
-	// ID of the organization this tutorial belongs to
-	Organization string `protobuf:"bytes,6,opt,name=organization,proto3" json:"organization,omitempty"`
-}
-
-func (x *ShowResponse) Reset() {
-	*x = ShowResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_step_proto_msgTypes[5]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ShowResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ShowResponse) ProtoMessage() {}
-
-func (x *ShowResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_step_proto_msgTypes[5]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ShowResponse.ProtoReflect.Descriptor instead.
-func (*ShowResponse) Descriptor() ([]byte, []int) {
-	return file_step_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *ShowResponse) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *ShowResponse) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *ShowResponse) GetBaseUrl() string {
-	if x != nil {
-		return x.BaseUrl
-	}
-	return ""
-}
-
-func (x *ShowResponse) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
-}
-
-func (x *ShowResponse) GetPublishedUrl() string {
-	if x != nil {
-		return x.PublishedUrl
-	}
-	return ""
-}
-
-func (x *ShowResponse) GetOrganization() string {
-	if x != nil {
-		return x.Organization
+		return x.Action
 	}
 	return ""
 }
@@ -429,22 +240,16 @@ type AddRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Name of the Tutorial
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// base url for your tutorial to start from
-	BaseUrl string `protobuf:"bytes,2,opt,name=base_url,json=baseUrl,proto3" json:"base_url,omitempty"`
-	// Status of the walkthrough [draft|published]
-	Status string `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
-	// Code to be added into an existing page to make it visible locally
-	PublishedUrl string `protobuf:"bytes,4,opt,name=published_url,json=publishedUrl,proto3" json:"published_url,omitempty"`
-	// ID of the organization this tutorial belongs to
-	Organization string `protobuf:"bytes,5,opt,name=organization,proto3" json:"organization,omitempty"`
+	// The id of the Walkthrough those steps belong to.
+	WtId string `protobuf:"bytes,1,opt,name=wt_id,json=wtId,proto3" json:"wt_id,omitempty"`
+	// List of steps for a given walkthrough.
+	Steps []*Step1 `protobuf:"bytes,2,rep,name=steps,proto3" json:"steps,omitempty"`
 }
 
 func (x *AddRequest) Reset() {
 	*x = AddRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_step_proto_msgTypes[6]
+		mi := &file_step_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -457,7 +262,7 @@ func (x *AddRequest) String() string {
 func (*AddRequest) ProtoMessage() {}
 
 func (x *AddRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_step_proto_msgTypes[6]
+	mi := &file_step_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -470,42 +275,21 @@ func (x *AddRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddRequest.ProtoReflect.Descriptor instead.
 func (*AddRequest) Descriptor() ([]byte, []int) {
-	return file_step_proto_rawDescGZIP(), []int{6}
+	return file_step_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *AddRequest) GetName() string {
+func (x *AddRequest) GetWtId() string {
 	if x != nil {
-		return x.Name
+		return x.WtId
 	}
 	return ""
 }
 
-func (x *AddRequest) GetBaseUrl() string {
+func (x *AddRequest) GetSteps() []*Step1 {
 	if x != nil {
-		return x.BaseUrl
+		return x.Steps
 	}
-	return ""
-}
-
-func (x *AddRequest) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
-}
-
-func (x *AddRequest) GetPublishedUrl() string {
-	if x != nil {
-		return x.PublishedUrl
-	}
-	return ""
-}
-
-func (x *AddRequest) GetOrganization() string {
-	if x != nil {
-		return x.Organization
-	}
-	return ""
+	return nil
 }
 
 type AddResponse struct {
@@ -519,7 +303,7 @@ type AddResponse struct {
 func (x *AddResponse) Reset() {
 	*x = AddResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_step_proto_msgTypes[7]
+		mi := &file_step_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -532,7 +316,7 @@ func (x *AddResponse) String() string {
 func (*AddResponse) ProtoMessage() {}
 
 func (x *AddResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_step_proto_msgTypes[7]
+	mi := &file_step_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -545,7 +329,7 @@ func (x *AddResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddResponse.ProtoReflect.Descriptor instead.
 func (*AddResponse) Descriptor() ([]byte, []int) {
-	return file_step_proto_rawDescGZIP(), []int{7}
+	return file_step_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *AddResponse) GetField() string {
@@ -560,14 +344,14 @@ type RemoveRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// ID of Walkthrough to remove
+	// ID of Steps to remove
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 }
 
 func (x *RemoveRequest) Reset() {
 	*x = RemoveRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_step_proto_msgTypes[8]
+		mi := &file_step_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -580,7 +364,7 @@ func (x *RemoveRequest) String() string {
 func (*RemoveRequest) ProtoMessage() {}
 
 func (x *RemoveRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_step_proto_msgTypes[8]
+	mi := &file_step_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -593,7 +377,7 @@ func (x *RemoveRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveRequest.ProtoReflect.Descriptor instead.
 func (*RemoveRequest) Descriptor() ([]byte, []int) {
-	return file_step_proto_rawDescGZIP(), []int{8}
+	return file_step_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *RemoveRequest) GetId() string {
@@ -612,7 +396,7 @@ type RemoveResponse struct {
 func (x *RemoveResponse) Reset() {
 	*x = RemoveResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_step_proto_msgTypes[9]
+		mi := &file_step_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -625,7 +409,7 @@ func (x *RemoveResponse) String() string {
 func (*RemoveResponse) ProtoMessage() {}
 
 func (x *RemoveResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_step_proto_msgTypes[9]
+	mi := &file_step_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -638,7 +422,7 @@ func (x *RemoveResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveResponse.ProtoReflect.Descriptor instead.
 func (*RemoveResponse) Descriptor() ([]byte, []int) {
-	return file_step_proto_rawDescGZIP(), []int{9}
+	return file_step_proto_rawDescGZIP(), []int{6}
 }
 
 type UpdateRequest struct {
@@ -646,24 +430,18 @@ type UpdateRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// ID is the unique id of the Walkthrough.
+	// ID is the unique id of the Step.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// Name of the Tutorial
-	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	// base url for your tutorial to start from
-	BaseUrl string `protobuf:"bytes,3,opt,name=base_url,json=baseUrl,proto3" json:"base_url,omitempty"`
-	// Status of the walkthrough [draft|published]
-	Status string `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
-	// Code to be added into an existing page to make it visible locally
-	PublishedUrl string `protobuf:"bytes,5,opt,name=published_url,json=publishedUrl,proto3" json:"published_url,omitempty"`
-	// ID of the organization this tutorial belongs to
-	Organization string `protobuf:"bytes,6,opt,name=organization,proto3" json:"organization,omitempty"`
+	// The id of the Walkthrough those steps belong to.
+	WtId string `protobuf:"bytes,2,opt,name=wt_id,json=wtId,proto3" json:"wt_id,omitempty"`
+	// List of steps for a given walkthrough.
+	Steps []*Step1 `protobuf:"bytes,3,rep,name=steps,proto3" json:"steps,omitempty"`
 }
 
 func (x *UpdateRequest) Reset() {
 	*x = UpdateRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_step_proto_msgTypes[10]
+		mi := &file_step_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -676,7 +454,7 @@ func (x *UpdateRequest) String() string {
 func (*UpdateRequest) ProtoMessage() {}
 
 func (x *UpdateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_step_proto_msgTypes[10]
+	mi := &file_step_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -689,7 +467,7 @@ func (x *UpdateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRequest.ProtoReflect.Descriptor instead.
 func (*UpdateRequest) Descriptor() ([]byte, []int) {
-	return file_step_proto_rawDescGZIP(), []int{10}
+	return file_step_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UpdateRequest) GetId() string {
@@ -699,39 +477,18 @@ func (x *UpdateRequest) GetId() string {
 	return ""
 }
 
-func (x *UpdateRequest) GetName() string {
+func (x *UpdateRequest) GetWtId() string {
 	if x != nil {
-		return x.Name
+		return x.WtId
 	}
 	return ""
 }
 
-func (x *UpdateRequest) GetBaseUrl() string {
+func (x *UpdateRequest) GetSteps() []*Step1 {
 	if x != nil {
-		return x.BaseUrl
+		return x.Steps
 	}
-	return ""
-}
-
-func (x *UpdateRequest) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
-}
-
-func (x *UpdateRequest) GetPublishedUrl() string {
-	if x != nil {
-		return x.PublishedUrl
-	}
-	return ""
-}
-
-func (x *UpdateRequest) GetOrganization() string {
-	if x != nil {
-		return x.Organization
-	}
-	return ""
+	return nil
 }
 
 type UpdateResponse struct {
@@ -743,7 +500,7 @@ type UpdateResponse struct {
 func (x *UpdateResponse) Reset() {
 	*x = UpdateResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_step_proto_msgTypes[11]
+		mi := &file_step_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -756,7 +513,7 @@ func (x *UpdateResponse) String() string {
 func (*UpdateResponse) ProtoMessage() {}
 
 func (x *UpdateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_step_proto_msgTypes[11]
+	mi := &file_step_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -769,93 +526,7 @@ func (x *UpdateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateResponse.ProtoReflect.Descriptor instead.
 func (*UpdateResponse) Descriptor() ([]byte, []int) {
-	return file_step_proto_rawDescGZIP(), []int{11}
-}
-
-type PublishRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// ID of Walkthrough to be published
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-}
-
-func (x *PublishRequest) Reset() {
-	*x = PublishRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_step_proto_msgTypes[12]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *PublishRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PublishRequest) ProtoMessage() {}
-
-func (x *PublishRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_step_proto_msgTypes[12]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PublishRequest.ProtoReflect.Descriptor instead.
-func (*PublishRequest) Descriptor() ([]byte, []int) {
-	return file_step_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *PublishRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type PublishResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *PublishResponse) Reset() {
-	*x = PublishResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_step_proto_msgTypes[13]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *PublishResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PublishResponse) ProtoMessage() {}
-
-func (x *PublishResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_step_proto_msgTypes[13]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PublishResponse.ProtoReflect.Descriptor instead.
-func (*PublishResponse) Descriptor() ([]byte, []int) {
-	return file_step_proto_rawDescGZIP(), []int{13}
+	return file_step_proto_rawDescGZIP(), []int{8}
 }
 
 var File_step_proto protoreflect.FileDescriptor
@@ -864,92 +535,51 @@ var file_step_proto_rawDesc = []byte{
 	0x0a, 0x0a, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x04, 0x73, 0x74,
 	0x65, 0x70, 0x22, 0x1d, 0x0a, 0x0b, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
 	0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69,
-	0x64, 0x22, 0x4c, 0x0a, 0x1b, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x57, 0x61, 0x6c, 0x6b, 0x74,
-	0x68, 0x72, 0x6f, 0x75, 0x67, 0x68, 0x43, 0x6f, 0x6c, 0x6c, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e,
-	0x12, 0x2d, 0x0a, 0x05, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32,
-	0x17, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x57, 0x61, 0x6c,
-	0x6b, 0x74, 0x68, 0x72, 0x6f, 0x75, 0x67, 0x68, 0x52, 0x05, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x22,
-	0xb3, 0x01, 0x0a, 0x11, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x57, 0x61, 0x6c, 0x6b, 0x74, 0x68,
-	0x72, 0x6f, 0x75, 0x67, 0x68, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x62, 0x61, 0x73,
-	0x65, 0x5f, 0x75, 0x72, 0x6c, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x62, 0x61, 0x73,
-	0x65, 0x55, 0x72, 0x6c, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x04,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x23, 0x0a, 0x0d,
-	0x70, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x65, 0x64, 0x5f, 0x75, 0x72, 0x6c, 0x18, 0x05, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x0c, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x65, 0x64, 0x55, 0x72,
-	0x6c, 0x12, 0x22, 0x0a, 0x0c, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x3e, 0x0a, 0x11, 0x53, 0x68, 0x6f, 0x77, 0x4e, 0x6f, 0x74,
-	0x46, 0x6f, 0x75, 0x6e, 0x64, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x12, 0x19, 0x0a, 0x08, 0x6d, 0x65,
-	0x73, 0x73, 0x61, 0x67, 0x65, 0x5f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65,
-	0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x1d, 0x0a, 0x0b, 0x53, 0x68, 0x6f, 0x77, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x02, 0x69, 0x64, 0x22, 0xae, 0x01, 0x0a, 0x0c, 0x53, 0x68, 0x6f, 0x77, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x62, 0x61, 0x73,
-	0x65, 0x5f, 0x75, 0x72, 0x6c, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x62, 0x61, 0x73,
-	0x65, 0x55, 0x72, 0x6c, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x04,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x23, 0x0a, 0x0d,
-	0x70, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x65, 0x64, 0x5f, 0x75, 0x72, 0x6c, 0x18, 0x05, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x0c, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x65, 0x64, 0x55, 0x72,
-	0x6c, 0x12, 0x22, 0x0a, 0x0c, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x9c, 0x01, 0x0a, 0x0a, 0x41, 0x64, 0x64, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x62, 0x61, 0x73, 0x65,
-	0x5f, 0x75, 0x72, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x62, 0x61, 0x73, 0x65,
-	0x55, 0x72, 0x6c, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x23, 0x0a, 0x0d, 0x70,
-	0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x65, 0x64, 0x5f, 0x75, 0x72, 0x6c, 0x18, 0x04, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x0c, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x65, 0x64, 0x55, 0x72, 0x6c,
-	0x12, 0x22, 0x0a, 0x0c, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x22, 0x23, 0x0a, 0x0b, 0x41, 0x64, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x05, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x22, 0x1f, 0x0a, 0x0d, 0x52, 0x65, 0x6d,
-	0x6f, 0x76, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x10, 0x0a, 0x0e, 0x52, 0x65,
-	0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xaf, 0x01, 0x0a,
-	0x0d, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e,
-	0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12,
-	0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61,
-	0x6d, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x75, 0x72, 0x6c, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x62, 0x61, 0x73, 0x65, 0x55, 0x72, 0x6c, 0x12, 0x16, 0x0a,
-	0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73,
-	0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x23, 0x0a, 0x0d, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68,
-	0x65, 0x64, 0x5f, 0x75, 0x72, 0x6c, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x70, 0x75,
-	0x62, 0x6c, 0x69, 0x73, 0x68, 0x65, 0x64, 0x55, 0x72, 0x6c, 0x12, 0x22, 0x0a, 0x0c, 0x6f, 0x72,
-	0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x0c, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x10,
-	0x0a, 0x0e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x22, 0x20, 0x0a, 0x0e, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02,
-	0x69, 0x64, 0x22, 0x11, 0x0a, 0x0f, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0xc1, 0x02, 0x0a, 0x04, 0x53, 0x74, 0x65, 0x70, 0x12, 0x3c,
-	0x0a, 0x04, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x11, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x4c, 0x69,
-	0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x21, 0x2e, 0x73, 0x74, 0x65, 0x70,
-	0x2e, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x57, 0x61, 0x6c, 0x6b, 0x74, 0x68, 0x72, 0x6f, 0x75,
-	0x67, 0x68, 0x43, 0x6f, 0x6c, 0x6c, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2d, 0x0a, 0x04,
-	0x53, 0x68, 0x6f, 0x77, 0x12, 0x11, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x53, 0x68, 0x6f, 0x77,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x12, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x53,
-	0x68, 0x6f, 0x77, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2a, 0x0a, 0x03, 0x41,
-	0x64, 0x64, 0x12, 0x10, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x41, 0x64, 0x64, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x1a, 0x11, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x41, 0x64, 0x64, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x33, 0x0a, 0x06, 0x52, 0x65, 0x6d, 0x6f, 0x76,
-	0x65, 0x12, 0x13, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x14, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x52, 0x65,
-	0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x33, 0x0a, 0x06,
-	0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x12, 0x13, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x55, 0x70,
-	0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x14, 0x2e, 0x73, 0x74,
-	0x65, 0x70, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x12, 0x36, 0x0a, 0x07, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x12, 0x14, 0x2e, 0x73,
-	0x74, 0x65, 0x70, 0x2e, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x1a, 0x15, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x73,
-	0x68, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x08, 0x5a, 0x06, 0x73, 0x74, 0x65,
-	0x70, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x64, 0x22, 0x56, 0x0a, 0x0c, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69,
+	0x64, 0x12, 0x13, 0x0a, 0x05, 0x77, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x04, 0x77, 0x74, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x05, 0x73, 0x74, 0x65, 0x70, 0x73, 0x18,
+	0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0b, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x53, 0x74, 0x65,
+	0x70, 0x31, 0x52, 0x05, 0x73, 0x74, 0x65, 0x70, 0x73, 0x22, 0x81, 0x01, 0x0a, 0x05, 0x53, 0x74,
+	0x65, 0x70, 0x31, 0x12, 0x1a, 0x0a, 0x08, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x69, 0x64, 0x12,
+	0x12, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74,
+	0x79, 0x70, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x73, 0x65, 0x71,
+	0x75, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x11, 0x52, 0x08, 0x73, 0x65, 0x71,
+	0x75, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x18,
+	0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x44, 0x0a,
+	0x0a, 0x41, 0x64, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x13, 0x0a, 0x05, 0x77,
+	0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x77, 0x74, 0x49, 0x64,
+	0x12, 0x21, 0x0a, 0x05, 0x73, 0x74, 0x65, 0x70, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32,
+	0x0b, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x53, 0x74, 0x65, 0x70, 0x31, 0x52, 0x05, 0x73, 0x74,
+	0x65, 0x70, 0x73, 0x22, 0x23, 0x0a, 0x0b, 0x41, 0x64, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x05, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x22, 0x1f, 0x0a, 0x0d, 0x52, 0x65, 0x6d, 0x6f,
+	0x76, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x10, 0x0a, 0x0e, 0x52, 0x65, 0x6d,
+	0x6f, 0x76, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x57, 0x0a, 0x0d, 0x55,
+	0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x13, 0x0a, 0x05,
+	0x77, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x77, 0x74, 0x49,
+	0x64, 0x12, 0x21, 0x0a, 0x05, 0x73, 0x74, 0x65, 0x70, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x0b, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x53, 0x74, 0x65, 0x70, 0x31, 0x52, 0x05, 0x73,
+	0x74, 0x65, 0x70, 0x73, 0x22, 0x10, 0x0a, 0x0e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0xcb, 0x01, 0x0a, 0x04, 0x53, 0x74, 0x65, 0x70, 0x12,
+	0x2d, 0x0a, 0x04, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x11, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x4c,
+	0x69, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x12, 0x2e, 0x73, 0x74, 0x65,
+	0x70, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2a,
+	0x0a, 0x03, 0x41, 0x64, 0x64, 0x12, 0x10, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x41, 0x64, 0x64,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x11, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x41,
+	0x64, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x33, 0x0a, 0x06, 0x52, 0x65,
+	0x6d, 0x6f, 0x76, 0x65, 0x12, 0x13, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x52, 0x65, 0x6d, 0x6f,
+	0x76, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x14, 0x2e, 0x73, 0x74, 0x65, 0x70,
+	0x2e, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x33, 0x0a, 0x06, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x12, 0x13, 0x2e, 0x73, 0x74, 0x65, 0x70,
+	0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x14,
+	0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x42, 0x08, 0x5a, 0x06, 0x73, 0x74, 0x65, 0x70, 0x70, 0x62, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -964,42 +594,35 @@ func file_step_proto_rawDescGZIP() []byte {
 	return file_step_proto_rawDescData
 }
 
-var file_step_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_step_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_step_proto_goTypes = []interface{}{
-	(*ListRequest)(nil),                 // 0: step.ListRequest
-	(*StoredWalkthroughCollection)(nil), // 1: step.StoredWalkthroughCollection
-	(*StoredWalkthrough)(nil),           // 2: step.StoredWalkthrough
-	(*ShowNotFoundError)(nil),           // 3: step.ShowNotFoundError
-	(*ShowRequest)(nil),                 // 4: step.ShowRequest
-	(*ShowResponse)(nil),                // 5: step.ShowResponse
-	(*AddRequest)(nil),                  // 6: step.AddRequest
-	(*AddResponse)(nil),                 // 7: step.AddResponse
-	(*RemoveRequest)(nil),               // 8: step.RemoveRequest
-	(*RemoveResponse)(nil),              // 9: step.RemoveResponse
-	(*UpdateRequest)(nil),               // 10: step.UpdateRequest
-	(*UpdateResponse)(nil),              // 11: step.UpdateResponse
-	(*PublishRequest)(nil),              // 12: step.PublishRequest
-	(*PublishResponse)(nil),             // 13: step.PublishResponse
+	(*ListRequest)(nil),    // 0: step.ListRequest
+	(*ListResponse)(nil),   // 1: step.ListResponse
+	(*Step1)(nil),          // 2: step.Step1
+	(*AddRequest)(nil),     // 3: step.AddRequest
+	(*AddResponse)(nil),    // 4: step.AddResponse
+	(*RemoveRequest)(nil),  // 5: step.RemoveRequest
+	(*RemoveResponse)(nil), // 6: step.RemoveResponse
+	(*UpdateRequest)(nil),  // 7: step.UpdateRequest
+	(*UpdateResponse)(nil), // 8: step.UpdateResponse
 }
 var file_step_proto_depIdxs = []int32{
-	2,  // 0: step.StoredWalkthroughCollection.field:type_name -> step.StoredWalkthrough
-	0,  // 1: step.Step.List:input_type -> step.ListRequest
-	4,  // 2: step.Step.Show:input_type -> step.ShowRequest
-	6,  // 3: step.Step.Add:input_type -> step.AddRequest
-	8,  // 4: step.Step.Remove:input_type -> step.RemoveRequest
-	10, // 5: step.Step.Update:input_type -> step.UpdateRequest
-	12, // 6: step.Step.Publish:input_type -> step.PublishRequest
-	1,  // 7: step.Step.List:output_type -> step.StoredWalkthroughCollection
-	5,  // 8: step.Step.Show:output_type -> step.ShowResponse
-	7,  // 9: step.Step.Add:output_type -> step.AddResponse
-	9,  // 10: step.Step.Remove:output_type -> step.RemoveResponse
-	11, // 11: step.Step.Update:output_type -> step.UpdateResponse
-	13, // 12: step.Step.Publish:output_type -> step.PublishResponse
-	7,  // [7:13] is the sub-list for method output_type
-	1,  // [1:7] is the sub-list for method input_type
-	1,  // [1:1] is the sub-list for extension type_name
-	1,  // [1:1] is the sub-list for extension extendee
-	0,  // [0:1] is the sub-list for field type_name
+	2, // 0: step.ListResponse.steps:type_name -> step.Step1
+	2, // 1: step.AddRequest.steps:type_name -> step.Step1
+	2, // 2: step.UpdateRequest.steps:type_name -> step.Step1
+	0, // 3: step.Step.List:input_type -> step.ListRequest
+	3, // 4: step.Step.Add:input_type -> step.AddRequest
+	5, // 5: step.Step.Remove:input_type -> step.RemoveRequest
+	7, // 6: step.Step.Update:input_type -> step.UpdateRequest
+	1, // 7: step.Step.List:output_type -> step.ListResponse
+	4, // 8: step.Step.Add:output_type -> step.AddResponse
+	6, // 9: step.Step.Remove:output_type -> step.RemoveResponse
+	8, // 10: step.Step.Update:output_type -> step.UpdateResponse
+	7, // [7:11] is the sub-list for method output_type
+	3, // [3:7] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_step_proto_init() }
@@ -1021,7 +644,7 @@ func file_step_proto_init() {
 			}
 		}
 		file_step_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StoredWalkthroughCollection); i {
+			switch v := v.(*ListResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1033,7 +656,7 @@ func file_step_proto_init() {
 			}
 		}
 		file_step_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StoredWalkthrough); i {
+			switch v := v.(*Step1); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1045,42 +668,6 @@ func file_step_proto_init() {
 			}
 		}
 		file_step_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ShowNotFoundError); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_step_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ShowRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_step_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ShowResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_step_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*AddRequest); i {
 			case 0:
 				return &v.state
@@ -1092,7 +679,7 @@ func file_step_proto_init() {
 				return nil
 			}
 		}
-		file_step_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_step_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*AddResponse); i {
 			case 0:
 				return &v.state
@@ -1104,7 +691,7 @@ func file_step_proto_init() {
 				return nil
 			}
 		}
-		file_step_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_step_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RemoveRequest); i {
 			case 0:
 				return &v.state
@@ -1116,7 +703,7 @@ func file_step_proto_init() {
 				return nil
 			}
 		}
-		file_step_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_step_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RemoveResponse); i {
 			case 0:
 				return &v.state
@@ -1128,7 +715,7 @@ func file_step_proto_init() {
 				return nil
 			}
 		}
-		file_step_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_step_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateRequest); i {
 			case 0:
 				return &v.state
@@ -1140,32 +727,8 @@ func file_step_proto_init() {
 				return nil
 			}
 		}
-		file_step_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+		file_step_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_step_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PublishRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_step_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PublishResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1183,7 +746,7 @@ func file_step_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_step_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -1209,18 +772,14 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type StepClient interface {
-	// List all stored walkthrough for a given organization
-	List(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*StoredWalkthroughCollection, error)
-	// Show Walkthrough by ID
-	Show(ctx context.Context, in *ShowRequest, opts ...grpc.CallOption) (*ShowResponse, error)
-	// Add new Tutorial and return its ID.
+	// List all stored Steps for a given walkthrough
+	List(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error)
+	// Add new Steps to walkthrough and return ID.
 	Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*AddResponse, error)
-	// Remove Walkthrough from storage
+	// Remove Steps from storage
 	Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveResponse, error)
-	// Update Walkthrough with the given IDs.
+	// Update Steps with the given IDs.
 	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error)
-	// Publishes Walkthrough with the given IDs.
-	Publish(ctx context.Context, in *PublishRequest, opts ...grpc.CallOption) (*PublishResponse, error)
 }
 
 type stepClient struct {
@@ -1231,18 +790,9 @@ func NewStepClient(cc grpc.ClientConnInterface) StepClient {
 	return &stepClient{cc}
 }
 
-func (c *stepClient) List(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*StoredWalkthroughCollection, error) {
-	out := new(StoredWalkthroughCollection)
+func (c *stepClient) List(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error) {
+	out := new(ListResponse)
 	err := c.cc.Invoke(ctx, "/step.Step/List", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *stepClient) Show(ctx context.Context, in *ShowRequest, opts ...grpc.CallOption) (*ShowResponse, error) {
-	out := new(ShowResponse)
-	err := c.cc.Invoke(ctx, "/step.Step/Show", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1276,40 +826,24 @@ func (c *stepClient) Update(ctx context.Context, in *UpdateRequest, opts ...grpc
 	return out, nil
 }
 
-func (c *stepClient) Publish(ctx context.Context, in *PublishRequest, opts ...grpc.CallOption) (*PublishResponse, error) {
-	out := new(PublishResponse)
-	err := c.cc.Invoke(ctx, "/step.Step/Publish", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // StepServer is the server API for Step service.
 type StepServer interface {
-	// List all stored walkthrough for a given organization
-	List(context.Context, *ListRequest) (*StoredWalkthroughCollection, error)
-	// Show Walkthrough by ID
-	Show(context.Context, *ShowRequest) (*ShowResponse, error)
-	// Add new Tutorial and return its ID.
+	// List all stored Steps for a given walkthrough
+	List(context.Context, *ListRequest) (*ListResponse, error)
+	// Add new Steps to walkthrough and return ID.
 	Add(context.Context, *AddRequest) (*AddResponse, error)
-	// Remove Walkthrough from storage
+	// Remove Steps from storage
 	Remove(context.Context, *RemoveRequest) (*RemoveResponse, error)
-	// Update Walkthrough with the given IDs.
+	// Update Steps with the given IDs.
 	Update(context.Context, *UpdateRequest) (*UpdateResponse, error)
-	// Publishes Walkthrough with the given IDs.
-	Publish(context.Context, *PublishRequest) (*PublishResponse, error)
 }
 
 // UnimplementedStepServer can be embedded to have forward compatible implementations.
 type UnimplementedStepServer struct {
 }
 
-func (*UnimplementedStepServer) List(context.Context, *ListRequest) (*StoredWalkthroughCollection, error) {
+func (*UnimplementedStepServer) List(context.Context, *ListRequest) (*ListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
-}
-func (*UnimplementedStepServer) Show(context.Context, *ShowRequest) (*ShowResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Show not implemented")
 }
 func (*UnimplementedStepServer) Add(context.Context, *AddRequest) (*AddResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Add not implemented")
@@ -1319,9 +853,6 @@ func (*UnimplementedStepServer) Remove(context.Context, *RemoveRequest) (*Remove
 }
 func (*UnimplementedStepServer) Update(context.Context, *UpdateRequest) (*UpdateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
-}
-func (*UnimplementedStepServer) Publish(context.Context, *PublishRequest) (*PublishResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Publish not implemented")
 }
 
 func RegisterStepServer(s *grpc.Server, srv StepServer) {
@@ -1342,24 +873,6 @@ func _Step_List_Handler(srv interface{}, ctx context.Context, dec func(interface
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StepServer).List(ctx, req.(*ListRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Step_Show_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ShowRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(StepServer).Show(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/step.Step/Show",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StepServer).Show(ctx, req.(*ShowRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1418,24 +931,6 @@ func _Step_Update_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Step_Publish_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PublishRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(StepServer).Publish(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/step.Step/Publish",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StepServer).Publish(ctx, req.(*PublishRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 var _Step_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "step.Step",
 	HandlerType: (*StepServer)(nil),
@@ -1443,10 +938,6 @@ var _Step_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "List",
 			Handler:    _Step_List_Handler,
-		},
-		{
-			MethodName: "Show",
-			Handler:    _Step_Show_Handler,
 		},
 		{
 			MethodName: "Add",
@@ -1459,10 +950,6 @@ var _Step_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Update",
 			Handler:    _Step_Update_Handler,
-		},
-		{
-			MethodName: "Publish",
-			Handler:    _Step_Publish_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -66,7 +66,7 @@ func BuildAddPayload(walkthroughAddBody string) (*walkthrough.Walkthrough, error
 	{
 		err = json.Unmarshal([]byte(walkthroughAddBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Ratione perspiciatis provident voluptas voluptas.\",\n      \"publishedURL\": \"Ea accusamus enim repudiandae.\",\n      \"status\": \"draft | published\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Fugit non.\",\n      \"publishedURL\": \"Tempore provident at fugit libero ut recusandae.\",\n      \"status\": \"draft | published\"\n   }'")
 		}
 		if utf8.RuneCountInString(body.Name) > 100 {
 			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", body.Name, utf8.RuneCountInString(body.Name), 100, false))
@@ -111,7 +111,7 @@ func BuildUpdatePayload(walkthroughUpdateBody string) (*walkthrough.StoredWalkth
 	{
 		err = json.Unmarshal([]byte(walkthroughUpdateBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"id\": \"123abc\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Adipisci minima cum consequatur occaecati commodi laudantium.\",\n      \"publishedURL\": \"Eos earum fugiat quia assumenda odit.\",\n      \"status\": \"draft | published\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"id\": \"123abc\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Animi dolores nisi cumque et.\",\n      \"publishedURL\": \"Et alias distinctio minima debitis consequatur consectetur.\",\n      \"status\": \"draft | published\"\n   }'")
 		}
 		if utf8.RuneCountInString(body.Name) > 100 {
 			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", body.Name, utf8.RuneCountInString(body.Name), 100, false))

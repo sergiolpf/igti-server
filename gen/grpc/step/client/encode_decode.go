@@ -49,62 +49,16 @@ func DecodeListResponse(ctx context.Context, v interface{}, hdr, trlr metadata.M
 			view = vals[0]
 		}
 	}
-	message, ok := v.(*steppb.StoredWalkthroughCollection)
+	message, ok := v.(*steppb.ListResponse)
 	if !ok {
-		return nil, goagrpc.ErrInvalidType("step", "list", "*steppb.StoredWalkthroughCollection", v)
+		return nil, goagrpc.ErrInvalidType("step", "list", "*steppb.ListResponse", v)
 	}
 	res := NewListResult(message)
-	vres := stepviews.StoredWalkthroughCollection{Projected: res, View: view}
-	if err := stepviews.ValidateStoredWalkthroughCollection(vres); err != nil {
+	vres := &stepviews.StoredSteps{Projected: res, View: view}
+	if err := stepviews.ValidateStoredSteps(vres); err != nil {
 		return nil, err
 	}
-	return step.NewStoredWalkthroughCollection(vres), nil
-}
-
-// BuildShowFunc builds the remote method to invoke for "step" service "show"
-// endpoint.
-func BuildShowFunc(grpccli steppb.StepClient, cliopts ...grpc.CallOption) goagrpc.RemoteFunc {
-	return func(ctx context.Context, reqpb interface{}, opts ...grpc.CallOption) (interface{}, error) {
-		for _, opt := range cliopts {
-			opts = append(opts, opt)
-		}
-		if reqpb != nil {
-			return grpccli.Show(ctx, reqpb.(*steppb.ShowRequest), opts...)
-		}
-		return grpccli.Show(ctx, &steppb.ShowRequest{}, opts...)
-	}
-}
-
-// EncodeShowRequest encodes requests sent to step show endpoint.
-func EncodeShowRequest(ctx context.Context, v interface{}, md *metadata.MD) (interface{}, error) {
-	payload, ok := v.(*step.ShowPayload)
-	if !ok {
-		return nil, goagrpc.ErrInvalidType("step", "show", "*step.ShowPayload", v)
-	}
-	if payload.View != nil {
-		(*md).Append("view", *payload.View)
-	}
-	return NewShowRequest(payload), nil
-}
-
-// DecodeShowResponse decodes responses from the step show endpoint.
-func DecodeShowResponse(ctx context.Context, v interface{}, hdr, trlr metadata.MD) (interface{}, error) {
-	var view string
-	{
-		if vals := hdr.Get("goa-view"); len(vals) > 0 {
-			view = vals[0]
-		}
-	}
-	message, ok := v.(*steppb.ShowResponse)
-	if !ok {
-		return nil, goagrpc.ErrInvalidType("step", "show", "*steppb.ShowResponse", v)
-	}
-	res := NewShowResult(message)
-	vres := &stepviews.StoredWalkthrough{Projected: res, View: view}
-	if err := stepviews.ValidateStoredWalkthrough(vres); err != nil {
-		return nil, err
-	}
-	return step.NewStoredWalkthrough(vres), nil
+	return step.NewStoredSteps(vres), nil
 }
 
 // BuildAddFunc builds the remote method to invoke for "step" service "add"
@@ -123,9 +77,9 @@ func BuildAddFunc(grpccli steppb.StepClient, cliopts ...grpc.CallOption) goagrpc
 
 // EncodeAddRequest encodes requests sent to step add endpoint.
 func EncodeAddRequest(ctx context.Context, v interface{}, md *metadata.MD) (interface{}, error) {
-	payload, ok := v.(*step.Walkthrough)
+	payload, ok := v.(*step.Steps)
 	if !ok {
-		return nil, goagrpc.ErrInvalidType("step", "add", "*step.Walkthrough", v)
+		return nil, goagrpc.ErrInvalidType("step", "add", "*step.Steps", v)
 	}
 	return NewAddRequest(payload), nil
 }
@@ -179,32 +133,9 @@ func BuildUpdateFunc(grpccli steppb.StepClient, cliopts ...grpc.CallOption) goag
 
 // EncodeUpdateRequest encodes requests sent to step update endpoint.
 func EncodeUpdateRequest(ctx context.Context, v interface{}, md *metadata.MD) (interface{}, error) {
-	payload, ok := v.(*step.StoredWalkthrough)
+	payload, ok := v.(*step.StoredSteps)
 	if !ok {
-		return nil, goagrpc.ErrInvalidType("step", "update", "*step.StoredWalkthrough", v)
+		return nil, goagrpc.ErrInvalidType("step", "update", "*step.StoredSteps", v)
 	}
 	return NewUpdateRequest(payload), nil
-}
-
-// BuildPublishFunc builds the remote method to invoke for "step" service
-// "publish" endpoint.
-func BuildPublishFunc(grpccli steppb.StepClient, cliopts ...grpc.CallOption) goagrpc.RemoteFunc {
-	return func(ctx context.Context, reqpb interface{}, opts ...grpc.CallOption) (interface{}, error) {
-		for _, opt := range cliopts {
-			opts = append(opts, opt)
-		}
-		if reqpb != nil {
-			return grpccli.Publish(ctx, reqpb.(*steppb.PublishRequest), opts...)
-		}
-		return grpccli.Publish(ctx, &steppb.PublishRequest{}, opts...)
-	}
-}
-
-// EncodePublishRequest encodes requests sent to step publish endpoint.
-func EncodePublishRequest(ctx context.Context, v interface{}, md *metadata.MD) (interface{}, error) {
-	payload, ok := v.(*step.PublishPayload)
-	if !ok {
-		return nil, goagrpc.ErrInvalidType("step", "publish", "*step.PublishPayload", v)
-	}
-	return NewPublishRequest(payload), nil
 }

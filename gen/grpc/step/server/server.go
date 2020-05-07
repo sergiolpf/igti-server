@@ -12,19 +12,16 @@ import (
 
 	goagrpc "goa.design/goa/v3/grpc"
 	goa "goa.design/goa/v3/pkg"
-	"google.golang.org/grpc/codes"
 	steppb "guide.me/gen/grpc/step/pb"
 	step "guide.me/gen/step"
 )
 
 // Server implements the steppb.StepServer interface.
 type Server struct {
-	ListH    goagrpc.UnaryHandler
-	ShowH    goagrpc.UnaryHandler
-	AddH     goagrpc.UnaryHandler
-	RemoveH  goagrpc.UnaryHandler
-	UpdateH  goagrpc.UnaryHandler
-	PublishH goagrpc.UnaryHandler
+	ListH   goagrpc.UnaryHandler
+	AddH    goagrpc.UnaryHandler
+	RemoveH goagrpc.UnaryHandler
+	UpdateH goagrpc.UnaryHandler
 }
 
 // ErrorNamer is an interface implemented by generated error structs that
@@ -36,12 +33,10 @@ type ErrorNamer interface {
 // New instantiates the server struct with the step service endpoints.
 func New(e *step.Endpoints, uh goagrpc.UnaryHandler) *Server {
 	return &Server{
-		ListH:    NewListHandler(e.List, uh),
-		ShowH:    NewShowHandler(e.Show, uh),
-		AddH:     NewAddHandler(e.Add, uh),
-		RemoveH:  NewRemoveHandler(e.Remove, uh),
-		UpdateH:  NewUpdateHandler(e.Update, uh),
-		PublishH: NewPublishHandler(e.Publish, uh),
+		ListH:   NewListHandler(e.List, uh),
+		AddH:    NewAddHandler(e.Add, uh),
+		RemoveH: NewRemoveHandler(e.Remove, uh),
+		UpdateH: NewUpdateHandler(e.Update, uh),
 	}
 }
 
@@ -55,41 +50,14 @@ func NewListHandler(endpoint goa.Endpoint, h goagrpc.UnaryHandler) goagrpc.Unary
 }
 
 // List implements the "List" method in steppb.StepServer interface.
-func (s *Server) List(ctx context.Context, message *steppb.ListRequest) (*steppb.StoredWalkthroughCollection, error) {
+func (s *Server) List(ctx context.Context, message *steppb.ListRequest) (*steppb.ListResponse, error) {
 	ctx = context.WithValue(ctx, goa.MethodKey, "list")
 	ctx = context.WithValue(ctx, goa.ServiceKey, "step")
 	resp, err := s.ListH.Handle(ctx, message)
 	if err != nil {
 		return nil, goagrpc.EncodeError(err)
 	}
-	return resp.(*steppb.StoredWalkthroughCollection), nil
-}
-
-// NewShowHandler creates a gRPC handler which serves the "step" service "show"
-// endpoint.
-func NewShowHandler(endpoint goa.Endpoint, h goagrpc.UnaryHandler) goagrpc.UnaryHandler {
-	if h == nil {
-		h = goagrpc.NewUnaryHandler(endpoint, DecodeShowRequest, EncodeShowResponse)
-	}
-	return h
-}
-
-// Show implements the "Show" method in steppb.StepServer interface.
-func (s *Server) Show(ctx context.Context, message *steppb.ShowRequest) (*steppb.ShowResponse, error) {
-	ctx = context.WithValue(ctx, goa.MethodKey, "show")
-	ctx = context.WithValue(ctx, goa.ServiceKey, "step")
-	resp, err := s.ShowH.Handle(ctx, message)
-	if err != nil {
-		if en, ok := err.(ErrorNamer); ok {
-			switch en.ErrorName() {
-			case "not_found":
-				er := err.(*step.ElementNotFound)
-				return nil, goagrpc.NewStatusError(codes.NotFound, err, NewShowNotFoundError(er))
-			}
-		}
-		return nil, goagrpc.EncodeError(err)
-	}
-	return resp.(*steppb.ShowResponse), nil
+	return resp.(*steppb.ListResponse), nil
 }
 
 // NewAddHandler creates a gRPC handler which serves the "step" service "add"
@@ -150,24 +118,4 @@ func (s *Server) Update(ctx context.Context, message *steppb.UpdateRequest) (*st
 		return nil, goagrpc.EncodeError(err)
 	}
 	return resp.(*steppb.UpdateResponse), nil
-}
-
-// NewPublishHandler creates a gRPC handler which serves the "step" service
-// "publish" endpoint.
-func NewPublishHandler(endpoint goa.Endpoint, h goagrpc.UnaryHandler) goagrpc.UnaryHandler {
-	if h == nil {
-		h = goagrpc.NewUnaryHandler(endpoint, DecodePublishRequest, EncodePublishResponse)
-	}
-	return h
-}
-
-// Publish implements the "Publish" method in steppb.StepServer interface.
-func (s *Server) Publish(ctx context.Context, message *steppb.PublishRequest) (*steppb.PublishResponse, error) {
-	ctx = context.WithValue(ctx, goa.MethodKey, "publish")
-	ctx = context.WithValue(ctx, goa.ServiceKey, "step")
-	resp, err := s.PublishH.Handle(ctx, message)
-	if err != nil {
-		return nil, goagrpc.EncodeError(err)
-	}
-	return resp.(*steppb.PublishResponse), nil
 }

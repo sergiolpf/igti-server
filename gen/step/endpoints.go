@@ -15,34 +15,28 @@ import (
 
 // Endpoints wraps the "step" service endpoints.
 type Endpoints struct {
-	List    goa.Endpoint
-	Show    goa.Endpoint
-	Add     goa.Endpoint
-	Remove  goa.Endpoint
-	Update  goa.Endpoint
-	Publish goa.Endpoint
+	List   goa.Endpoint
+	Add    goa.Endpoint
+	Remove goa.Endpoint
+	Update goa.Endpoint
 }
 
 // NewEndpoints wraps the methods of the "step" service with endpoints.
 func NewEndpoints(s Service) *Endpoints {
 	return &Endpoints{
-		List:    NewListEndpoint(s),
-		Show:    NewShowEndpoint(s),
-		Add:     NewAddEndpoint(s),
-		Remove:  NewRemoveEndpoint(s),
-		Update:  NewUpdateEndpoint(s),
-		Publish: NewPublishEndpoint(s),
+		List:   NewListEndpoint(s),
+		Add:    NewAddEndpoint(s),
+		Remove: NewRemoveEndpoint(s),
+		Update: NewUpdateEndpoint(s),
 	}
 }
 
 // Use applies the given middleware to all the "step" service endpoints.
 func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
 	e.List = m(e.List)
-	e.Show = m(e.Show)
 	e.Add = m(e.Add)
 	e.Remove = m(e.Remove)
 	e.Update = m(e.Update)
-	e.Publish = m(e.Publish)
 }
 
 // NewListEndpoint returns an endpoint function that calls the method "list" of
@@ -54,21 +48,7 @@ func NewListEndpoint(s Service) goa.Endpoint {
 		if err != nil {
 			return nil, err
 		}
-		vres := NewViewedStoredWalkthroughCollection(res, "tiny")
-		return vres, nil
-	}
-}
-
-// NewShowEndpoint returns an endpoint function that calls the method "show" of
-// service "step".
-func NewShowEndpoint(s Service) goa.Endpoint {
-	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		p := req.(*ShowPayload)
-		res, view, err := s.Show(ctx, p)
-		if err != nil {
-			return nil, err
-		}
-		vres := NewViewedStoredWalkthrough(res, view)
+		vres := NewViewedStoredSteps(res, "default")
 		return vres, nil
 	}
 }
@@ -77,7 +57,7 @@ func NewShowEndpoint(s Service) goa.Endpoint {
 // service "step".
 func NewAddEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		p := req.(*Walkthrough)
+		p := req.(*Steps)
 		return s.Add(ctx, p)
 	}
 }
@@ -95,16 +75,7 @@ func NewRemoveEndpoint(s Service) goa.Endpoint {
 // "update" of service "step".
 func NewUpdateEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		p := req.(*StoredWalkthrough)
+		p := req.(*StoredSteps)
 		return nil, s.Update(ctx, p)
-	}
-}
-
-// NewPublishEndpoint returns an endpoint function that calls the method
-// "publish" of service "step".
-func NewPublishEndpoint(s Service) goa.Endpoint {
-	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		p := req.(*PublishPayload)
-		return nil, s.Publish(ctx, p)
 	}
 }

@@ -8,191 +8,142 @@
 package views
 
 import (
-	"unicode/utf8"
-
 	goa "goa.design/goa/v3/pkg"
 )
 
-// StoredWalkthroughCollection is the viewed result type that is projected
-// based on a view.
-type StoredWalkthroughCollection struct {
+// StoredSteps is the viewed result type that is projected based on a view.
+type StoredSteps struct {
 	// Type to project
-	Projected StoredWalkthroughCollectionView
+	Projected *StoredStepsView
 	// View to render
 	View string
 }
 
-// StoredWalkthrough is the viewed result type that is projected based on a
-// view.
-type StoredWalkthrough struct {
-	// Type to project
-	Projected *StoredWalkthroughView
-	// View to render
-	View string
-}
-
-// StoredWalkthroughCollectionView is a type that runs validations on a
-// projected type.
-type StoredWalkthroughCollectionView []*StoredWalkthroughView
-
-// StoredWalkthroughView is a type that runs validations on a projected type.
-type StoredWalkthroughView struct {
-	// ID is the unique id of the Walkthrough.
+// StoredStepsView is a type that runs validations on a projected type.
+type StoredStepsView struct {
+	// ID is the unique id of the Step.
 	ID *string
-	// Name of the Tutorial
-	Name *string
-	// base url for your tutorial to start from
-	BaseURL *string
-	// Status of the walkthrough [draft|published]
-	Status *string
-	// Code to be added into an existing page to make it visible locally
-	PublishedURL *string
-	// ID of the organization this tutorial belongs to
-	Organization *string
+	// The id of the Walkthrough those steps belong to.
+	WtID *string
+	// List of steps for a given walkthrough.
+	Steps []*StepView
+}
+
+// StepView is a type that runs validations on a projected type.
+type StepView struct {
+	// A string representing the HTML ID of an element
+	Targetid *string
+	// The type of step to be used
+	Type *string
+	// The content of the message to be displayed
+	Value *string
+	// The number in the sequence that the step belongs to.
+	Sequence *int32
+	// What action should trigger the next step
+	Action *string
 }
 
 var (
-	// StoredWalkthroughCollectionMap is a map of attribute names in result type
-	// StoredWalkthroughCollection indexed by view name.
-	StoredWalkthroughCollectionMap = map[string][]string{
+	// StoredStepsMap is a map of attribute names in result type StoredSteps
+	// indexed by view name.
+	StoredStepsMap = map[string][]string{
 		"default": []string{
 			"id",
-			"name",
-			"baseURL",
-			"status",
-			"publishedURL",
-			"organization",
+			"wtId",
+			"steps",
 		},
 		"tiny": []string{
 			"id",
-			"name",
-			"baseURL",
-			"organization",
-		},
-	}
-	// StoredWalkthroughMap is a map of attribute names in result type
-	// StoredWalkthrough indexed by view name.
-	StoredWalkthroughMap = map[string][]string{
-		"default": []string{
-			"id",
-			"name",
-			"baseURL",
-			"status",
-			"publishedURL",
-			"organization",
-		},
-		"tiny": []string{
-			"id",
-			"name",
-			"baseURL",
-			"organization",
+			"wtId",
+			"steps",
 		},
 	}
 )
 
-// ValidateStoredWalkthroughCollection runs the validations defined on the
-// viewed result type StoredWalkthroughCollection.
-func ValidateStoredWalkthroughCollection(result StoredWalkthroughCollection) (err error) {
+// ValidateStoredSteps runs the validations defined on the viewed result type
+// StoredSteps.
+func ValidateStoredSteps(result *StoredSteps) (err error) {
 	switch result.View {
 	case "default", "":
-		err = ValidateStoredWalkthroughCollectionView(result.Projected)
+		err = ValidateStoredStepsView(result.Projected)
 	case "tiny":
-		err = ValidateStoredWalkthroughCollectionViewTiny(result.Projected)
+		err = ValidateStoredStepsViewTiny(result.Projected)
 	default:
 		err = goa.InvalidEnumValueError("view", result.View, []interface{}{"default", "tiny"})
 	}
 	return
 }
 
-// ValidateStoredWalkthrough runs the validations defined on the viewed result
-// type StoredWalkthrough.
-func ValidateStoredWalkthrough(result *StoredWalkthrough) (err error) {
-	switch result.View {
-	case "default", "":
-		err = ValidateStoredWalkthroughView(result.Projected)
-	case "tiny":
-		err = ValidateStoredWalkthroughViewTiny(result.Projected)
-	default:
-		err = goa.InvalidEnumValueError("view", result.View, []interface{}{"default", "tiny"})
-	}
-	return
-}
-
-// ValidateStoredWalkthroughCollectionView runs the validations defined on
-// StoredWalkthroughCollectionView using the "default" view.
-func ValidateStoredWalkthroughCollectionView(result StoredWalkthroughCollectionView) (err error) {
-	for _, item := range result {
-		if err2 := ValidateStoredWalkthroughView(item); err2 != nil {
-			err = goa.MergeErrors(err, err2)
-		}
-	}
-	return
-}
-
-// ValidateStoredWalkthroughCollectionViewTiny runs the validations defined on
-// StoredWalkthroughCollectionView using the "tiny" view.
-func ValidateStoredWalkthroughCollectionViewTiny(result StoredWalkthroughCollectionView) (err error) {
-	for _, item := range result {
-		if err2 := ValidateStoredWalkthroughViewTiny(item); err2 != nil {
-			err = goa.MergeErrors(err, err2)
-		}
-	}
-	return
-}
-
-// ValidateStoredWalkthroughView runs the validations defined on
-// StoredWalkthroughView using the "default" view.
-func ValidateStoredWalkthroughView(result *StoredWalkthroughView) (err error) {
+// ValidateStoredStepsView runs the validations defined on StoredStepsView
+// using the "default" view.
+func ValidateStoredStepsView(result *StoredStepsView) (err error) {
 	if result.ID == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("id", "result"))
 	}
-	if result.Name == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("name", "result"))
+	if result.WtID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("wtId", "result"))
 	}
-	if result.BaseURL == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("baseURL", "result"))
+	if result.Steps == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("steps", "result"))
 	}
-	if result.Organization == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("organization", "result"))
-	}
-	if result.Name != nil {
-		if utf8.RuneCountInString(*result.Name) > 100 {
-			err = goa.MergeErrors(err, goa.InvalidLengthError("result.name", *result.Name, utf8.RuneCountInString(*result.Name), 100, false))
-		}
-	}
-	if result.BaseURL != nil {
-		err = goa.MergeErrors(err, goa.ValidatePattern("result.baseURL", *result.BaseURL, "(?i)^(https?|ftp)://[^\\s/$.?#].[^\\s]*$"))
-	}
-	if result.Status != nil {
-		if !(*result.Status == "draft" || *result.Status == "completed" || *result.Status == "removed") {
-			err = goa.MergeErrors(err, goa.InvalidEnumValueError("result.status", *result.Status, []interface{}{"draft", "completed", "removed"}))
+	for _, e := range result.Steps {
+		if e != nil {
+			if err2 := ValidateStepView(e); err2 != nil {
+				err = goa.MergeErrors(err, err2)
+			}
 		}
 	}
 	return
 }
 
-// ValidateStoredWalkthroughViewTiny runs the validations defined on
-// StoredWalkthroughView using the "tiny" view.
-func ValidateStoredWalkthroughViewTiny(result *StoredWalkthroughView) (err error) {
+// ValidateStoredStepsViewTiny runs the validations defined on StoredStepsView
+// using the "tiny" view.
+func ValidateStoredStepsViewTiny(result *StoredStepsView) (err error) {
 	if result.ID == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("id", "result"))
 	}
-	if result.Name == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("name", "result"))
+	if result.WtID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("wtId", "result"))
 	}
-	if result.BaseURL == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("baseURL", "result"))
+	if result.Steps == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("steps", "result"))
 	}
-	if result.Organization == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("organization", "result"))
-	}
-	if result.Name != nil {
-		if utf8.RuneCountInString(*result.Name) > 100 {
-			err = goa.MergeErrors(err, goa.InvalidLengthError("result.name", *result.Name, utf8.RuneCountInString(*result.Name), 100, false))
+	for _, e := range result.Steps {
+		if e != nil {
+			if err2 := ValidateStepView(e); err2 != nil {
+				err = goa.MergeErrors(err, err2)
+			}
 		}
 	}
-	if result.BaseURL != nil {
-		err = goa.MergeErrors(err, goa.ValidatePattern("result.baseURL", *result.BaseURL, "(?i)^(https?|ftp)://[^\\s/$.?#].[^\\s]*$"))
+	return
+}
+
+// ValidateStepView runs the validations defined on StepView.
+func ValidateStepView(result *StepView) (err error) {
+	if result.Targetid == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("targetid", "result"))
+	}
+	if result.Type == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("type", "result"))
+	}
+	if result.Value == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("value", "result"))
+	}
+	if result.Sequence == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("sequence", "result"))
+	}
+	if result.Action == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("action", "result"))
+	}
+	if result.Type != nil {
+		if !(*result.Type == "text" || *result.Type == "picture") {
+			err = goa.MergeErrors(err, goa.InvalidEnumValueError("result.type", *result.Type, []interface{}{"text", "picture"}))
+		}
+	}
+	if result.Action != nil {
+		if !(*result.Action == "click" || *result.Action == "next" || *result.Action == "end") {
+			err = goa.MergeErrors(err, goa.InvalidEnumValueError("result.action", *result.Action, []interface{}{"click", "next", "end"}))
+		}
 	}
 	return
 }

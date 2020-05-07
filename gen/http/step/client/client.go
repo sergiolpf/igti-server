@@ -20,9 +20,6 @@ type Client struct {
 	// List Doer is the HTTP client used to make requests to the list endpoint.
 	ListDoer goahttp.Doer
 
-	// Show Doer is the HTTP client used to make requests to the show endpoint.
-	ShowDoer goahttp.Doer
-
 	// Add Doer is the HTTP client used to make requests to the add endpoint.
 	AddDoer goahttp.Doer
 
@@ -31,10 +28,6 @@ type Client struct {
 
 	// Update Doer is the HTTP client used to make requests to the update endpoint.
 	UpdateDoer goahttp.Doer
-
-	// Publish Doer is the HTTP client used to make requests to the publish
-	// endpoint.
-	PublishDoer goahttp.Doer
 
 	// RestoreResponseBody controls whether the response bodies are reset after
 	// decoding so they can be read again.
@@ -57,11 +50,9 @@ func NewClient(
 ) *Client {
 	return &Client{
 		ListDoer:            doer,
-		ShowDoer:            doer,
 		AddDoer:             doer,
 		RemoveDoer:          doer,
 		UpdateDoer:          doer,
-		PublishDoer:         doer,
 		RestoreResponseBody: restoreBody,
 		scheme:              scheme,
 		host:                host,
@@ -84,30 +75,6 @@ func (c *Client) List() goa.Endpoint {
 		resp, err := c.ListDoer.Do(req)
 		if err != nil {
 			return nil, goahttp.ErrRequestError("step", "list", err)
-		}
-		return decodeResponse(resp)
-	}
-}
-
-// Show returns an endpoint that makes HTTP requests to the step service show
-// server.
-func (c *Client) Show() goa.Endpoint {
-	var (
-		encodeRequest  = EncodeShowRequest(c.encoder)
-		decodeResponse = DecodeShowResponse(c.decoder, c.RestoreResponseBody)
-	)
-	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildShowRequest(ctx, v)
-		if err != nil {
-			return nil, err
-		}
-		err = encodeRequest(req, v)
-		if err != nil {
-			return nil, err
-		}
-		resp, err := c.ShowDoer.Do(req)
-		if err != nil {
-			return nil, goahttp.ErrRequestError("step", "show", err)
 		}
 		return decodeResponse(resp)
 	}
@@ -175,25 +142,6 @@ func (c *Client) Update() goa.Endpoint {
 		resp, err := c.UpdateDoer.Do(req)
 		if err != nil {
 			return nil, goahttp.ErrRequestError("step", "update", err)
-		}
-		return decodeResponse(resp)
-	}
-}
-
-// Publish returns an endpoint that makes HTTP requests to the step service
-// publish server.
-func (c *Client) Publish() goa.Endpoint {
-	var (
-		decodeResponse = DecodePublishResponse(c.decoder, c.RestoreResponseBody)
-	)
-	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildPublishRequest(ctx, v)
-		if err != nil {
-			return nil, err
-		}
-		resp, err := c.PublishDoer.Do(req)
-		if err != nil {
-			return nil, goahttp.ErrRequestError("step", "publish", err)
 		}
 		return decodeResponse(resp)
 	}

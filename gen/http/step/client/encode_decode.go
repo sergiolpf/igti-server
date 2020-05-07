@@ -71,118 +71,17 @@ func DecodeListResponse(decoder func(*http.Response) goahttp.Decoder, restoreBod
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("step", "list", err)
 			}
-			p := NewListStoredWalkthroughCollectionOK(body)
-			view := "tiny"
-			vres := stepviews.StoredWalkthroughCollection{Projected: p, View: view}
-			if err = stepviews.ValidateStoredWalkthroughCollection(vres); err != nil {
+			p := NewListStoredStepsOK(&body)
+			view := "default"
+			vres := &stepviews.StoredSteps{Projected: p, View: view}
+			if err = stepviews.ValidateStoredSteps(vres); err != nil {
 				return nil, goahttp.ErrValidationError("step", "list", err)
 			}
-			res := step.NewStoredWalkthroughCollection(vres)
+			res := step.NewStoredSteps(vres)
 			return res, nil
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("step", "list", resp.StatusCode, string(body))
-		}
-	}
-}
-
-// BuildShowRequest instantiates a HTTP request object with method and path set
-// to call the "step" service "show" endpoint
-func (c *Client) BuildShowRequest(ctx context.Context, v interface{}) (*http.Request, error) {
-	var (
-		id string
-	)
-	{
-		p, ok := v.(*step.ShowPayload)
-		if !ok {
-			return nil, goahttp.ErrInvalidType("step", "show", "*step.ShowPayload", v)
-		}
-		id = p.ID
-	}
-	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: ShowStepPath(id)}
-	req, err := http.NewRequest("GET", u.String(), nil)
-	if err != nil {
-		return nil, goahttp.ErrInvalidURL("step", "show", u.String(), err)
-	}
-	if ctx != nil {
-		req = req.WithContext(ctx)
-	}
-
-	return req, nil
-}
-
-// EncodeShowRequest returns an encoder for requests sent to the step show
-// server.
-func EncodeShowRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
-	return func(req *http.Request, v interface{}) error {
-		p, ok := v.(*step.ShowPayload)
-		if !ok {
-			return goahttp.ErrInvalidType("step", "show", "*step.ShowPayload", v)
-		}
-		values := req.URL.Query()
-		if p.View != nil {
-			values.Add("view", *p.View)
-		}
-		req.URL.RawQuery = values.Encode()
-		return nil
-	}
-}
-
-// DecodeShowResponse returns a decoder for responses returned by the step show
-// endpoint. restoreBody controls whether the response body should be restored
-// after having been read.
-// DecodeShowResponse may return the following errors:
-//	- "not_found" (type *step.ElementNotFound): http.StatusNotFound
-//	- error: internal error
-func DecodeShowResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
-	return func(resp *http.Response) (interface{}, error) {
-		if restoreBody {
-			b, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-			resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
-			defer func() {
-				resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
-			}()
-		} else {
-			defer resp.Body.Close()
-		}
-		switch resp.StatusCode {
-		case http.StatusOK:
-			var (
-				body ShowResponseBody
-				err  error
-			)
-			err = decoder(resp).Decode(&body)
-			if err != nil {
-				return nil, goahttp.ErrDecodingError("step", "show", err)
-			}
-			p := NewShowStoredWalkthroughOK(&body)
-			view := resp.Header.Get("goa-view")
-			vres := &stepviews.StoredWalkthrough{Projected: p, View: view}
-			if err = stepviews.ValidateStoredWalkthrough(vres); err != nil {
-				return nil, goahttp.ErrValidationError("step", "show", err)
-			}
-			res := step.NewStoredWalkthrough(vres)
-			return res, nil
-		case http.StatusNotFound:
-			var (
-				body ShowNotFoundResponseBody
-				err  error
-			)
-			err = decoder(resp).Decode(&body)
-			if err != nil {
-				return nil, goahttp.ErrDecodingError("step", "show", err)
-			}
-			err = ValidateShowNotFoundResponseBody(&body)
-			if err != nil {
-				return nil, goahttp.ErrValidationError("step", "show", err)
-			}
-			return nil, NewShowNotFound(&body)
-		default:
-			body, _ := ioutil.ReadAll(resp.Body)
-			return nil, goahttp.ErrInvalidResponse("step", "show", resp.StatusCode, string(body))
 		}
 	}
 }
@@ -205,9 +104,9 @@ func (c *Client) BuildAddRequest(ctx context.Context, v interface{}) (*http.Requ
 // EncodeAddRequest returns an encoder for requests sent to the step add server.
 func EncodeAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
 	return func(req *http.Request, v interface{}) error {
-		p, ok := v.(*step.Walkthrough)
+		p, ok := v.(*step.Steps)
 		if !ok {
-			return goahttp.ErrInvalidType("step", "add", "*step.Walkthrough", v)
+			return goahttp.ErrInvalidType("step", "add", "*step.Steps", v)
 		}
 		body := NewAddRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
@@ -323,9 +222,9 @@ func (c *Client) BuildUpdateRequest(ctx context.Context, v interface{}) (*http.R
 // server.
 func EncodeUpdateRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
 	return func(req *http.Request, v interface{}) error {
-		p, ok := v.(*step.StoredWalkthrough)
+		p, ok := v.(*step.StoredSteps)
 		if !ok {
-			return goahttp.ErrInvalidType("step", "update", "*step.StoredWalkthrough", v)
+			return goahttp.ErrInvalidType("step", "update", "*step.StoredSteps", v)
 		}
 		body := NewUpdateRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
@@ -362,73 +261,49 @@ func DecodeUpdateResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 	}
 }
 
-// BuildPublishRequest instantiates a HTTP request object with method and path
-// set to call the "step" service "publish" endpoint
-func (c *Client) BuildPublishRequest(ctx context.Context, v interface{}) (*http.Request, error) {
-	var (
-		id string
-	)
-	{
-		p, ok := v.(*step.PublishPayload)
-		if !ok {
-			return nil, goahttp.ErrInvalidType("step", "publish", "*step.PublishPayload", v)
-		}
-		id = p.ID
-	}
-	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: PublishStepPath(id)}
-	req, err := http.NewRequest("PUT", u.String(), nil)
-	if err != nil {
-		return nil, goahttp.ErrInvalidURL("step", "publish", u.String(), err)
-	}
-	if ctx != nil {
-		req = req.WithContext(ctx)
+// unmarshalStepResponseBodyToStepviewsStepView builds a value of type
+// *stepviews.StepView from a value of type *StepResponseBody.
+func unmarshalStepResponseBodyToStepviewsStepView(v *StepResponseBody) *stepviews.StepView {
+	res := &stepviews.StepView{
+		Targetid: v.Targetid,
+		Type:     v.Type,
+		Value:    v.Value,
+		Sequence: v.Sequence,
+		Action:   v.Action,
 	}
 
-	return req, nil
+	return res
 }
 
-// DecodePublishResponse returns a decoder for responses returned by the step
-// publish endpoint. restoreBody controls whether the response body should be
-// restored after having been read.
-func DecodePublishResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
-	return func(resp *http.Response) (interface{}, error) {
-		if restoreBody {
-			b, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-			resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
-			defer func() {
-				resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
-			}()
-		} else {
-			defer resp.Body.Close()
-		}
-		switch resp.StatusCode {
-		case http.StatusNoContent:
-			return nil, nil
-		default:
-			body, _ := ioutil.ReadAll(resp.Body)
-			return nil, goahttp.ErrInvalidResponse("step", "publish", resp.StatusCode, string(body))
-		}
+// marshalStepStepToStepRequestBody builds a value of type *StepRequestBody
+// from a value of type *step.Step.
+func marshalStepStepToStepRequestBody(v *step.Step) *StepRequestBody {
+	if v == nil {
+		return nil
 	}
+	res := &StepRequestBody{
+		Targetid: v.Targetid,
+		Type:     v.Type,
+		Value:    v.Value,
+		Sequence: v.Sequence,
+		Action:   v.Action,
+	}
+
+	return res
 }
 
-// unmarshalStoredWalkthroughResponseToStepviewsStoredWalkthroughView builds a
-// value of type *stepviews.StoredWalkthroughView from a value of type
-// *StoredWalkthroughResponse.
-func unmarshalStoredWalkthroughResponseToStepviewsStoredWalkthroughView(v *StoredWalkthroughResponse) *stepviews.StoredWalkthroughView {
-	res := &stepviews.StoredWalkthroughView{
-		ID:           v.ID,
-		Name:         v.Name,
-		BaseURL:      v.BaseURL,
-		Status:       v.Status,
-		PublishedURL: v.PublishedURL,
-		Organization: v.Organization,
+// marshalStepRequestBodyToStepStep builds a value of type *step.Step from a
+// value of type *StepRequestBody.
+func marshalStepRequestBodyToStepStep(v *StepRequestBody) *step.Step {
+	if v == nil {
+		return nil
 	}
-	if v.Status == nil {
-		var tmp string = "draft"
-		res.Status = &tmp
+	res := &step.Step{
+		Targetid: v.Targetid,
+		Type:     v.Type,
+		Value:    v.Value,
+		Sequence: v.Sequence,
+		Action:   v.Action,
 	}
 
 	return res

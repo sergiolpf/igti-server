@@ -6,6 +6,7 @@ import (
 	"log"
 
 	organization "guide.me/gen/organization"
+	step "guide.me/gen/step"
 	"guide.me/gen/walkthrough"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -97,6 +98,31 @@ func (m *Mongo) SaveWalkthrough(wt walkthrough.Walkthrough) (string, error) {
 
 }
 
+func (m *Mongo) SaveSteps(wtSteps step.Steps) (string, error) {
+
+	collection := m.getCollection(STEPS_COLLNAME)
+
+	newWtId, err := primitive.ObjectIDFromHex(*wtSteps.WtID)
+	if err != nil {
+		log.Println(err)
+		return "", ErrNotFound
+	}
+
+	stepsModel := StepsModel{
+		WtID:  newWtId,
+		Steps: wtSteps.Steps,
+	}
+
+	res, err := collection.InsertOne(context.Background(), stepsModel)
+	if err != nil {
+		log.Println(err)
+		return "", ErrNotFound
+	}
+
+	return fmt.Sprintf("%v", res.InsertedID), err
+
+}
+
 func (m *Mongo) LoadAllOrganizations() (organization.StoredOrganizationCollection, error) {
 	collection := m.getCollection(ORG_COLLNAME)
 
@@ -134,6 +160,37 @@ func (m *Mongo) LoadAllOrganizations() (organization.StoredOrganizationCollectio
 	}
 
 	return listOfStoredOrgs, err
+}
+
+func (m *Mongo) LoadWalkthroughSteps(id string) (*step.StoredSteps, error) {
+	collection := m.getCollection(STEPS_COLLNAME)
+
+	log.Println("@@@ vou criar um novo ID")
+	filterId, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		log.Println(err)
+		return nil, ErrNotFound
+	}
+	log.Println("@@@ Novo ID foi sucesso")
+
+	var element StepsModel
+	err = collection.FindOne(context.Background(), bson.M{"_id": filterId}).Decode(&element)
+	log.Println("@@@ Fiz a busca")
+	if err != nil {
+		log.Println(err)
+		return nil, ErrNotFound
+	}
+	log.Println("@@@ A busca foi um sucesso")
+
+	var storedObject step.StoredSteps
+	storedObject = step.StoredSteps{
+		ID:    element.ID.String(),
+		WtID:  element.WtID.String(),
+		Steps: element.Steps,
+	}
+
+	return &storedObject, err
 }
 
 func (m *Mongo) LoadAllWalkthroughs(id string) (walkthrough.StoredWalkthroughCollection, error) {
@@ -284,6 +341,26 @@ func (m *Mongo) DeleteWalkthrough(id string) error {
 
 }
 
+func (m *Mongo) DeleteWalkthroughSteps(id string) error {
+	collection := m.getCollection(STEPS_COLLNAME)
+
+	filterId, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		log.Println(err)
+		return ErrNotFound
+	}
+
+	_, err = collection.DeleteOne(context.Background(), bson.M{"_id": filterId})
+
+	if err != nil {
+		log.Println(err)
+		return ErrNotFound
+	}
+	return nil
+
+}
+
 func (m *Mongo) UpdateOrganization(org organization.StoredOrganization) error {
 	collection := m.getCollection(ORG_COLLNAME)
 
@@ -358,6 +435,34 @@ func (m *Mongo) UpdateStatusWalkthrough(wtid string, wgStatus string) error {
 	filter := bson.D{{"_id", id}}
 	update := bson.D{{"$set", bson.D{
 		{"status", wgStatus}}}}
+
+	result, err := collection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Println(err)
+		return ErrNotFound
+	}
+
+	if result.MatchedCount != 0 {
+		log.Println("matched and replaced an existing document")
+	}
+
+	return err
+
+}
+
+func (m *Mongo) UpdateWalkthroughSteps(wtSteps step.StoredSteps) error {
+	collection := m.getCollection(STEPS_COLLNAME)
+
+	//update an Organization
+	id, err := primitive.ObjectIDFromHex(wtSteps.ID)
+
+	if err != nil {
+		log.Println(err)
+		return ErrNotFound
+	}
+
+	filter := bson.D{{"_id", id}}
+	update := bson.D{{"$set", bson.D{{"steps", wtSteps.Steps}}}}
 
 	result, err := collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {

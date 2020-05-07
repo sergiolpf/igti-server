@@ -16,11 +16,6 @@ func ListStepPath(id string) string {
 	return fmt.Sprintf("/steps/%v", id)
 }
 
-// ShowStepPath returns the URL path to the step service show HTTP endpoint.
-func ShowStepPath(id string) string {
-	return fmt.Sprintf("/steps/show/%v", id)
-}
-
 // AddStepPath returns the URL path to the step service add HTTP endpoint.
 func AddStepPath() string {
 	return "/steps"
@@ -34,9 +29,4 @@ func RemoveStepPath(id string) string {
 // UpdateStepPath returns the URL path to the step service update HTTP endpoint.
 func UpdateStepPath() string {
 	return "/steps/update"
-}
-
-// PublishStepPath returns the URL path to the step service publish HTTP endpoint.
-func PublishStepPath(id string) string {
-	return fmt.Sprintf("/steps/publish/%v", id)
 }
