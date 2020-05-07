@@ -64,7 +64,7 @@ func NewShowResponse(result *organizationviews.StoredOrganizationView) *organiza
 
 // NewShowNotFoundError builds the gRPC error response type from the error of
 // the "show" endpoint of the "organization" service.
-func NewShowNotFoundError(er *organization.NotFound) *organizationpb.ShowNotFoundError {
+func NewShowNotFoundError(er *organization.ElementNotFound) *organizationpb.ShowNotFoundError {
 	message := &organizationpb.ShowNotFoundError{
 		Message_: er.Message,
 		Id:       er.ID,

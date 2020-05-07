@@ -15,21 +15,23 @@ import (
 
 // Client is the "walkthrough" service client.
 type Client struct {
-	ListEndpoint   goa.Endpoint
-	ShowEndpoint   goa.Endpoint
-	AddEndpoint    goa.Endpoint
-	RemoveEndpoint goa.Endpoint
-	UpdateEndpoint goa.Endpoint
+	ListEndpoint    goa.Endpoint
+	ShowEndpoint    goa.Endpoint
+	AddEndpoint     goa.Endpoint
+	RemoveEndpoint  goa.Endpoint
+	UpdateEndpoint  goa.Endpoint
+	PublishEndpoint goa.Endpoint
 }
 
 // NewClient initializes a "walkthrough" service client given the endpoints.
-func NewClient(list, show, add, remove, update goa.Endpoint) *Client {
+func NewClient(list, show, add, remove, update, publish goa.Endpoint) *Client {
 	return &Client{
-		ListEndpoint:   list,
-		ShowEndpoint:   show,
-		AddEndpoint:    add,
-		RemoveEndpoint: remove,
-		UpdateEndpoint: update,
+		ListEndpoint:    list,
+		ShowEndpoint:    show,
+		AddEndpoint:     add,
+		RemoveEndpoint:  remove,
+		UpdateEndpoint:  update,
+		PublishEndpoint: publish,
 	}
 }
 
@@ -45,7 +47,7 @@ func (c *Client) List(ctx context.Context, p *ListPayload) (res StoredWalkthroug
 
 // Show calls the "show" endpoint of the "walkthrough" service.
 // Show may return the following errors:
-//	- "not_found" (type *NotFound): Walkthrough not found
+//	- "not_found" (type *ElementNotFound): Walkthrough not found
 //	- error: internal error
 func (c *Client) Show(ctx context.Context, p *ShowPayload) (res *StoredWalkthrough, err error) {
 	var ires interface{}
@@ -68,7 +70,7 @@ func (c *Client) Add(ctx context.Context, p *Walkthrough) (res string, err error
 
 // Remove calls the "remove" endpoint of the "walkthrough" service.
 // Remove may return the following errors:
-//	- "not_found" (type *NotFound): Walkthrough not found
+//	- "not_found" (type *ElementNotFound): Walkthrough not found
 //	- error: internal error
 func (c *Client) Remove(ctx context.Context, p *RemovePayload) (err error) {
 	_, err = c.RemoveEndpoint(ctx, p)
@@ -78,5 +80,11 @@ func (c *Client) Remove(ctx context.Context, p *RemovePayload) (err error) {
 // Update calls the "update" endpoint of the "walkthrough" service.
 func (c *Client) Update(ctx context.Context, p *StoredWalkthrough) (err error) {
 	_, err = c.UpdateEndpoint(ctx, p)
+	return
+}
+
+// Publish calls the "publish" endpoint of the "walkthrough" service.
+func (c *Client) Publish(ctx context.Context, p *PublishPayload) (err error) {
+	_, err = c.PublishEndpoint(ctx, p)
 	return
 }

@@ -45,7 +45,7 @@ func (c *Client) List(ctx context.Context) (res StoredOrganizationCollection, er
 
 // Show calls the "show" endpoint of the "organization" service.
 // Show may return the following errors:
-//	- "not_found" (type *NotFound): Organization not found
+//	- "not_found" (type *ElementNotFound): Organization not found
 //	- error: internal error
 func (c *Client) Show(ctx context.Context, p *ShowPayload) (res *StoredOrganization, err error) {
 	var ires interface{}
@@ -68,7 +68,7 @@ func (c *Client) Add(ctx context.Context, p *Organization) (res string, err erro
 
 // Remove calls the "remove" endpoint of the "organization" service.
 // Remove may return the following errors:
-//	- "not_found" (type *NotFound): Organization not found
+//	- "not_found" (type *ElementNotFound): Organization not found
 //	- error: internal error
 func (c *Client) Remove(ctx context.Context, p *RemovePayload) (err error) {
 	_, err = c.RemoveEndpoint(ctx, p)

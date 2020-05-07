@@ -146,7 +146,7 @@ func NewShowResponseBodyTiny(res *walkthroughviews.StoredWalkthroughView) *ShowR
 
 // NewShowNotFoundResponseBody builds the HTTP response body from the result of
 // the "show" endpoint of the "walkthrough" service.
-func NewShowNotFoundResponseBody(res *walkthrough.NotFound) *ShowNotFoundResponseBody {
+func NewShowNotFoundResponseBody(res *walkthrough.ElementNotFound) *ShowNotFoundResponseBody {
 	body := &ShowNotFoundResponseBody{
 		Message: res.Message,
 		ID:      res.ID,
@@ -213,6 +213,14 @@ func NewUpdateStoredWalkthrough(body *UpdateRequestBody) *walkthrough.StoredWalk
 	if body.Status == nil {
 		v.Status = "draft"
 	}
+
+	return v
+}
+
+// NewPublishPayload builds a walkthrough service publish endpoint payload.
+func NewPublishPayload(id string) *walkthrough.PublishPayload {
+	v := &walkthrough.PublishPayload{}
+	v.ID = id
 
 	return v
 }

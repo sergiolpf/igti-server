@@ -15,21 +15,23 @@ import (
 
 // Endpoints wraps the "walkthrough" service endpoints.
 type Endpoints struct {
-	List   goa.Endpoint
-	Show   goa.Endpoint
-	Add    goa.Endpoint
-	Remove goa.Endpoint
-	Update goa.Endpoint
+	List    goa.Endpoint
+	Show    goa.Endpoint
+	Add     goa.Endpoint
+	Remove  goa.Endpoint
+	Update  goa.Endpoint
+	Publish goa.Endpoint
 }
 
 // NewEndpoints wraps the methods of the "walkthrough" service with endpoints.
 func NewEndpoints(s Service) *Endpoints {
 	return &Endpoints{
-		List:   NewListEndpoint(s),
-		Show:   NewShowEndpoint(s),
-		Add:    NewAddEndpoint(s),
-		Remove: NewRemoveEndpoint(s),
-		Update: NewUpdateEndpoint(s),
+		List:    NewListEndpoint(s),
+		Show:    NewShowEndpoint(s),
+		Add:     NewAddEndpoint(s),
+		Remove:  NewRemoveEndpoint(s),
+		Update:  NewUpdateEndpoint(s),
+		Publish: NewPublishEndpoint(s),
 	}
 }
 
@@ -40,6 +42,7 @@ func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
 	e.Add = m(e.Add)
 	e.Remove = m(e.Remove)
 	e.Update = m(e.Update)
+	e.Publish = m(e.Publish)
 }
 
 // NewListEndpoint returns an endpoint function that calls the method "list" of
@@ -94,5 +97,14 @@ func NewUpdateEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*StoredWalkthrough)
 		return nil, s.Update(ctx, p)
+	}
+}
+
+// NewPublishEndpoint returns an endpoint function that calls the method
+// "publish" of service "walkthrough".
+func NewPublishEndpoint(s Service) goa.Endpoint {
+	return func(ctx context.Context, req interface{}) (interface{}, error) {
+		p := req.(*PublishPayload)
+		return nil, s.Publish(ctx, p)
 	}
 }

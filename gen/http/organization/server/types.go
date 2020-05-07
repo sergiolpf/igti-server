@@ -110,7 +110,7 @@ func NewShowResponseBodyTiny(res *organizationviews.StoredOrganizationView) *Sho
 
 // NewShowNotFoundResponseBody builds the HTTP response body from the result of
 // the "show" endpoint of the "organization" service.
-func NewShowNotFoundResponseBody(res *organization.NotFound) *ShowNotFoundResponseBody {
+func NewShowNotFoundResponseBody(res *organization.ElementNotFound) *ShowNotFoundResponseBody {
 	body := &ShowNotFoundResponseBody{
 		Message: res.Message,
 		ID:      res.ID,

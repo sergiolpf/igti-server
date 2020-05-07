@@ -122,7 +122,7 @@ func EncodeShowRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.R
 // organization show endpoint. restoreBody controls whether the response body
 // should be restored after having been read.
 // DecodeShowResponse may return the following errors:
-//	- "not_found" (type *organization.NotFound): http.StatusNotFound
+//	- "not_found" (type *organization.ElementNotFound): http.StatusNotFound
 //	- error: internal error
 func DecodeShowResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {

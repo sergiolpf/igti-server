@@ -32,6 +32,10 @@ type Client struct {
 	// Update Doer is the HTTP client used to make requests to the update endpoint.
 	UpdateDoer goahttp.Doer
 
+	// Publish Doer is the HTTP client used to make requests to the publish
+	// endpoint.
+	PublishDoer goahttp.Doer
+
 	// RestoreResponseBody controls whether the response bodies are reset after
 	// decoding so they can be read again.
 	RestoreResponseBody bool
@@ -57,6 +61,7 @@ func NewClient(
 		AddDoer:             doer,
 		RemoveDoer:          doer,
 		UpdateDoer:          doer,
+		PublishDoer:         doer,
 		RestoreResponseBody: restoreBody,
 		scheme:              scheme,
 		host:                host,
@@ -170,6 +175,25 @@ func (c *Client) Update() goa.Endpoint {
 		resp, err := c.UpdateDoer.Do(req)
 		if err != nil {
 			return nil, goahttp.ErrRequestError("walkthrough", "update", err)
+		}
+		return decodeResponse(resp)
+	}
+}
+
+// Publish returns an endpoint that makes HTTP requests to the walkthrough
+// service publish server.
+func (c *Client) Publish() goa.Endpoint {
+	var (
+		decodeResponse = DecodePublishResponse(c.decoder, c.RestoreResponseBody)
+	)
+	return func(ctx context.Context, v interface{}) (interface{}, error) {
+		req, err := c.BuildPublishRequest(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+		resp, err := c.PublishDoer.Do(req)
+		if err != nil {
+			return nil, goahttp.ErrRequestError("walkthrough", "publish", err)
 		}
 		return decodeResponse(resp)
 	}

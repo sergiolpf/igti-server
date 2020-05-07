@@ -16,6 +16,7 @@ import (
 	goahttp "goa.design/goa/v3/http"
 	goa "goa.design/goa/v3/pkg"
 	organizationc "guide.me/gen/http/organization/client"
+	stepc "guide.me/gen/http/step/client"
 	walkthroughc "guide.me/gen/http/walkthrough/client"
 )
 
@@ -25,14 +26,16 @@ import (
 //
 func UsageCommands() string {
 	return `organization (list|show|add|remove|update)
-walkthrough (list|show|add|remove|update)
+step (list|show|add|remove|update|publish)
+walkthrough (list|show|add|remove|update|publish)
 `
 }
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
 	return os.Args[0] + ` organization list` + "\n" +
-		os.Args[0] + ` walkthrough list --id "Id voluptatem."` + "\n" +
+		os.Args[0] + ` step list --id "Quia perferendis aut."` + "\n" +
+		os.Args[0] + ` walkthrough list --id "Ex enim minima itaque vitae."` + "\n" +
 		""
 }
 
@@ -63,6 +66,27 @@ func ParseEndpoint(
 		organizationUpdateFlags    = flag.NewFlagSet("update", flag.ExitOnError)
 		organizationUpdateBodyFlag = organizationUpdateFlags.String("body", "REQUIRED", "")
 
+		stepFlags = flag.NewFlagSet("step", flag.ContinueOnError)
+
+		stepListFlags  = flag.NewFlagSet("list", flag.ExitOnError)
+		stepListIDFlag = stepListFlags.String("id", "REQUIRED", "ID of Organization to search for ")
+
+		stepShowFlags    = flag.NewFlagSet("show", flag.ExitOnError)
+		stepShowIDFlag   = stepShowFlags.String("id", "REQUIRED", "ID of the Walkthrough to show")
+		stepShowViewFlag = stepShowFlags.String("view", "", "")
+
+		stepAddFlags    = flag.NewFlagSet("add", flag.ExitOnError)
+		stepAddBodyFlag = stepAddFlags.String("body", "REQUIRED", "")
+
+		stepRemoveFlags  = flag.NewFlagSet("remove", flag.ExitOnError)
+		stepRemoveIDFlag = stepRemoveFlags.String("id", "REQUIRED", "ID of Walkthrough to remove")
+
+		stepUpdateFlags    = flag.NewFlagSet("update", flag.ExitOnError)
+		stepUpdateBodyFlag = stepUpdateFlags.String("body", "REQUIRED", "")
+
+		stepPublishFlags  = flag.NewFlagSet("publish", flag.ExitOnError)
+		stepPublishIDFlag = stepPublishFlags.String("id", "REQUIRED", "ID of Walkthrough to be published")
+
 		walkthroughFlags = flag.NewFlagSet("walkthrough", flag.ContinueOnError)
 
 		walkthroughListFlags  = flag.NewFlagSet("list", flag.ExitOnError)
@@ -80,6 +104,9 @@ func ParseEndpoint(
 
 		walkthroughUpdateFlags    = flag.NewFlagSet("update", flag.ExitOnError)
 		walkthroughUpdateBodyFlag = walkthroughUpdateFlags.String("body", "REQUIRED", "")
+
+		walkthroughPublishFlags  = flag.NewFlagSet("publish", flag.ExitOnError)
+		walkthroughPublishIDFlag = walkthroughPublishFlags.String("id", "REQUIRED", "ID of Walkthrough to be published")
 	)
 	organizationFlags.Usage = organizationUsage
 	organizationListFlags.Usage = organizationListUsage
@@ -88,12 +115,21 @@ func ParseEndpoint(
 	organizationRemoveFlags.Usage = organizationRemoveUsage
 	organizationUpdateFlags.Usage = organizationUpdateUsage
 
+	stepFlags.Usage = stepUsage
+	stepListFlags.Usage = stepListUsage
+	stepShowFlags.Usage = stepShowUsage
+	stepAddFlags.Usage = stepAddUsage
+	stepRemoveFlags.Usage = stepRemoveUsage
+	stepUpdateFlags.Usage = stepUpdateUsage
+	stepPublishFlags.Usage = stepPublishUsage
+
 	walkthroughFlags.Usage = walkthroughUsage
 	walkthroughListFlags.Usage = walkthroughListUsage
 	walkthroughShowFlags.Usage = walkthroughShowUsage
 	walkthroughAddFlags.Usage = walkthroughAddUsage
 	walkthroughRemoveFlags.Usage = walkthroughRemoveUsage
 	walkthroughUpdateFlags.Usage = walkthroughUpdateUsage
+	walkthroughPublishFlags.Usage = walkthroughPublishUsage
 
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		return nil, nil, err
@@ -112,6 +148,8 @@ func ParseEndpoint(
 		switch svcn {
 		case "organization":
 			svcf = organizationFlags
+		case "step":
+			svcf = stepFlags
 		case "walkthrough":
 			svcf = walkthroughFlags
 		default:
@@ -148,6 +186,28 @@ func ParseEndpoint(
 
 			}
 
+		case "step":
+			switch epn {
+			case "list":
+				epf = stepListFlags
+
+			case "show":
+				epf = stepShowFlags
+
+			case "add":
+				epf = stepAddFlags
+
+			case "remove":
+				epf = stepRemoveFlags
+
+			case "update":
+				epf = stepUpdateFlags
+
+			case "publish":
+				epf = stepPublishFlags
+
+			}
+
 		case "walkthrough":
 			switch epn {
 			case "list":
@@ -164,6 +224,9 @@ func ParseEndpoint(
 
 			case "update":
 				epf = walkthroughUpdateFlags
+
+			case "publish":
+				epf = walkthroughPublishFlags
 
 			}
 
@@ -206,6 +269,28 @@ func ParseEndpoint(
 				endpoint = c.Update()
 				data, err = organizationc.BuildUpdatePayload(*organizationUpdateBodyFlag)
 			}
+		case "step":
+			c := stepc.NewClient(scheme, host, doer, enc, dec, restore)
+			switch epn {
+			case "list":
+				endpoint = c.List()
+				data, err = stepc.BuildListPayload(*stepListIDFlag)
+			case "show":
+				endpoint = c.Show()
+				data, err = stepc.BuildShowPayload(*stepShowIDFlag, *stepShowViewFlag)
+			case "add":
+				endpoint = c.Add()
+				data, err = stepc.BuildAddPayload(*stepAddBodyFlag)
+			case "remove":
+				endpoint = c.Remove()
+				data, err = stepc.BuildRemovePayload(*stepRemoveIDFlag)
+			case "update":
+				endpoint = c.Update()
+				data, err = stepc.BuildUpdatePayload(*stepUpdateBodyFlag)
+			case "publish":
+				endpoint = c.Publish()
+				data, err = stepc.BuildPublishPayload(*stepPublishIDFlag)
+			}
 		case "walkthrough":
 			c := walkthroughc.NewClient(scheme, host, doer, enc, dec, restore)
 			switch epn {
@@ -224,6 +309,9 @@ func ParseEndpoint(
 			case "update":
 				endpoint = c.Update()
 				data, err = walkthroughc.BuildUpdatePayload(*walkthroughUpdateBodyFlag)
+			case "publish":
+				endpoint = c.Publish()
+				data, err = walkthroughc.BuildPublishPayload(*walkthroughPublishIDFlag)
 			}
 		}
 	}
@@ -270,7 +358,7 @@ Show Organization by ID
     -view STRING: 
 
 Example:
-    `+os.Args[0]+` organization show --id "Quae omnis." --view "tiny"
+    `+os.Args[0]+` organization show --id "Et numquam maxime qui qui." --view "default"
 `, os.Args[0])
 }
 
@@ -295,7 +383,7 @@ Remove Organization from storage
     -id STRING: ID of Organization to remove
 
 Example:
-    `+os.Args[0]+` organization remove --id "Doloremque esse esse."
+    `+os.Args[0]+` organization remove --id "Eius unde."
 `, os.Args[0])
 }
 
@@ -314,6 +402,104 @@ Example:
 `, os.Args[0])
 }
 
+// stepUsage displays the usage of the step command and its subcommands.
+func stepUsage() {
+	fmt.Fprintf(os.Stderr, `The Step service makes it possible to view, add, modify or remove Steps of a Walkthrough.
+Usage:
+    %s [globalflags] step COMMAND [flags]
+
+COMMAND:
+    list: List all stored walkthrough for a given organization
+    show: Show Walkthrough by ID
+    add: Add new Tutorial and return its ID.
+    remove: Remove Walkthrough from storage
+    update: Update Walkthrough with the given IDs.
+    publish: Publishes Walkthrough with the given IDs.
+
+Additional help:
+    %s step COMMAND --help
+`, os.Args[0], os.Args[0])
+}
+func stepListUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] step list -id STRING
+
+List all stored walkthrough for a given organization
+    -id STRING: ID of Organization to search for 
+
+Example:
+    `+os.Args[0]+` step list --id "Quia perferendis aut."
+`, os.Args[0])
+}
+
+func stepShowUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] step show -id STRING -view STRING
+
+Show Walkthrough by ID
+    -id STRING: ID of the Walkthrough to show
+    -view STRING: 
+
+Example:
+    `+os.Args[0]+` step show --id "Sunt amet quis." --view "tiny"
+`, os.Args[0])
+}
+
+func stepAddUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] step add -body JSON
+
+Add new Tutorial and return its ID.
+    -body JSON: 
+
+Example:
+    `+os.Args[0]+` step add --body '{
+      "baseURL": "http://www.google.com/",
+      "name": "How to create a new process using the exception condition.",
+      "organization": "Nostrum veniam.",
+      "publishedURL": "Doloremque quo aut molestiae laudantium aliquam.",
+      "status": "draft | published"
+   }'
+`, os.Args[0])
+}
+
+func stepRemoveUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] step remove -id STRING
+
+Remove Walkthrough from storage
+    -id STRING: ID of Walkthrough to remove
+
+Example:
+    `+os.Args[0]+` step remove --id "Voluptatem est ipsa mollitia in atque."
+`, os.Args[0])
+}
+
+func stepUpdateUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] step update -body JSON
+
+Update Walkthrough with the given IDs.
+    -body JSON: 
+
+Example:
+    `+os.Args[0]+` step update --body '{
+      "baseURL": "http://www.google.com/",
+      "id": "123abc",
+      "name": "How to create a new process using the exception condition.",
+      "organization": "Fugit non.",
+      "publishedURL": "Tempore provident at fugit libero ut recusandae.",
+      "status": "draft | published"
+   }'
+`, os.Args[0])
+}
+
+func stepPublishUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] step publish -id STRING
+
+Publishes Walkthrough with the given IDs.
+    -id STRING: ID of Walkthrough to be published
+
+Example:
+    `+os.Args[0]+` step publish --id "Ad doloribus possimus deleniti magni quia."
+`, os.Args[0])
+}
+
 // walkthroughUsage displays the usage of the walkthrough command and its
 // subcommands.
 func walkthroughUsage() {
@@ -327,6 +513,7 @@ COMMAND:
     add: Add new Tutorial and return its ID.
     remove: Remove Walkthrough from storage
     update: Update Walkthrough with the given IDs.
+    publish: Publishes Walkthrough with the given IDs.
 
 Additional help:
     %s walkthrough COMMAND --help
@@ -339,7 +526,7 @@ List all stored walkthrough for a given organization
     -id STRING: ID of Organization to search for 
 
 Example:
-    `+os.Args[0]+` walkthrough list --id "Id voluptatem."
+    `+os.Args[0]+` walkthrough list --id "Ex enim minima itaque vitae."
 `, os.Args[0])
 }
 
@@ -351,7 +538,7 @@ Show Walkthrough by ID
     -view STRING: 
 
 Example:
-    `+os.Args[0]+` walkthrough show --id "Reiciendis eum mollitia consequuntur totam voluptatem." --view "tiny"
+    `+os.Args[0]+` walkthrough show --id "Animi dolores nisi cumque et." --view "default"
 `, os.Args[0])
 }
 
@@ -365,8 +552,8 @@ Example:
     `+os.Args[0]+` walkthrough add --body '{
       "baseURL": "http://www.google.com/",
       "name": "How to create a new process using the exception condition.",
-      "organization": "Sunt amet quis.",
-      "publishedURL": "Ratione dolorem consectetur itaque quis et.",
+      "organization": "Ratione perspiciatis provident voluptas voluptas.",
+      "publishedURL": "Ea accusamus enim repudiandae.",
       "status": "draft | published"
    }'
 `, os.Args[0])
@@ -379,7 +566,7 @@ Remove Walkthrough from storage
     -id STRING: ID of Walkthrough to remove
 
 Example:
-    `+os.Args[0]+` walkthrough remove --id "Quaerat aut."
+    `+os.Args[0]+` walkthrough remove --id "Odit asperiores."
 `, os.Args[0])
 }
 
@@ -394,9 +581,20 @@ Example:
       "baseURL": "http://www.google.com/",
       "id": "123abc",
       "name": "How to create a new process using the exception condition.",
-      "organization": "A eos non eum et cum rem.",
-      "publishedURL": "Modi ullam minus.",
+      "organization": "Adipisci minima cum consequatur occaecati commodi laudantium.",
+      "publishedURL": "Eos earum fugiat quia assumenda odit.",
       "status": "draft | published"
    }'
+`, os.Args[0])
+}
+
+func walkthroughPublishUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] walkthrough publish -id STRING
+
+Publishes Walkthrough with the given IDs.
+    -id STRING: ID of Walkthrough to be published
+
+Example:
+    `+os.Args[0]+` walkthrough publish --id "Maxime ea qui molestiae adipisci sint aut."
 `, os.Args[0])
 }

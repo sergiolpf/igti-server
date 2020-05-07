@@ -106,7 +106,7 @@ func EncodeShowError(encoder func(context.Context, http.ResponseWriter) goahttp.
 		}
 		switch en.ErrorName() {
 		case "not_found":
-			res := v.(*walkthrough.NotFound)
+			res := v.(*walkthrough.ElementNotFound)
 			enc := encoder(ctx, w)
 			var body interface{}
 			if formatter != nil {
@@ -214,6 +214,31 @@ func DecodeUpdateRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 			return nil, err
 		}
 		payload := NewUpdateStoredWalkthrough(&body)
+
+		return payload, nil
+	}
+}
+
+// EncodePublishResponse returns an encoder for responses returned by the
+// walkthrough publish endpoint.
+func EncodePublishResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
+	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
+		w.WriteHeader(http.StatusNoContent)
+		return nil
+	}
+}
+
+// DecodePublishRequest returns a decoder for requests sent to the walkthrough
+// publish endpoint.
+func DecodePublishRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			id string
+
+			params = mux.Vars(r)
+		)
+		id = params["id"]
+		payload := NewPublishPayload(id)
 
 		return payload, nil
 	}

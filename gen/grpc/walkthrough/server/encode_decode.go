@@ -186,3 +186,29 @@ func DecodeUpdateRequest(ctx context.Context, v interface{}, md metadata.MD) (in
 	}
 	return payload, nil
 }
+
+// EncodePublishResponse encodes responses from the "walkthrough" service
+// "publish" endpoint.
+func EncodePublishResponse(ctx context.Context, v interface{}, hdr, trlr *metadata.MD) (interface{}, error) {
+	resp := NewPublishResponse()
+	return resp, nil
+}
+
+// DecodePublishRequest decodes requests sent to "walkthrough" service
+// "publish" endpoint.
+func DecodePublishRequest(ctx context.Context, v interface{}, md metadata.MD) (interface{}, error) {
+	var (
+		message *walkthroughpb.PublishRequest
+		ok      bool
+	)
+	{
+		if message, ok = v.(*walkthroughpb.PublishRequest); !ok {
+			return nil, goagrpc.ErrInvalidType("walkthrough", "publish", "*walkthroughpb.PublishRequest", v)
+		}
+	}
+	var payload *walkthrough.PublishPayload
+	{
+		payload = NewPublishPayload(message)
+	}
+	return payload, nil
+}

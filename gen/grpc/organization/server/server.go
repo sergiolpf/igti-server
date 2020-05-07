@@ -83,7 +83,7 @@ func (s *Server) Show(ctx context.Context, message *organizationpb.ShowRequest) 
 		if en, ok := err.(ErrorNamer); ok {
 			switch en.ErrorName() {
 			case "not_found":
-				er := err.(*organization.NotFound)
+				er := err.(*organization.ElementNotFound)
 				return nil, goagrpc.NewStatusError(codes.NotFound, err, NewShowNotFoundError(er))
 			}
 		}

@@ -18,7 +18,7 @@ func ListWalkthroughPath(id string) string {
 
 // ShowWalkthroughPath returns the URL path to the walkthrough service show HTTP endpoint.
 func ShowWalkthroughPath(id string) string {
-	return fmt.Sprintf("/walkthrough/%v", id)
+	return fmt.Sprintf("/walkthrough/show/%v", id)
 }
 
 // AddWalkthroughPath returns the URL path to the walkthrough service add HTTP endpoint.
@@ -34,4 +34,9 @@ func RemoveWalkthroughPath(id string) string {
 // UpdateWalkthroughPath returns the URL path to the walkthrough service update HTTP endpoint.
 func UpdateWalkthroughPath() string {
 	return "/walkthrough/update"
+}
+
+// PublishWalkthroughPath returns the URL path to the walkthrough service publish HTTP endpoint.
+func PublishWalkthroughPath(id string) string {
+	return fmt.Sprintf("/walkthrough/publish/%v", id)
 }

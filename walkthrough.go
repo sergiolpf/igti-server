@@ -5,8 +5,15 @@ import (
 	"log"
 
 	"go.mongodb.org/mongo-driver/mongo"
-	organization "guide.me/gen/organization"
 	walkthrough "guide.me/gen/walkthrough"
+)
+
+type WalkthroughStatusType string
+
+const (
+	Draft     WalkthroughStatusType = "draft"
+	Published                       = "published"
+	Removed                         = "removed"
 )
 
 // walkthrough service example implementation.
@@ -31,7 +38,6 @@ func NewWalkthrough(client *mongo.Client, logger *log.Logger) (walkthrough.Servi
 // List all stored walkthrough for a given organization
 func (s *walkthroughsrvc) List(ctx context.Context, p *walkthrough.ListPayload) (res walkthrough.StoredWalkthroughCollection, err error) {
 	s.logger.Print("walkthrough.list")
-
 	res, err = s.db.LoadAllWalkthroughs(p.ID)
 	if err != nil {
 		return nil, err
@@ -44,7 +50,6 @@ func (s *walkthroughsrvc) Show(ctx context.Context, p *walkthrough.ShowPayload) 
 	res = &walkthrough.StoredWalkthrough{}
 	view = "default"
 	s.logger.Print("walkthrough.show")
-
 	res = &walkthrough.StoredWalkthrough{}
 	if p.View != nil {
 		view = *p.View
@@ -55,14 +60,13 @@ func (s *walkthroughsrvc) Show(ctx context.Context, p *walkthrough.ShowPayload) 
 	res, err = s.db.LoadWalkthrough(p.ID)
 	if err == ErrNotFound {
 
-		return nil, view, &organization.OrgNotFound{
+		return nil, view, &walkthrough.ElementNotFound{
 			Message: err.Error(),
 			ID:      p.ID,
 		}
 	}
 	return res, view, nil
 
-	return
 }
 
 // Add new Tutorial and return its ID.
@@ -88,6 +92,13 @@ func (s *walkthroughsrvc) Remove(ctx context.Context, p *walkthrough.RemovePaylo
 // Update Walkthrough with the given IDs.
 func (s *walkthroughsrvc) Update(ctx context.Context, p *walkthrough.StoredWalkthrough) (err error) {
 	s.logger.Print("walkthrough.update")
-	err = s.db.UpdateWalkthrough(*p)
 	return
+}
+
+// Publishes Walkthrough with the given IDs.
+func (s *walkthroughsrvc) Publish(ctx context.Context, p *walkthrough.PublishPayload) (err error) {
+	s.logger.Print("walkthrough.publish")
+	err = s.db.UpdateStatusWalkthrough(p.ID, "published")
+
+	return err
 }

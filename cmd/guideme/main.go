@@ -13,8 +13,10 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
 	guideme "guide.me"
 	organization "guide.me/gen/organization"
+	step "guide.me/gen/step"
 	walkthrough "guide.me/gen/walkthrough"
 )
 
@@ -64,6 +66,7 @@ func main() {
 	var (
 		organizationSvc organization.Service
 		walkthroughSvc  walkthrough.Service
+		stepSvc         step.Service
 		err             error
 	)
 	{
@@ -72,7 +75,12 @@ func main() {
 			logger.Fatalf("Error creating dabtabase: %s", err)
 		}
 
-		walkthroughSvc, err =  = guideme.NewWalkthrough(client, logger)
+		walkthroughSvc, err = guideme.NewWalkthrough(client, logger)
+		if err != nil {
+			logger.Fatalf("Error creating dabtabase: %s", err)
+		}
+
+		stepSvc, err = guideme.NewStep(client, logger)
 		if err != nil {
 			logger.Fatalf("Error creating dabtabase: %s", err)
 		}
@@ -83,10 +91,12 @@ func main() {
 	var (
 		organizationEndpoints *organization.Endpoints
 		walkthroughEndpoints  *walkthrough.Endpoints
+		stepEndpoints         *step.Endpoints
 	)
 	{
 		organizationEndpoints = organization.NewEndpoints(organizationSvc)
 		walkthroughEndpoints = walkthrough.NewEndpoints(walkthroughSvc)
+		stepEndpoints = step.NewEndpoints(stepSvc)
 	}
 
 	// Create channel used by both the signal handler and server goroutines
@@ -126,7 +136,7 @@ func main() {
 			} else if u.Port() == "" {
 				u.Host += ":80"
 			}
-			handleHTTPServer(ctx, u, organizationEndpoints, walkthroughEndpoints, &wg, errc, logger, *dbgF)
+			handleHTTPServer(ctx, u, organizationEndpoints, walkthroughEndpoints, stepEndpoints, &wg, errc, logger, *dbgF)
 		}
 
 		{
@@ -148,7 +158,7 @@ func main() {
 			} else if u.Port() == "" {
 				u.Host += ":8080"
 			}
-			handleGRPCServer(ctx, u, organizationEndpoints, walkthroughEndpoints, &wg, errc, logger, *dbgF)
+			handleGRPCServer(ctx, u, organizationEndpoints, walkthroughEndpoints, stepEndpoints, &wg, errc, logger, *dbgF)
 		}
 
 	default:

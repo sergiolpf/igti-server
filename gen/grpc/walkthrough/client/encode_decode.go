@@ -185,3 +185,26 @@ func EncodeUpdateRequest(ctx context.Context, v interface{}, md *metadata.MD) (i
 	}
 	return NewUpdateRequest(payload), nil
 }
+
+// BuildPublishFunc builds the remote method to invoke for "walkthrough"
+// service "publish" endpoint.
+func BuildPublishFunc(grpccli walkthroughpb.WalkthroughClient, cliopts ...grpc.CallOption) goagrpc.RemoteFunc {
+	return func(ctx context.Context, reqpb interface{}, opts ...grpc.CallOption) (interface{}, error) {
+		for _, opt := range cliopts {
+			opts = append(opts, opt)
+		}
+		if reqpb != nil {
+			return grpccli.Publish(ctx, reqpb.(*walkthroughpb.PublishRequest), opts...)
+		}
+		return grpccli.Publish(ctx, &walkthroughpb.PublishRequest{}, opts...)
+	}
+}
+
+// EncodePublishRequest encodes requests sent to walkthrough publish endpoint.
+func EncodePublishRequest(ctx context.Context, v interface{}, md *metadata.MD) (interface{}, error) {
+	payload, ok := v.(*walkthrough.PublishPayload)
+	if !ok {
+		return nil, goagrpc.ErrInvalidType("walkthrough", "publish", "*walkthrough.PublishPayload", v)
+	}
+	return NewPublishRequest(payload), nil
+}

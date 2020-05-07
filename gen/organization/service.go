@@ -78,7 +78,7 @@ type RemovePayload struct {
 	ID string
 }
 
-type NotFound struct {
+type ElementNotFound struct {
 	// Message of error
 	Message string
 	// ID of missing element
@@ -86,12 +86,12 @@ type NotFound struct {
 }
 
 // Error returns an error description.
-func (e *NotFound) Error() string {
+func (e *ElementNotFound) Error() string {
 	return ""
 }
 
-// ErrorName returns "NotFound".
-func (e *NotFound) ErrorName() string {
+// ErrorName returns "ElementNotFound".
+func (e *ElementNotFound) ErrorName() string {
 	return e.Message
 }
 

@@ -29,6 +29,8 @@ type Service interface {
 	Remove(context.Context, *RemovePayload) (err error)
 	// Update Walkthrough with the given IDs.
 	Update(context.Context, *StoredWalkthrough) (err error)
+	// Publishes Walkthrough with the given IDs.
+	Publish(context.Context, *PublishPayload) (err error)
 }
 
 // ServiceName is the name of the service as defined in the design. This is the
@@ -39,7 +41,7 @@ const ServiceName = "walkthrough"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [5]string{"list", "show", "add", "remove", "update"}
+var MethodNames = [6]string{"list", "show", "add", "remove", "update", "publish"}
 
 // ListPayload is the payload type of the walkthrough service list method.
 type ListPayload struct {
@@ -95,7 +97,13 @@ type RemovePayload struct {
 	ID string
 }
 
-type NotFound struct {
+// PublishPayload is the payload type of the walkthrough service publish method.
+type PublishPayload struct {
+	// ID of Walkthrough to be published
+	ID string
+}
+
+type ElementNotFound struct {
 	// Message of error
 	Message string
 	// ID of missing element
@@ -103,12 +111,12 @@ type NotFound struct {
 }
 
 // Error returns an error description.
-func (e *NotFound) Error() string {
+func (e *ElementNotFound) Error() string {
 	return ""
 }
 
-// ErrorName returns "NotFound".
-func (e *NotFound) ErrorName() string {
+// ErrorName returns "ElementNotFound".
+func (e *ElementNotFound) ErrorName() string {
 	return e.Message
 }
 

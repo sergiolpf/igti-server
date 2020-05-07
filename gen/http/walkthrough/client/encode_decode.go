@@ -132,7 +132,7 @@ func EncodeShowRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.R
 // walkthrough show endpoint. restoreBody controls whether the response body
 // should be restored after having been read.
 // DecodeShowResponse may return the following errors:
-//	- "not_found" (type *walkthrough.NotFound): http.StatusNotFound
+//	- "not_found" (type *walkthrough.ElementNotFound): http.StatusNotFound
 //	- error: internal error
 func DecodeShowResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
@@ -359,6 +359,58 @@ func DecodeUpdateResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("walkthrough", "update", resp.StatusCode, string(body))
+		}
+	}
+}
+
+// BuildPublishRequest instantiates a HTTP request object with method and path
+// set to call the "walkthrough" service "publish" endpoint
+func (c *Client) BuildPublishRequest(ctx context.Context, v interface{}) (*http.Request, error) {
+	var (
+		id string
+	)
+	{
+		p, ok := v.(*walkthrough.PublishPayload)
+		if !ok {
+			return nil, goahttp.ErrInvalidType("walkthrough", "publish", "*walkthrough.PublishPayload", v)
+		}
+		id = p.ID
+	}
+	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: PublishWalkthroughPath(id)}
+	req, err := http.NewRequest("PUT", u.String(), nil)
+	if err != nil {
+		return nil, goahttp.ErrInvalidURL("walkthrough", "publish", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
+
+	return req, nil
+}
+
+// DecodePublishResponse returns a decoder for responses returned by the
+// walkthrough publish endpoint. restoreBody controls whether the response body
+// should be restored after having been read.
+func DecodePublishResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
+	return func(resp *http.Response) (interface{}, error) {
+		if restoreBody {
+			b, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return nil, err
+			}
+			resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
+			defer func() {
+				resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
+			}()
+		} else {
+			defer resp.Body.Close()
+		}
+		switch resp.StatusCode {
+		case http.StatusNoContent:
+			return nil, nil
+		default:
+			body, _ := ioutil.ReadAll(resp.Body)
+			return nil, goahttp.ErrInvalidResponse("walkthrough", "publish", resp.StatusCode, string(body))
 		}
 	}
 }

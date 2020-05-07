@@ -50,10 +50,11 @@ func (s *organizationsrvc) Show(ctx context.Context, p *organization.ShowPayload
 	res, err = s.db.LoadOrganization(p.ID)
 	if err == ErrNotFound {
 
-		return nil, view, &ElementNotFound{
+		return nil, view, &organization.ElementNotFound{
 			Message: err.Error(),
 			ID:      p.ID,
 		}
+
 	}
 	return res, view, nil
 }

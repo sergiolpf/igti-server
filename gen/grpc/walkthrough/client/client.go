@@ -115,3 +115,19 @@ func (c *Client) Update() goa.Endpoint {
 		return res, nil
 	}
 }
+
+// Publish calls the "Publish" function in walkthroughpb.WalkthroughClient
+// interface.
+func (c *Client) Publish() goa.Endpoint {
+	return func(ctx context.Context, v interface{}) (interface{}, error) {
+		inv := goagrpc.NewInvoker(
+			BuildPublishFunc(c.grpccli, c.opts...),
+			EncodePublishRequest,
+			nil)
+		res, err := inv.Invoke(ctx, v)
+		if err != nil {
+			return nil, goa.Fault(err.Error())
+		}
+		return res, nil
+	}
+}

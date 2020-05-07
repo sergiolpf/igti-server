@@ -113,8 +113,8 @@ func NewShowStoredOrganizationOK(body *ShowResponseBody) *organizationviews.Stor
 }
 
 // NewShowNotFound builds a organization service show endpoint not_found error.
-func NewShowNotFound(body *ShowNotFoundResponseBody) *organization.NotFound {
-	v := &organization.NotFound{
+func NewShowNotFound(body *ShowNotFoundResponseBody) *organization.ElementNotFound {
+	v := &organization.ElementNotFound{
 		Message: *body.Message,
 		ID:      *body.ID,
 	}

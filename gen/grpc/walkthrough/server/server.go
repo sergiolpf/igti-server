@@ -19,11 +19,12 @@ import (
 
 // Server implements the walkthroughpb.WalkthroughServer interface.
 type Server struct {
-	ListH   goagrpc.UnaryHandler
-	ShowH   goagrpc.UnaryHandler
-	AddH    goagrpc.UnaryHandler
-	RemoveH goagrpc.UnaryHandler
-	UpdateH goagrpc.UnaryHandler
+	ListH    goagrpc.UnaryHandler
+	ShowH    goagrpc.UnaryHandler
+	AddH     goagrpc.UnaryHandler
+	RemoveH  goagrpc.UnaryHandler
+	UpdateH  goagrpc.UnaryHandler
+	PublishH goagrpc.UnaryHandler
 }
 
 // ErrorNamer is an interface implemented by generated error structs that
@@ -35,11 +36,12 @@ type ErrorNamer interface {
 // New instantiates the server struct with the walkthrough service endpoints.
 func New(e *walkthrough.Endpoints, uh goagrpc.UnaryHandler) *Server {
 	return &Server{
-		ListH:   NewListHandler(e.List, uh),
-		ShowH:   NewShowHandler(e.Show, uh),
-		AddH:    NewAddHandler(e.Add, uh),
-		RemoveH: NewRemoveHandler(e.Remove, uh),
-		UpdateH: NewUpdateHandler(e.Update, uh),
+		ListH:    NewListHandler(e.List, uh),
+		ShowH:    NewShowHandler(e.Show, uh),
+		AddH:     NewAddHandler(e.Add, uh),
+		RemoveH:  NewRemoveHandler(e.Remove, uh),
+		UpdateH:  NewUpdateHandler(e.Update, uh),
+		PublishH: NewPublishHandler(e.Publish, uh),
 	}
 }
 
@@ -83,7 +85,7 @@ func (s *Server) Show(ctx context.Context, message *walkthroughpb.ShowRequest) (
 		if en, ok := err.(ErrorNamer); ok {
 			switch en.ErrorName() {
 			case "not_found":
-				er := err.(*walkthrough.NotFound)
+				er := err.(*walkthrough.ElementNotFound)
 				return nil, goagrpc.NewStatusError(codes.NotFound, err, NewShowNotFoundError(er))
 			}
 		}
@@ -152,4 +154,25 @@ func (s *Server) Update(ctx context.Context, message *walkthroughpb.UpdateReques
 		return nil, goagrpc.EncodeError(err)
 	}
 	return resp.(*walkthroughpb.UpdateResponse), nil
+}
+
+// NewPublishHandler creates a gRPC handler which serves the "walkthrough"
+// service "publish" endpoint.
+func NewPublishHandler(endpoint goa.Endpoint, h goagrpc.UnaryHandler) goagrpc.UnaryHandler {
+	if h == nil {
+		h = goagrpc.NewUnaryHandler(endpoint, DecodePublishRequest, EncodePublishResponse)
+	}
+	return h
+}
+
+// Publish implements the "Publish" method in walkthroughpb.WalkthroughServer
+// interface.
+func (s *Server) Publish(ctx context.Context, message *walkthroughpb.PublishRequest) (*walkthroughpb.PublishResponse, error) {
+	ctx = context.WithValue(ctx, goa.MethodKey, "publish")
+	ctx = context.WithValue(ctx, goa.ServiceKey, "walkthrough")
+	resp, err := s.PublishH.Handle(ctx, message)
+	if err != nil {
+		return nil, goagrpc.EncodeError(err)
+	}
+	return resp.(*walkthroughpb.PublishResponse), nil
 }

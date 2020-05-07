@@ -46,7 +46,7 @@ var _ = Service("walkthrough", func() {
 		Error("not_found", ElementNotFound, "Walkthrough not found")
 
 		HTTP(func() {
-			GET("/{id}")
+			GET("/show/{id}")
 			Param("view")
 			Response(StatusOK)
 			Response("not_found", StatusNotFound)
@@ -105,6 +105,22 @@ var _ = Service("walkthrough", func() {
 
 		HTTP(func() {
 			PUT("/update")
+			Response(StatusNoContent)
+		})
+		GRPC(func() {
+			Response(CodeOK)
+		})
+	})
+
+	Method("publish", func() {
+		Description("Publishes Walkthrough with the given IDs.")
+		Payload(func() {
+			Field(1, "id", String, "ID of Walkthrough to be published")
+			Required("id")
+		})
+
+		HTTP(func() {
+			PUT("/publish/{id}")
 			Response(StatusNoContent)
 		})
 		GRPC(func() {

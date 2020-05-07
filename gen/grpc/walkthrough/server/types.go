@@ -97,7 +97,7 @@ func NewShowResponse(result *walkthroughviews.StoredWalkthroughView) *walkthroug
 
 // NewShowNotFoundError builds the gRPC error response type from the error of
 // the "show" endpoint of the "walkthrough" service.
-func NewShowNotFoundError(er *walkthrough.NotFound) *walkthroughpb.ShowNotFoundError {
+func NewShowNotFoundError(er *walkthrough.ElementNotFound) *walkthroughpb.ShowNotFoundError {
 	message := &walkthroughpb.ShowNotFoundError{
 		Message_: er.Message,
 		Id:       er.ID,
@@ -170,6 +170,22 @@ func NewUpdatePayload(message *walkthroughpb.UpdateRequest) *walkthrough.StoredW
 // "update" endpoint of the "walkthrough" service.
 func NewUpdateResponse() *walkthroughpb.UpdateResponse {
 	message := &walkthroughpb.UpdateResponse{}
+	return message
+}
+
+// NewPublishPayload builds the payload of the "publish" endpoint of the
+// "walkthrough" service from the gRPC request type.
+func NewPublishPayload(message *walkthroughpb.PublishRequest) *walkthrough.PublishPayload {
+	v := &walkthrough.PublishPayload{
+		ID: message.Id,
+	}
+	return v
+}
+
+// NewPublishResponse builds the gRPC response type from the result of the
+// "publish" endpoint of the "walkthrough" service.
+func NewPublishResponse() *walkthroughpb.PublishResponse {
+	message := &walkthroughpb.PublishResponse{}
 	return message
 }
 

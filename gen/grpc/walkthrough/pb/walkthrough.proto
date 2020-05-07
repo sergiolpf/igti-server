@@ -24,6 +24,8 @@ service Walkthrough {
 	rpc Remove (RemoveRequest) returns (RemoveResponse);
 	// Update Walkthrough with the given IDs.
 	rpc Update (UpdateRequest) returns (UpdateResponse);
+	// Publishes Walkthrough with the given IDs.
+	rpc Publish (PublishRequest) returns (PublishResponse);
 }
 
 message ListRequest {
@@ -119,4 +121,12 @@ message UpdateRequest {
 }
 
 message UpdateResponse {
+}
+
+message PublishRequest {
+	// ID of Walkthrough to be published
+	string id = 1;
+}
+
+message PublishResponse {
 }

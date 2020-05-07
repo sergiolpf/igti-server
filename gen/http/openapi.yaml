@@ -123,6 +123,143 @@ paths:
           description: No Content response.
       schemes:
       - http
+  /steps:
+    post:
+      tags:
+      - step
+      summary: add step
+      description: Add new Tutorial and return its ID.
+      operationId: step#add
+      parameters:
+      - name: AddRequestBody
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/StepAddRequestBody'
+          required:
+          - name
+          - baseURL
+          - organization
+      responses:
+        "201":
+          description: Created response.
+          schema:
+            type: string
+      schemes:
+      - http
+  /steps/{id}:
+    get:
+      tags:
+      - step
+      summary: list step
+      description: List all stored walkthrough for a given organization
+      operationId: step#list
+      parameters:
+      - name: id
+        in: path
+        description: 'ID of Organization to search for '
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK response.
+          schema:
+            $ref: '#/definitions/StepStoredWalkthroughResponseTinyCollection'
+      schemes:
+      - http
+    delete:
+      tags:
+      - step
+      summary: remove step
+      description: Remove Walkthrough from storage
+      operationId: step#remove
+      parameters:
+      - name: id
+        in: path
+        description: ID of Walkthrough to remove
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content response.
+      schemes:
+      - http
+  /steps/publish/{id}:
+    put:
+      tags:
+      - step
+      summary: publish step
+      description: Publishes Walkthrough with the given IDs.
+      operationId: step#publish
+      parameters:
+      - name: id
+        in: path
+        description: ID of Walkthrough to be published
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content response.
+      schemes:
+      - http
+  /steps/show/{id}:
+    get:
+      tags:
+      - step
+      summary: show step
+      description: Show Walkthrough by ID
+      operationId: step#show
+      parameters:
+      - name: view
+        in: query
+        description: View to render
+        required: false
+        type: string
+        enum:
+        - default
+        - tiny
+      - name: id
+        in: path
+        description: ID of the Walkthrough to show
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK response.
+          schema:
+            $ref: '#/definitions/StepShowResponseBody'
+        "404":
+          description: Not Found response.
+          schema:
+            $ref: '#/definitions/StepShowNotFoundResponseBody'
+            required:
+            - message
+            - id
+      schemes:
+      - http
+  /steps/update:
+    put:
+      tags:
+      - step
+      summary: update step
+      description: Update Walkthrough with the given IDs.
+      operationId: step#update
+      parameters:
+      - name: UpdateRequestBody
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/StepUpdateRequestBody'
+          required:
+          - id
+          - name
+          - baseURL
+          - organization
+      responses:
+        "204":
+          description: No Content response.
+      schemes:
+      - http
   /swagger/swagger.json:
     get:
       tags:
@@ -165,6 +302,61 @@ paths:
     get:
       tags:
       - walkthrough
+      summary: list walkthrough
+      description: List all stored walkthrough for a given organization
+      operationId: walkthrough#list
+      parameters:
+      - name: id
+        in: path
+        description: 'ID of Organization to search for '
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK response.
+          schema:
+            $ref: '#/definitions/WalkthroughStoredWalkthroughResponseTinyCollection'
+      schemes:
+      - http
+    delete:
+      tags:
+      - walkthrough
+      summary: remove walkthrough
+      description: Remove Walkthrough from storage
+      operationId: walkthrough#remove
+      parameters:
+      - name: id
+        in: path
+        description: ID of Walkthrough to remove
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content response.
+      schemes:
+      - http
+  /walkthrough/publish/{id}:
+    put:
+      tags:
+      - walkthrough
+      summary: publish walkthrough
+      description: Publishes Walkthrough with the given IDs.
+      operationId: walkthrough#publish
+      parameters:
+      - name: id
+        in: path
+        description: ID of Walkthrough to be published
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content response.
+      schemes:
+      - http
+  /walkthrough/show/{id}:
+    get:
+      tags:
+      - walkthrough
       summary: show walkthrough
       description: Show Walkthrough by ID
       operationId: walkthrough#show
@@ -194,23 +386,6 @@ paths:
             required:
             - message
             - id
-      schemes:
-      - http
-    delete:
-      tags:
-      - walkthrough
-      summary: remove walkthrough
-      description: Remove Walkthrough from storage
-      operationId: walkthrough#remove
-      parameters:
-      - name: id
-        in: path
-        description: ID of Walkthrough to remove
-        required: true
-        type: string
-      responses:
-        "204":
-          description: No Content response.
       schemes:
       - http
   /walkthrough/update:
@@ -264,14 +439,14 @@ definitions:
       id:
         type: string
         description: ID of missing element
-        example: Aut quia dolores unde et non quis.
+        example: Ducimus perspiciatis aut a.
       message:
         type: string
         description: Message of error
         example: Element 1 not found
     description: Organization not found
     example:
-      id: Sit non unde est odit asperiores.
+      id: Amet officiis ipsum vitae et ut libero.
       message: Element 1 not found
     required:
     - message
@@ -319,6 +494,9 @@ definitions:
     - id: 123abc
       name: Creating a new request in netflix!
       url: http://www.google.com/
+    - id: 123abc
+      name: Creating a new request in netflix!
+      url: http://www.google.com/
   OrganizationUpdateRequestBody:
     title: OrganizationUpdateRequestBody
     type: object
@@ -345,6 +523,195 @@ definitions:
     - id
     - name
     - url
+  StepAddRequestBody:
+    title: StepAddRequestBody
+    type: object
+    properties:
+      baseURL:
+        type: string
+        description: base url for your tutorial to start from
+        example: http://www.google.com/
+        pattern: (?i)^(https?|ftp)://[^\s/$.?#].[^\s]*$
+      name:
+        type: string
+        description: Name of the Tutorial
+        example: How to create a new process using the exception condition.
+        maxLength: 100
+      organization:
+        type: string
+        description: ID of the organization this tutorial belongs to
+        example: Reiciendis et possimus rerum quo.
+      publishedURL:
+        type: string
+        description: Code to be added into an existing page to make it visible locally
+        example: Officiis rerum officiis deserunt.
+      status:
+        type: string
+        description: 'Status of the walkthrough [draft|published] '
+        default: draft
+        example: draft | published
+        enum:
+        - draft
+        - completed
+        - removed
+    example:
+      baseURL: http://www.google.com/
+      name: How to create a new process using the exception condition.
+      organization: Iste et amet perspiciatis et nam.
+      publishedURL: Quidem iusto aut minima.
+      status: draft | published
+    required:
+    - name
+    - baseURL
+    - organization
+  StepShowNotFoundResponseBody:
+    title: StepShowNotFoundResponseBody
+    type: object
+    properties:
+      id:
+        type: string
+        description: ID of missing element
+        example: Excepturi omnis sed tenetur et quos et.
+      message:
+        type: string
+        description: Message of error
+        example: Element 1 not found
+    description: Walkthrough not found
+    example:
+      id: Delectus autem a.
+      message: Element 1 not found
+    required:
+    - message
+    - id
+  StepShowResponseBody:
+    title: 'Mediatype identifier: application/vnd.goa.guide.me.stored-walkthrough;
+      view=default'
+    type: object
+    properties:
+      baseURL:
+        type: string
+        description: base url for your tutorial to start from
+        example: http://www.google.com/
+        pattern: (?i)^(https?|ftp)://[^\s/$.?#].[^\s]*$
+      id:
+        type: string
+        description: ID is the unique id of the Walkthrough.
+        example: 123abc
+      name:
+        type: string
+        description: Name of the Tutorial
+        example: How to create a new process using the exception condition.
+        maxLength: 100
+      organization:
+        type: string
+        description: ID of the organization this tutorial belongs to
+        example: Provident et repellat nemo eius inventore saepe.
+      publishedURL:
+        type: string
+        description: Code to be added into an existing page to make it visible locally
+        example: Ut explicabo.
+      status:
+        type: string
+        description: 'Status of the walkthrough [draft|published] '
+        default: draft
+        example: draft | published
+        enum:
+        - draft
+        - completed
+        - removed
+    description: ShowResponseBody result type (default view)
+    example:
+      baseURL: http://www.google.com/
+      id: 123abc
+      name: How to create a new process using the exception condition.
+      organization: Et quasi aspernatur et a aperiam molestiae.
+      publishedURL: Ratione sunt consequuntur quia exercitationem.
+      status: draft | published
+    required:
+    - id
+    - name
+    - baseURL
+    - organization
+  StepStoredWalkthroughResponseTinyCollection:
+    title: 'Mediatype identifier: application/vnd.goa.guide.me.stored-walkthrough;
+      type=collection; view=tiny'
+    type: array
+    items:
+      $ref: '#/definitions/StoredWalkthroughResponseTiny'
+    description: StepStoredWalkthroughResponseTinyCollection is the result type for
+      an array of StoredWalkthroughResponseTiny (default view)
+    example:
+    - baseURL: http://www.google.com/
+      id: 123abc
+      name: How to create a new process using the exception condition.
+      organization: Est culpa atque accusamus quaerat aut.
+      publishedURL: Praesentium molestiae est et excepturi.
+      status: draft | published
+    - baseURL: http://www.google.com/
+      id: 123abc
+      name: How to create a new process using the exception condition.
+      organization: Est culpa atque accusamus quaerat aut.
+      publishedURL: Praesentium molestiae est et excepturi.
+      status: draft | published
+    - baseURL: http://www.google.com/
+      id: 123abc
+      name: How to create a new process using the exception condition.
+      organization: Est culpa atque accusamus quaerat aut.
+      publishedURL: Praesentium molestiae est et excepturi.
+      status: draft | published
+    - baseURL: http://www.google.com/
+      id: 123abc
+      name: How to create a new process using the exception condition.
+      organization: Est culpa atque accusamus quaerat aut.
+      publishedURL: Praesentium molestiae est et excepturi.
+      status: draft | published
+  StepUpdateRequestBody:
+    title: StepUpdateRequestBody
+    type: object
+    properties:
+      baseURL:
+        type: string
+        description: base url for your tutorial to start from
+        example: http://www.google.com/
+        pattern: (?i)^(https?|ftp)://[^\s/$.?#].[^\s]*$
+      id:
+        type: string
+        description: ID is the unique id of the Walkthrough.
+        example: 123abc
+      name:
+        type: string
+        description: Name of the Tutorial
+        example: How to create a new process using the exception condition.
+        maxLength: 100
+      organization:
+        type: string
+        description: ID of the organization this tutorial belongs to
+        example: Quis quaerat.
+      publishedURL:
+        type: string
+        description: Code to be added into an existing page to make it visible locally
+        example: Et sint eos.
+      status:
+        type: string
+        description: 'Status of the walkthrough [draft|published] '
+        default: draft
+        example: draft | published
+        enum:
+        - draft
+        - completed
+        - removed
+    example:
+      baseURL: http://www.google.com/
+      id: 123abc
+      name: How to create a new process using the exception condition.
+      organization: Error doloremque sint dolores.
+      publishedURL: Quae in quis.
+      status: draft | published
+    required:
+    - id
+    - name
+    - baseURL
+    - organization
   StoredOrganizationResponseTiny:
     title: 'Mediatype identifier: application/vnd.goa.guide.me.stored-organization;
       view=default'
@@ -389,14 +756,14 @@ definitions:
       organization:
         type: string
         description: ID of the organization this tutorial belongs to
-        example: Eos earum fugiat quia assumenda odit.
+        example: Numquam aliquid ea eaque et explicabo repellat.
     description: A StoredWalkthrough describes a Walkthrough retrieved by the Walkthrough
       service. (tiny view) (default view)
     example:
       baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Adipisci minima cum consequatur occaecati commodi laudantium.
+      organization: Fuga eos placeat exercitationem et unde optio.
     required:
     - id
     - name
@@ -419,11 +786,11 @@ definitions:
       organization:
         type: string
         description: ID of the organization this tutorial belongs to
-        example: Et explicabo omnis.
+        example: Reprehenderit iste voluptas recusandae.
       publishedURL:
         type: string
         description: Code to be added into an existing page to make it visible locally
-        example: Esse facere.
+        example: Impedit sit.
       status:
         type: string
         description: 'Status of the walkthrough [draft|published] '
@@ -436,8 +803,8 @@ definitions:
     example:
       baseURL: http://www.google.com/
       name: How to create a new process using the exception condition.
-      organization: Aspernatur est.
-      publishedURL: Quo eligendi.
+      organization: Eos sapiente quas rerum.
+      publishedURL: Fuga ab amet eum delectus non pariatur.
       status: draft | published
     required:
     - name
@@ -450,14 +817,14 @@ definitions:
       id:
         type: string
         description: ID of missing element
-        example: Quia aperiam illo.
+        example: Explicabo dolorem.
       message:
         type: string
         description: Message of error
         example: Element 1 not found
     description: Walkthrough not found
     example:
-      id: Voluptates repudiandae corporis harum quae quia.
+      id: Aut dolore quo veritatis.
       message: Element 1 not found
     required:
     - message
@@ -484,11 +851,11 @@ definitions:
       organization:
         type: string
         description: ID of the organization this tutorial belongs to
-        example: Adipisci sint aut sed.
+        example: Laboriosam nihil.
       publishedURL:
         type: string
         description: Code to be added into an existing page to make it visible locally
-        example: Et omnis dignissimos maxime ea qui.
+        example: Tenetur dolores rerum dolor.
       status:
         type: string
         description: 'Status of the walkthrough [draft|published] '
@@ -503,8 +870,8 @@ definitions:
       baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Et architecto omnis ab accusamus est veniam.
-      publishedURL: Repudiandae sed dolor.
+      organization: Repudiandae autem officiis aperiam amet iusto.
+      publishedURL: Fugiat consequatur quibusdam non.
       status: draft | published
     required:
     - id
@@ -523,20 +890,20 @@ definitions:
     - baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Omnis aut eius.
-      publishedURL: Molestias magnam omnis facere.
+      organization: Est culpa atque accusamus quaerat aut.
+      publishedURL: Praesentium molestiae est et excepturi.
       status: draft | published
     - baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Omnis aut eius.
-      publishedURL: Molestias magnam omnis facere.
+      organization: Est culpa atque accusamus quaerat aut.
+      publishedURL: Praesentium molestiae est et excepturi.
       status: draft | published
     - baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Omnis aut eius.
-      publishedURL: Molestias magnam omnis facere.
+      organization: Est culpa atque accusamus quaerat aut.
+      publishedURL: Praesentium molestiae est et excepturi.
       status: draft | published
   WalkthroughUpdateRequestBody:
     title: WalkthroughUpdateRequestBody
@@ -559,11 +926,11 @@ definitions:
       organization:
         type: string
         description: ID of the organization this tutorial belongs to
-        example: Ratione eum.
+        example: Sit et.
       publishedURL:
         type: string
         description: Code to be added into an existing page to make it visible locally
-        example: Esse aspernatur adipisci ipsa.
+        example: Sit velit assumenda.
       status:
         type: string
         description: 'Status of the walkthrough [draft|published] '
@@ -577,8 +944,8 @@ definitions:
       baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Sequi dolor quam eum debitis debitis.
-      publishedURL: Sapiente odit eos praesentium ad.
+      organization: Aperiam similique dolor et assumenda voluptate.
+      publishedURL: Nesciunt debitis corrupti corporis.
       status: draft | published
     required:
     - id

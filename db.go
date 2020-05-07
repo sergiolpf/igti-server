@@ -324,7 +324,40 @@ func (m *Mongo) UpdateWalkthrough(walkthrough walkthrough.StoredWalkthrough) err
 	}
 
 	filter := bson.D{{"_id", id}}
-	update := bson.D{{"$set", bson.D{{"name", walkthrough.Name}, {"baseUrl", walkthrough.BaseURL}}}}
+	update := bson.D{{"$set", bson.D{
+		{"name", walkthrough.Name},
+		{"baseurl", walkthrough.BaseURL},
+		{"status", walkthrough.Status},
+		{"publishedurl", walkthrough.PublishedURL}}}}
+
+	result, err := collection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Println(err)
+		return ErrNotFound
+	}
+
+	if result.MatchedCount != 0 {
+		log.Println("matched and replaced an existing document")
+	}
+
+	return err
+
+}
+
+func (m *Mongo) UpdateStatusWalkthrough(wtid string, wgStatus string) error {
+	collection := m.getCollection(ORG_COLLNAME)
+
+	//update a Walkthrough
+	id, err := primitive.ObjectIDFromHex(wtid)
+
+	if err != nil {
+		log.Println(err)
+		return ErrNotFound
+	}
+
+	filter := bson.D{{"_id", id}}
+	update := bson.D{{"$set", bson.D{
+		{"status", wgStatus}}}}
 
 	result, err := collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {

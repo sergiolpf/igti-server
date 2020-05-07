@@ -150,8 +150,8 @@ func NewShowStoredWalkthroughOK(body *ShowResponseBody) *walkthroughviews.Stored
 }
 
 // NewShowNotFound builds a walkthrough service show endpoint not_found error.
-func NewShowNotFound(body *ShowNotFoundResponseBody) *walkthrough.NotFound {
-	v := &walkthrough.NotFound{
+func NewShowNotFound(body *ShowNotFoundResponseBody) *walkthrough.ElementNotFound {
+	v := &walkthrough.ElementNotFound{
 		Message: *body.Message,
 		ID:      *body.ID,
 	}

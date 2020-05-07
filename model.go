@@ -23,5 +23,5 @@ type WalkthroughModel struct {
 	// Code to be added into an existing page to make it visible locally
 	PublishedURL *string
 	// ID of the organization this tutorial belongs to
-	orgID primitive.ObjectID `bson:"_id,omitempty"`
+	orgID primitive.ObjectID `bson:"orgId,omitempty"`
 }

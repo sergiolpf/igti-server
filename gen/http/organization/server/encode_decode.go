@@ -90,7 +90,7 @@ func EncodeShowError(encoder func(context.Context, http.ResponseWriter) goahttp.
 		}
 		switch en.ErrorName() {
 		case "not_found":
-			res := v.(*organization.NotFound)
+			res := v.(*organization.ElementNotFound)
 			enc := encoder(ctx, w)
 			var body interface{}
 			if formatter != nil {

@@ -13,15 +13,17 @@ import (
 	httpmdlwr "goa.design/goa/v3/http/middleware"
 	"goa.design/goa/v3/middleware"
 	organizationsvr "guide.me/gen/http/organization/server"
+	stepsvr "guide.me/gen/http/step/server"
 	swaggersvr "guide.me/gen/http/swagger/server"
 	walkthroughsvr "guide.me/gen/http/walkthrough/server"
 	organization "guide.me/gen/organization"
+	step "guide.me/gen/step"
 	walkthrough "guide.me/gen/walkthrough"
 )
 
 // handleHTTPServer starts configures and starts a HTTP server on the given
 // URL. It shuts down the server if any error is received in the error channel.
-func handleHTTPServer(ctx context.Context, u *url.URL, organizationEndpoints *organization.Endpoints, walkthroughEndpoints *walkthrough.Endpoints, wg *sync.WaitGroup, errc chan error, logger *log.Logger, debug bool) {
+func handleHTTPServer(ctx context.Context, u *url.URL, organizationEndpoints *organization.Endpoints, walkthroughEndpoints *walkthrough.Endpoints, stepEndpoints *step.Endpoints, wg *sync.WaitGroup, errc chan error, logger *log.Logger, debug bool) {
 
 	// Setup goa log adapter.
 	var (
@@ -54,17 +56,20 @@ func handleHTTPServer(ctx context.Context, u *url.URL, organizationEndpoints *or
 	var (
 		organizationServer *organizationsvr.Server
 		walkthroughServer  *walkthroughsvr.Server
+		stepServer         *stepsvr.Server
 		swaggerServer      *swaggersvr.Server
 	)
 	{
 		eh := errorHandler(logger)
 		organizationServer = organizationsvr.New(organizationEndpoints, mux, dec, enc, eh, nil)
 		walkthroughServer = walkthroughsvr.New(walkthroughEndpoints, mux, dec, enc, eh, nil)
+		stepServer = stepsvr.New(stepEndpoints, mux, dec, enc, eh, nil)
 		swaggerServer = swaggersvr.New(nil, mux, dec, enc, eh, nil)
 		if debug {
 			servers := goahttp.Servers{
 				organizationServer,
 				walkthroughServer,
+				stepServer,
 				swaggerServer,
 			}
 			servers.Use(httpmdlwr.Debug(mux, os.Stdout))
@@ -73,6 +78,7 @@ func handleHTTPServer(ctx context.Context, u *url.URL, organizationEndpoints *or
 	// Configure the mux.
 	organizationsvr.Mount(mux, organizationServer)
 	walkthroughsvr.Mount(mux, walkthroughServer)
+	stepsvr.Mount(mux, stepServer)
 	swaggersvr.Mount(mux)
 
 	// Wrap the multiplexer with additional middlewares. Middlewares mounted
@@ -90,6 +96,9 @@ func handleHTTPServer(ctx context.Context, u *url.URL, organizationEndpoints *or
 		logger.Printf("HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
 	}
 	for _, m := range walkthroughServer.Mounts {
+		logger.Printf("HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
+	}
+	for _, m := range stepServer.Mounts {
 		logger.Printf("HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
 	}
 	for _, m := range swaggerServer.Mounts {
