@@ -3,27 +3,30 @@ package guideme
 import (
 	"context"
 	"log"
+	"sort"
 
 	"go.mongodb.org/mongo-driver/mongo"
+	db "guide.me/db"
 	step "guide.me/gen/step"
 )
 
 // step service example implementation.
 // The example methods log the requests and return zero values.
 type stepsrvc struct {
-	db     *Mongo
+	db     *db.Mongo
 	logger *log.Logger
 }
 
 // NewStep returns the step service implementation.
 func NewStep(client *mongo.Client, logger *log.Logger) (step.Service, error) {
-	mongo, err := NewMongoClient(client)
+	mongo, err := db.NewMongoClient(client)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return &stepsrvc{mongo, logger}, nil
+
 }
 
 // List all stored Steps for a given walkthrough
@@ -35,6 +38,10 @@ func (s *stepsrvc) List(ctx context.Context, p *step.ListPayload) (res *step.Sto
 	if err != nil {
 		return nil, err
 	}
+
+	sort.Slice(res.Steps, func(i, j int) bool {
+		return res.Steps[i].Sequence < res.Steps[j].Sequence
+	})
 	return res, nil
 }
 

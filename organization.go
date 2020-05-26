@@ -5,26 +5,28 @@ import (
 	"log"
 
 	"go.mongodb.org/mongo-driver/mongo"
+	db "guide.me/db"
 	organization "guide.me/gen/organization"
 )
 
 // organization service example implementation.
 // The example methods log the requests and return zero values.
 type organizationsrvc struct {
-	db     *Mongo
+	db     *db.Mongo
 	logger *log.Logger
 }
 
 // NewOrganization returns the organization service implementation.
 func NewOrganization(client *mongo.Client, logger *log.Logger) (organization.Service, error) {
-	// Setup Database
-	mongo, err := NewMongoClient(client)
+	//Setup Database
+	mongo, err := db.NewMongoClient(client)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return &organizationsrvc{mongo, logger}, nil
+
 }
 
 // List all stored Organizations
@@ -48,7 +50,7 @@ func (s *organizationsrvc) Show(ctx context.Context, p *organization.ShowPayload
 	}
 
 	res, err = s.db.LoadOrganization(p.ID)
-	if err == ErrNotFound {
+	if err == db.ErrNotFound {
 
 		return nil, view, &organization.ElementNotFound{
 			Message: err.Error(),
@@ -69,6 +71,7 @@ func (s *organizationsrvc) Add(ctx context.Context, p *organization.Organization
 		return "", err
 	}
 	return res, err
+
 }
 
 // Remove Organization from storage

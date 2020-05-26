@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"go.mongodb.org/mongo-driver/mongo"
+	db "guide.me/db"
 	walkthrough "guide.me/gen/walkthrough"
 )
 
@@ -19,20 +20,21 @@ const (
 // walkthrough service example implementation.
 // The example methods log the requests and return zero values.
 type walkthroughsrvc struct {
-	db     *Mongo
+	db     *db.Mongo
 	logger *log.Logger
 }
 
 // NewWalkthrough returns the walkthrough service implementation.
 func NewWalkthrough(client *mongo.Client, logger *log.Logger) (walkthrough.Service, error) {
 	// Setup Database
-	mongo, err := NewMongoClient(client)
+	mongo, err := db.NewMongoClient(client)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return &walkthroughsrvc{mongo, logger}, nil
+
 }
 
 // List all stored walkthrough for a given organization
@@ -58,7 +60,7 @@ func (s *walkthroughsrvc) Show(ctx context.Context, p *walkthrough.ShowPayload) 
 	}
 
 	res, err = s.db.LoadWalkthrough(p.ID)
-	if err == ErrNotFound {
+	if err == db.ErrNotFound {
 
 		return nil, view, &walkthrough.ElementNotFound{
 			Message: err.Error(),
@@ -79,6 +81,7 @@ func (s *walkthroughsrvc) Add(ctx context.Context, p *walkthrough.Walkthrough) (
 		return "", err
 	}
 	return res, err
+
 }
 
 // Remove Walkthrough from storage
