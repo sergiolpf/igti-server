@@ -24,6 +24,8 @@ service Walkthrough {
 	rpc Remove (RemoveRequest) returns (RemoveResponse);
 	// Update Walkthrough with the given IDs.
 	rpc Update (UpdateRequest) returns (UpdateResponse);
+	// Rename Walkthrough with the given IDs.
+	rpc Rename (RenameRequest) returns (RenameResponse);
 	// Publishes Walkthrough with the given IDs.
 	rpc Publish (PublishRequest) returns (PublishResponse);
 }
@@ -132,6 +134,28 @@ message UpdateRequest {
 }
 
 message UpdateResponse {
+}
+
+message RenameRequest {
+	// ID of Walkthrough to be renamed
+	string id = 1;
+	// New Name to the walkthrough
+	string name = 2;
+}
+
+message RenameResponse {
+	// ID is the unique id of the Walkthrough.
+	string id = 1;
+	// Name of the Tutorial
+	string name = 2;
+	// base url for your tutorial to start from
+	string base_url = 3;
+	// Status of the walkthrough [draft|published]
+	string status = 4;
+	// Code to be added into an existing page to make it visible locally
+	string published_url = 5;
+	// ID of the organization this tutorial belongs to
+	string organization = 6;
 }
 
 message PublishRequest {

@@ -82,6 +82,7 @@ var StoredWalkthrough = ResultType("application/vnd.goa.guide.me.stored-walkthro
 		Attribute("baseURL")
 		Attribute("organization")
 	})
+
 	Required("id", "name", "baseURL", "organization")
 })
 

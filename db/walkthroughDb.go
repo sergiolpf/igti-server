@@ -7,6 +7,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"guide.me/gen/walkthrough"
 )
 
@@ -37,7 +38,7 @@ func convertIdToString(id primitive.ObjectID) string {
 }
 
 func (m *Mongo) UpdateStatusWalkthrough(wtid string, wgStatus string) error {
-	collection := m.getCollection(ORG_COLLNAME)
+	collection := m.getCollection(WT_COLLNAME)
 
 	//update a Walkthrough
 	id, err := primitive.ObjectIDFromHex(wtid)
@@ -66,7 +67,7 @@ func (m *Mongo) UpdateStatusWalkthrough(wtid string, wgStatus string) error {
 }
 
 func (m *Mongo) UpdateWalkthrough(walkthrough walkthrough.StoredWalkthrough) error {
-	collection := m.getCollection(ORG_COLLNAME)
+	collection := m.getCollection(WT_COLLNAME)
 
 	//update a Walkthrough
 	id, err := primitive.ObjectIDFromHex(walkthrough.ID)
@@ -216,5 +217,45 @@ func (m *Mongo) SaveWalkthrough(wt walkthrough.Walkthrough) (*walkthrough.Stored
 		Status:       wt.Status,
 	}
 	return &element, err
+
+}
+
+func (m *Mongo) UpdateNameWalkthrough(wtid string, wgName string) (*walkthrough.StoredWalkthrough, error) {
+	collection := m.getCollection(WT_COLLNAME)
+	log.Println("id passado: ", wtid, " nome passado: ", wgName)
+	//update a Walkthrough
+	id, err := primitive.ObjectIDFromHex(wtid)
+
+	if err != nil {
+		log.Println(err)
+		return nil, ErrNotFound
+	}
+	log.Println("deu certo converter o numero")
+	after := options.After
+	opts := options.FindOneAndUpdateOptions{
+		ReturnDocument: &after,
+	}
+	filter := bson.D{{"_id", id}}
+	update := bson.D{{"$set", bson.D{
+		{"name", wgName}}}}
+
+	var element WalkthroughModel
+	err = collection.FindOneAndUpdate(context.TODO(), filter, update, &opts).Decode(&element)
+
+	if err != nil {
+		log.Println(err)
+		return nil, ErrNotFound
+	}
+
+	updated := walkthrough.StoredWalkthrough{
+		ID:           convertIdToString(element.ID),
+		BaseURL:      element.BaseURL,
+		Name:         element.Name,
+		Organization: element.Organization,
+		PublishedURL: element.PublishedURL,
+		Status:       element.Status,
+	}
+
+	return &updated, err
 
 }

@@ -66,7 +66,7 @@ func BuildAddPayload(walkthroughAddBody string) (*walkthrough.Walkthrough, error
 	{
 		err = json.Unmarshal([]byte(walkthroughAddBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Fugit non.\",\n      \"publishedURL\": \"Tempore provident at fugit libero ut recusandae.\",\n      \"status\": \"draft | published\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Asperiores maxime.\",\n      \"publishedURL\": \"Fugit non.\",\n      \"status\": \"draft | published\"\n   }'")
 		}
 		if utf8.RuneCountInString(body.Name) > 100 {
 			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", body.Name, utf8.RuneCountInString(body.Name), 100, false))
@@ -111,7 +111,7 @@ func BuildUpdatePayload(walkthroughUpdateBody string) (*walkthrough.StoredWalkth
 	{
 		err = json.Unmarshal([]byte(walkthroughUpdateBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"id\": \"123abc\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Animi dolores nisi cumque et.\",\n      \"publishedURL\": \"Et alias distinctio minima debitis consequatur consectetur.\",\n      \"status\": \"draft | published\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"id\": \"123abc\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Consequatur reiciendis perferendis nihil ut aperiam.\",\n      \"publishedURL\": \"Animi dolores nisi cumque et.\",\n      \"status\": \"draft | published\"\n   }'")
 		}
 		if utf8.RuneCountInString(body.Name) > 100 {
 			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", body.Name, utf8.RuneCountInString(body.Name), 100, false))
@@ -131,6 +131,25 @@ func BuildUpdatePayload(walkthroughUpdateBody string) (*walkthrough.StoredWalkth
 		Status:       body.Status,
 		PublishedURL: body.PublishedURL,
 		Organization: body.Organization,
+	}
+
+	return v, nil
+}
+
+// BuildRenamePayload builds the payload for the walkthrough rename endpoint
+// from CLI flags.
+func BuildRenamePayload(walkthroughRenameBody string) (*walkthrough.RenamePayload, error) {
+	var err error
+	var body RenameRequestBody
+	{
+		err = json.Unmarshal([]byte(walkthroughRenameBody), &body)
+		if err != nil {
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"id\": \"Debitis et dicta corporis est aut ea.\",\n      \"name\": \"Enim repudiandae dolores ratione perspiciatis.\"\n   }'")
+		}
+	}
+	v := &walkthrough.RenamePayload{
+		ID:   body.ID,
+		Name: body.Name,
 	}
 
 	return v, nil

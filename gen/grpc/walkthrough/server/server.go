@@ -24,6 +24,7 @@ type Server struct {
 	AddH     goagrpc.UnaryHandler
 	RemoveH  goagrpc.UnaryHandler
 	UpdateH  goagrpc.UnaryHandler
+	RenameH  goagrpc.UnaryHandler
 	PublishH goagrpc.UnaryHandler
 }
 
@@ -41,6 +42,7 @@ func New(e *walkthrough.Endpoints, uh goagrpc.UnaryHandler) *Server {
 		AddH:     NewAddHandler(e.Add, uh),
 		RemoveH:  NewRemoveHandler(e.Remove, uh),
 		UpdateH:  NewUpdateHandler(e.Update, uh),
+		RenameH:  NewRenameHandler(e.Rename, uh),
 		PublishH: NewPublishHandler(e.Publish, uh),
 	}
 }
@@ -154,6 +156,27 @@ func (s *Server) Update(ctx context.Context, message *walkthroughpb.UpdateReques
 		return nil, goagrpc.EncodeError(err)
 	}
 	return resp.(*walkthroughpb.UpdateResponse), nil
+}
+
+// NewRenameHandler creates a gRPC handler which serves the "walkthrough"
+// service "rename" endpoint.
+func NewRenameHandler(endpoint goa.Endpoint, h goagrpc.UnaryHandler) goagrpc.UnaryHandler {
+	if h == nil {
+		h = goagrpc.NewUnaryHandler(endpoint, DecodeRenameRequest, EncodeRenameResponse)
+	}
+	return h
+}
+
+// Rename implements the "Rename" method in walkthroughpb.WalkthroughServer
+// interface.
+func (s *Server) Rename(ctx context.Context, message *walkthroughpb.RenameRequest) (*walkthroughpb.RenameResponse, error) {
+	ctx = context.WithValue(ctx, goa.MethodKey, "rename")
+	ctx = context.WithValue(ctx, goa.ServiceKey, "walkthrough")
+	resp, err := s.RenameH.Handle(ctx, message)
+	if err != nil {
+		return nil, goagrpc.EncodeError(err)
+	}
+	return resp.(*walkthroughpb.RenameResponse), nil
 }
 
 // NewPublishHandler creates a gRPC handler which serves the "walkthrough"

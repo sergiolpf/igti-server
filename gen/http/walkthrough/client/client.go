@@ -32,6 +32,9 @@ type Client struct {
 	// Update Doer is the HTTP client used to make requests to the update endpoint.
 	UpdateDoer goahttp.Doer
 
+	// Rename Doer is the HTTP client used to make requests to the rename endpoint.
+	RenameDoer goahttp.Doer
+
 	// Publish Doer is the HTTP client used to make requests to the publish
 	// endpoint.
 	PublishDoer goahttp.Doer
@@ -61,6 +64,7 @@ func NewClient(
 		AddDoer:             doer,
 		RemoveDoer:          doer,
 		UpdateDoer:          doer,
+		RenameDoer:          doer,
 		PublishDoer:         doer,
 		RestoreResponseBody: restoreBody,
 		scheme:              scheme,
@@ -175,6 +179,30 @@ func (c *Client) Update() goa.Endpoint {
 		resp, err := c.UpdateDoer.Do(req)
 		if err != nil {
 			return nil, goahttp.ErrRequestError("walkthrough", "update", err)
+		}
+		return decodeResponse(resp)
+	}
+}
+
+// Rename returns an endpoint that makes HTTP requests to the walkthrough
+// service rename server.
+func (c *Client) Rename() goa.Endpoint {
+	var (
+		encodeRequest  = EncodeRenameRequest(c.encoder)
+		decodeResponse = DecodeRenameResponse(c.decoder, c.RestoreResponseBody)
+	)
+	return func(ctx context.Context, v interface{}) (interface{}, error) {
+		req, err := c.BuildRenameRequest(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+		err = encodeRequest(req, v)
+		if err != nil {
+			return nil, err
+		}
+		resp, err := c.RenameDoer.Do(req)
+		if err != nil {
+			return nil, goahttp.ErrRequestError("walkthrough", "rename", err)
 		}
 		return decodeResponse(resp)
 	}

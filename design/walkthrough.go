@@ -112,6 +112,27 @@ var _ = Service("walkthrough", func() {
 		})
 	})
 
+	Method("rename", func() {
+		Description("Rename Walkthrough with the given IDs.")
+		Payload(func() {
+			Field(1, "id", String, "ID of Walkthrough to be renamed")
+			Field(2, "name", String, "New Name to the walkthrough")
+			Required("id", "name")
+		})
+
+		Result(StoredWalkthrough, func() {
+			View("tiny")
+		})
+
+		HTTP(func() {
+			PUT("/rename")
+			Response(StatusOK)
+		})
+		GRPC(func() {
+			Response(CodeOK)
+		})
+	})
+
 	Method("publish", func() {
 		Description("Publishes Walkthrough with the given IDs.")
 		Payload(func() {

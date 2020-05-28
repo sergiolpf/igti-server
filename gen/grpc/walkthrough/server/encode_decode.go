@@ -189,6 +189,38 @@ func DecodeUpdateRequest(ctx context.Context, v interface{}, md metadata.MD) (in
 	return payload, nil
 }
 
+// EncodeRenameResponse encodes responses from the "walkthrough" service
+// "rename" endpoint.
+func EncodeRenameResponse(ctx context.Context, v interface{}, hdr, trlr *metadata.MD) (interface{}, error) {
+	vres, ok := v.(*walkthroughviews.StoredWalkthrough)
+	if !ok {
+		return nil, goagrpc.ErrInvalidType("walkthrough", "rename", "*walkthroughviews.StoredWalkthrough", v)
+	}
+	result := vres.Projected
+	(*hdr).Append("goa-view", vres.View)
+	resp := NewRenameResponse(result)
+	return resp, nil
+}
+
+// DecodeRenameRequest decodes requests sent to "walkthrough" service "rename"
+// endpoint.
+func DecodeRenameRequest(ctx context.Context, v interface{}, md metadata.MD) (interface{}, error) {
+	var (
+		message *walkthroughpb.RenameRequest
+		ok      bool
+	)
+	{
+		if message, ok = v.(*walkthroughpb.RenameRequest); !ok {
+			return nil, goagrpc.ErrInvalidType("walkthrough", "rename", "*walkthroughpb.RenameRequest", v)
+		}
+	}
+	var payload *walkthrough.RenamePayload
+	{
+		payload = NewRenamePayload(message)
+	}
+	return payload, nil
+}
+
 // EncodePublishResponse encodes responses from the "walkthrough" service
 // "publish" endpoint.
 func EncodePublishResponse(ctx context.Context, v interface{}, hdr, trlr *metadata.MD) (interface{}, error) {

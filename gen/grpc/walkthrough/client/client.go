@@ -116,6 +116,22 @@ func (c *Client) Update() goa.Endpoint {
 	}
 }
 
+// Rename calls the "Rename" function in walkthroughpb.WalkthroughClient
+// interface.
+func (c *Client) Rename() goa.Endpoint {
+	return func(ctx context.Context, v interface{}) (interface{}, error) {
+		inv := goagrpc.NewInvoker(
+			BuildRenameFunc(c.grpccli, c.opts...),
+			EncodeRenameRequest,
+			DecodeRenameResponse)
+		res, err := inv.Invoke(ctx, v)
+		if err != nil {
+			return nil, goa.Fault(err.Error())
+		}
+		return res, nil
+	}
+}
+
 // Publish calls the "Publish" function in walkthroughpb.WalkthroughClient
 // interface.
 func (c *Client) Publish() goa.Endpoint {

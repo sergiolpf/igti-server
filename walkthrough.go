@@ -99,6 +99,20 @@ func (s *walkthroughsrvc) Update(ctx context.Context, p *walkthrough.StoredWalkt
 	return err
 }
 
+// Rename Walkthrough with the given IDs.
+func (s *walkthroughsrvc) Rename(ctx context.Context, p *walkthrough.RenamePayload) (res *walkthrough.StoredWalkthrough, view string, err error) {
+	res = &walkthrough.StoredWalkthrough{}
+	view = "tiny"
+	s.logger.Print("walkthrough.rename")
+	s.logger.Print("id: ", p.ID, " name: ", p.Name)
+	res, err = s.db.UpdateNameWalkthrough(p.ID, p.Name)
+	if err != nil {
+		log.Println(err)
+		return nil, view, err
+	}
+	return res, view, err
+}
+
 // Publishes Walkthrough with the given IDs.
 func (s *walkthroughsrvc) Publish(ctx context.Context, p *walkthrough.PublishPayload) (err error) {
 	s.logger.Print("walkthrough.publish")

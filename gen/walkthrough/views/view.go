@@ -69,6 +69,10 @@ var (
 			"baseURL",
 			"organization",
 		},
+		"rename": []string{
+			"id",
+			"name",
+		},
 	}
 	// StoredWalkthroughMap is a map of attribute names in result type
 	// StoredWalkthrough indexed by view name.
@@ -87,6 +91,10 @@ var (
 			"baseURL",
 			"organization",
 		},
+		"rename": []string{
+			"id",
+			"name",
+		},
 	}
 )
 
@@ -98,8 +106,10 @@ func ValidateStoredWalkthroughCollection(result StoredWalkthroughCollection) (er
 		err = ValidateStoredWalkthroughCollectionView(result.Projected)
 	case "tiny":
 		err = ValidateStoredWalkthroughCollectionViewTiny(result.Projected)
+	case "rename":
+		err = ValidateStoredWalkthroughCollectionViewRename(result.Projected)
 	default:
-		err = goa.InvalidEnumValueError("view", result.View, []interface{}{"default", "tiny"})
+		err = goa.InvalidEnumValueError("view", result.View, []interface{}{"default", "tiny", "rename"})
 	}
 	return
 }
@@ -112,8 +122,10 @@ func ValidateStoredWalkthrough(result *StoredWalkthrough) (err error) {
 		err = ValidateStoredWalkthroughView(result.Projected)
 	case "tiny":
 		err = ValidateStoredWalkthroughViewTiny(result.Projected)
+	case "rename":
+		err = ValidateStoredWalkthroughViewRename(result.Projected)
 	default:
-		err = goa.InvalidEnumValueError("view", result.View, []interface{}{"default", "tiny"})
+		err = goa.InvalidEnumValueError("view", result.View, []interface{}{"default", "tiny", "rename"})
 	}
 	return
 }
@@ -134,6 +146,17 @@ func ValidateStoredWalkthroughCollectionView(result StoredWalkthroughCollectionV
 func ValidateStoredWalkthroughCollectionViewTiny(result StoredWalkthroughCollectionView) (err error) {
 	for _, item := range result {
 		if err2 := ValidateStoredWalkthroughViewTiny(item); err2 != nil {
+			err = goa.MergeErrors(err, err2)
+		}
+	}
+	return
+}
+
+// ValidateStoredWalkthroughCollectionViewRename runs the validations defined
+// on StoredWalkthroughCollectionView using the "rename" view.
+func ValidateStoredWalkthroughCollectionViewRename(result StoredWalkthroughCollectionView) (err error) {
+	for _, item := range result {
+		if err2 := ValidateStoredWalkthroughViewRename(item); err2 != nil {
 			err = goa.MergeErrors(err, err2)
 		}
 	}
@@ -193,6 +216,23 @@ func ValidateStoredWalkthroughViewTiny(result *StoredWalkthroughView) (err error
 	}
 	if result.BaseURL != nil {
 		err = goa.MergeErrors(err, goa.ValidatePattern("result.baseURL", *result.BaseURL, "(?i)^(https?|ftp)://[^\\s/$.?#].[^\\s]*$"))
+	}
+	return
+}
+
+// ValidateStoredWalkthroughViewRename runs the validations defined on
+// StoredWalkthroughView using the "rename" view.
+func ValidateStoredWalkthroughViewRename(result *StoredWalkthroughView) (err error) {
+	if result.ID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("id", "result"))
+	}
+	if result.Name == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("name", "result"))
+	}
+	if result.Name != nil {
+		if utf8.RuneCountInString(*result.Name) > 100 {
+			err = goa.MergeErrors(err, goa.InvalidLengthError("result.name", *result.Name, utf8.RuneCountInString(*result.Name), 100, false))
+		}
 	}
 	return
 }

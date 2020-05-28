@@ -20,17 +20,19 @@ type Client struct {
 	AddEndpoint     goa.Endpoint
 	RemoveEndpoint  goa.Endpoint
 	UpdateEndpoint  goa.Endpoint
+	RenameEndpoint  goa.Endpoint
 	PublishEndpoint goa.Endpoint
 }
 
 // NewClient initializes a "walkthrough" service client given the endpoints.
-func NewClient(list, show, add, remove, update, publish goa.Endpoint) *Client {
+func NewClient(list, show, add, remove, update, rename, publish goa.Endpoint) *Client {
 	return &Client{
 		ListEndpoint:    list,
 		ShowEndpoint:    show,
 		AddEndpoint:     add,
 		RemoveEndpoint:  remove,
 		UpdateEndpoint:  update,
+		RenameEndpoint:  rename,
 		PublishEndpoint: publish,
 	}
 }
@@ -81,6 +83,16 @@ func (c *Client) Remove(ctx context.Context, p *RemovePayload) (err error) {
 func (c *Client) Update(ctx context.Context, p *StoredWalkthrough) (err error) {
 	_, err = c.UpdateEndpoint(ctx, p)
 	return
+}
+
+// Rename calls the "rename" endpoint of the "walkthrough" service.
+func (c *Client) Rename(ctx context.Context, p *RenamePayload) (res *StoredWalkthrough, err error) {
+	var ires interface{}
+	ires, err = c.RenameEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(*StoredWalkthrough), nil
 }
 
 // Publish calls the "publish" endpoint of the "walkthrough" service.

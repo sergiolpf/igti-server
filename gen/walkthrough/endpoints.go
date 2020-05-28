@@ -20,6 +20,7 @@ type Endpoints struct {
 	Add     goa.Endpoint
 	Remove  goa.Endpoint
 	Update  goa.Endpoint
+	Rename  goa.Endpoint
 	Publish goa.Endpoint
 }
 
@@ -31,6 +32,7 @@ func NewEndpoints(s Service) *Endpoints {
 		Add:     NewAddEndpoint(s),
 		Remove:  NewRemoveEndpoint(s),
 		Update:  NewUpdateEndpoint(s),
+		Rename:  NewRenameEndpoint(s),
 		Publish: NewPublishEndpoint(s),
 	}
 }
@@ -42,6 +44,7 @@ func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
 	e.Add = m(e.Add)
 	e.Remove = m(e.Remove)
 	e.Update = m(e.Update)
+	e.Rename = m(e.Rename)
 	e.Publish = m(e.Publish)
 }
 
@@ -102,6 +105,20 @@ func NewUpdateEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*StoredWalkthrough)
 		return nil, s.Update(ctx, p)
+	}
+}
+
+// NewRenameEndpoint returns an endpoint function that calls the method
+// "rename" of service "walkthrough".
+func NewRenameEndpoint(s Service) goa.Endpoint {
+	return func(ctx context.Context, req interface{}) (interface{}, error) {
+		p := req.(*RenamePayload)
+		res, view, err := s.Rename(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+		vres := NewViewedStoredWalkthrough(res, view)
+		return vres, nil
 	}
 }
 

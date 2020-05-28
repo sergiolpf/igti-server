@@ -47,6 +47,15 @@ type UpdateRequestBody struct {
 	Organization string `form:"organization" json:"organization" xml:"organization"`
 }
 
+// RenameRequestBody is the type of the "walkthrough" service "rename" endpoint
+// HTTP request body.
+type RenameRequestBody struct {
+	// ID of Walkthrough to be renamed
+	ID string `form:"id" json:"id" xml:"id"`
+	// New Name to the walkthrough
+	Name string `form:"name" json:"name" xml:"name"`
+}
+
 // ListResponseBody is the type of the "walkthrough" service "list" endpoint
 // HTTP response body.
 type ListResponseBody []*StoredWalkthroughResponse
@@ -71,6 +80,23 @@ type ShowResponseBody struct {
 // AddResponseBody is the type of the "walkthrough" service "add" endpoint HTTP
 // response body.
 type AddResponseBody struct {
+	// ID is the unique id of the Walkthrough.
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+	// Name of the Tutorial
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
+	// base url for your tutorial to start from
+	BaseURL *string `form:"baseURL,omitempty" json:"baseURL,omitempty" xml:"baseURL,omitempty"`
+	// Status of the walkthrough [draft|published]
+	Status *string `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
+	// Code to be added into an existing page to make it visible locally
+	PublishedURL *string `form:"publishedURL,omitempty" json:"publishedURL,omitempty" xml:"publishedURL,omitempty"`
+	// ID of the organization this tutorial belongs to
+	Organization *string `form:"organization,omitempty" json:"organization,omitempty" xml:"organization,omitempty"`
+}
+
+// RenameResponseBody is the type of the "walkthrough" service "rename"
+// endpoint HTTP response body.
+type RenameResponseBody struct {
 	// ID is the unique id of the Walkthrough.
 	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
 	// Name of the Tutorial
@@ -137,6 +163,16 @@ func NewUpdateRequestBody(p *walkthrough.StoredWalkthrough) *UpdateRequestBody {
 	return body
 }
 
+// NewRenameRequestBody builds the HTTP request body from the payload of the
+// "rename" endpoint of the "walkthrough" service.
+func NewRenameRequestBody(p *walkthrough.RenamePayload) *RenameRequestBody {
+	body := &RenameRequestBody{
+		ID:   p.ID,
+		Name: p.Name,
+	}
+	return body
+}
+
 // NewListStoredWalkthroughCollectionOK builds a "walkthrough" service "list"
 // endpoint result from a HTTP "OK" response.
 func NewListStoredWalkthroughCollectionOK(body ListResponseBody) walkthroughviews.StoredWalkthroughCollectionView {
@@ -179,6 +215,25 @@ func NewShowNotFound(body *ShowNotFoundResponseBody) *walkthrough.ElementNotFoun
 // NewAddStoredWalkthroughCreated builds a "walkthrough" service "add" endpoint
 // result from a HTTP "Created" response.
 func NewAddStoredWalkthroughCreated(body *AddResponseBody) *walkthroughviews.StoredWalkthroughView {
+	v := &walkthroughviews.StoredWalkthroughView{
+		ID:           body.ID,
+		Name:         body.Name,
+		BaseURL:      body.BaseURL,
+		Status:       body.Status,
+		PublishedURL: body.PublishedURL,
+		Organization: body.Organization,
+	}
+	if body.Status == nil {
+		var tmp string = "draft"
+		v.Status = &tmp
+	}
+
+	return v
+}
+
+// NewRenameStoredWalkthroughOK builds a "walkthrough" service "rename"
+// endpoint result from a HTTP "OK" response.
+func NewRenameStoredWalkthroughOK(body *RenameResponseBody) *walkthroughviews.StoredWalkthroughView {
 	v := &walkthroughviews.StoredWalkthroughView{
 		ID:           body.ID,
 		Name:         body.Name,

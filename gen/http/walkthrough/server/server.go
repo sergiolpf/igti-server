@@ -24,6 +24,7 @@ type Server struct {
 	Add     http.Handler
 	Remove  http.Handler
 	Update  http.Handler
+	Rename  http.Handler
 	Publish http.Handler
 }
 
@@ -65,6 +66,7 @@ func New(
 			{"Add", "POST", "/walkthrough"},
 			{"Remove", "DELETE", "/walkthrough/{id}"},
 			{"Update", "PUT", "/walkthrough/update"},
+			{"Rename", "PUT", "/walkthrough/rename"},
 			{"Publish", "PUT", "/walkthrough/publish/{id}"},
 		},
 		List:    NewListHandler(e.List, mux, decoder, encoder, errhandler, formatter),
@@ -72,6 +74,7 @@ func New(
 		Add:     NewAddHandler(e.Add, mux, decoder, encoder, errhandler, formatter),
 		Remove:  NewRemoveHandler(e.Remove, mux, decoder, encoder, errhandler, formatter),
 		Update:  NewUpdateHandler(e.Update, mux, decoder, encoder, errhandler, formatter),
+		Rename:  NewRenameHandler(e.Rename, mux, decoder, encoder, errhandler, formatter),
 		Publish: NewPublishHandler(e.Publish, mux, decoder, encoder, errhandler, formatter),
 	}
 }
@@ -86,6 +89,7 @@ func (s *Server) Use(m func(http.Handler) http.Handler) {
 	s.Add = m(s.Add)
 	s.Remove = m(s.Remove)
 	s.Update = m(s.Update)
+	s.Rename = m(s.Rename)
 	s.Publish = m(s.Publish)
 }
 
@@ -96,6 +100,7 @@ func Mount(mux goahttp.Muxer, h *Server) {
 	MountAddHandler(mux, h.Add)
 	MountRemoveHandler(mux, h.Remove)
 	MountUpdateHandler(mux, h.Update)
+	MountRenameHandler(mux, h.Rename)
 	MountPublishHandler(mux, h.Publish)
 }
 
@@ -333,6 +338,57 @@ func NewUpdateHandler(
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
 		ctx = context.WithValue(ctx, goa.MethodKey, "update")
+		ctx = context.WithValue(ctx, goa.ServiceKey, "walkthrough")
+		payload, err := decodeRequest(r)
+		if err != nil {
+			if err := encodeError(ctx, w, err); err != nil {
+				errhandler(ctx, w, err)
+			}
+			return
+		}
+		res, err := endpoint(ctx, payload)
+		if err != nil {
+			if err := encodeError(ctx, w, err); err != nil {
+				errhandler(ctx, w, err)
+			}
+			return
+		}
+		if err := encodeResponse(ctx, w, res); err != nil {
+			errhandler(ctx, w, err)
+		}
+	})
+}
+
+// MountRenameHandler configures the mux to serve the "walkthrough" service
+// "rename" endpoint.
+func MountRenameHandler(mux goahttp.Muxer, h http.Handler) {
+	f, ok := h.(http.HandlerFunc)
+	if !ok {
+		f = func(w http.ResponseWriter, r *http.Request) {
+			h.ServeHTTP(w, r)
+		}
+	}
+	mux.Handle("PUT", "/walkthrough/rename", f)
+}
+
+// NewRenameHandler creates a HTTP handler which loads the HTTP request and
+// calls the "walkthrough" service "rename" endpoint.
+func NewRenameHandler(
+	endpoint goa.Endpoint,
+	mux goahttp.Muxer,
+	decoder func(*http.Request) goahttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(err error) goahttp.Statuser,
+) http.Handler {
+	var (
+		decodeRequest  = DecodeRenameRequest(mux, decoder)
+		encodeResponse = EncodeRenameResponse(encoder)
+		encodeError    = goahttp.ErrorEncoder(encoder, formatter)
+	)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
+		ctx = context.WithValue(ctx, goa.MethodKey, "rename")
 		ctx = context.WithValue(ctx, goa.ServiceKey, "walkthrough")
 		payload, err := decodeRequest(r)
 		if err != nil {

@@ -22,16 +22,24 @@ type Service interface {
 	// The "view" return value must have one of the following views
 	//	- "default"
 	//	- "tiny"
+	//	- "rename"
 	Show(context.Context, *ShowPayload) (res *StoredWalkthrough, view string, err error)
 	// Add new Tutorial and return its ID.
 	// The "view" return value must have one of the following views
 	//	- "default"
 	//	- "tiny"
+	//	- "rename"
 	Add(context.Context, *Walkthrough) (res *StoredWalkthrough, view string, err error)
 	// Remove Walkthrough from storage
 	Remove(context.Context, *RemovePayload) (err error)
 	// Update Walkthrough with the given IDs.
 	Update(context.Context, *StoredWalkthrough) (err error)
+	// Rename Walkthrough with the given IDs.
+	// The "view" return value must have one of the following views
+	//	- "default"
+	//	- "tiny"
+	//	- "rename"
+	Rename(context.Context, *RenamePayload) (res *StoredWalkthrough, view string, err error)
 	// Publishes Walkthrough with the given IDs.
 	Publish(context.Context, *PublishPayload) (err error)
 }
@@ -44,7 +52,7 @@ const ServiceName = "walkthrough"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [6]string{"list", "show", "add", "remove", "update", "publish"}
+var MethodNames = [7]string{"list", "show", "add", "remove", "update", "rename", "publish"}
 
 // ListPayload is the payload type of the walkthrough service list method.
 type ListPayload struct {
@@ -100,6 +108,14 @@ type RemovePayload struct {
 	ID string
 }
 
+// RenamePayload is the payload type of the walkthrough service rename method.
+type RenamePayload struct {
+	// ID of Walkthrough to be renamed
+	ID string
+	// New Name to the walkthrough
+	Name string
+}
+
 // PublishPayload is the payload type of the walkthrough service publish method.
 type PublishPayload struct {
 	// ID of Walkthrough to be published
@@ -133,6 +149,8 @@ func NewStoredWalkthroughCollection(vres walkthroughviews.StoredWalkthroughColle
 		res = newStoredWalkthroughCollection(vres.Projected)
 	case "tiny":
 		res = newStoredWalkthroughCollectionTiny(vres.Projected)
+	case "rename":
+		res = newStoredWalkthroughCollectionRename(vres.Projected)
 	}
 	return res
 }
@@ -149,6 +167,9 @@ func NewViewedStoredWalkthroughCollection(res StoredWalkthroughCollection, view 
 	case "tiny":
 		p := newStoredWalkthroughCollectionViewTiny(res)
 		vres = walkthroughviews.StoredWalkthroughCollection{Projected: p, View: "tiny"}
+	case "rename":
+		p := newStoredWalkthroughCollectionViewRename(res)
+		vres = walkthroughviews.StoredWalkthroughCollection{Projected: p, View: "rename"}
 	}
 	return vres
 }
@@ -162,6 +183,8 @@ func NewStoredWalkthrough(vres *walkthroughviews.StoredWalkthrough) *StoredWalkt
 		res = newStoredWalkthrough(vres.Projected)
 	case "tiny":
 		res = newStoredWalkthroughTiny(vres.Projected)
+	case "rename":
+		res = newStoredWalkthroughRename(vres.Projected)
 	}
 	return res
 }
@@ -177,6 +200,9 @@ func NewViewedStoredWalkthrough(res *StoredWalkthrough, view string) *walkthroug
 	case "tiny":
 		p := newStoredWalkthroughViewTiny(res)
 		vres = &walkthroughviews.StoredWalkthrough{Projected: p, View: "tiny"}
+	case "rename":
+		p := newStoredWalkthroughViewRename(res)
+		vres = &walkthroughviews.StoredWalkthrough{Projected: p, View: "rename"}
 	}
 	return vres
 }
@@ -201,6 +227,16 @@ func newStoredWalkthroughCollectionTiny(vres walkthroughviews.StoredWalkthroughC
 	return res
 }
 
+// newStoredWalkthroughCollectionRename converts projected type
+// StoredWalkthroughCollection to service type StoredWalkthroughCollection.
+func newStoredWalkthroughCollectionRename(vres walkthroughviews.StoredWalkthroughCollectionView) StoredWalkthroughCollection {
+	res := make(StoredWalkthroughCollection, len(vres))
+	for i, n := range vres {
+		res[i] = newStoredWalkthroughRename(n)
+	}
+	return res
+}
+
 // newStoredWalkthroughCollectionView projects result type
 // StoredWalkthroughCollection to projected type
 // StoredWalkthroughCollectionView using the "default" view.
@@ -219,6 +255,17 @@ func newStoredWalkthroughCollectionViewTiny(res StoredWalkthroughCollection) wal
 	vres := make(walkthroughviews.StoredWalkthroughCollectionView, len(res))
 	for i, n := range res {
 		vres[i] = newStoredWalkthroughViewTiny(n)
+	}
+	return vres
+}
+
+// newStoredWalkthroughCollectionViewRename projects result type
+// StoredWalkthroughCollection to projected type
+// StoredWalkthroughCollectionView using the "rename" view.
+func newStoredWalkthroughCollectionViewRename(res StoredWalkthroughCollection) walkthroughviews.StoredWalkthroughCollectionView {
+	vres := make(walkthroughviews.StoredWalkthroughCollectionView, len(res))
+	for i, n := range res {
+		vres[i] = newStoredWalkthroughViewRename(n)
 	}
 	return vres
 }
@@ -269,6 +316,19 @@ func newStoredWalkthroughTiny(vres *walkthroughviews.StoredWalkthroughView) *Sto
 	return res
 }
 
+// newStoredWalkthroughRename converts projected type StoredWalkthrough to
+// service type StoredWalkthrough.
+func newStoredWalkthroughRename(vres *walkthroughviews.StoredWalkthroughView) *StoredWalkthrough {
+	res := &StoredWalkthrough{}
+	if vres.ID != nil {
+		res.ID = *vres.ID
+	}
+	if vres.Name != nil {
+		res.Name = *vres.Name
+	}
+	return res
+}
+
 // newStoredWalkthroughView projects result type StoredWalkthrough to projected
 // type StoredWalkthroughView using the "default" view.
 func newStoredWalkthroughView(res *StoredWalkthrough) *walkthroughviews.StoredWalkthroughView {
@@ -291,6 +351,16 @@ func newStoredWalkthroughViewTiny(res *StoredWalkthrough) *walkthroughviews.Stor
 		Name:         &res.Name,
 		BaseURL:      &res.BaseURL,
 		Organization: &res.Organization,
+	}
+	return vres
+}
+
+// newStoredWalkthroughViewRename projects result type StoredWalkthrough to
+// projected type StoredWalkthroughView using the "rename" view.
+func newStoredWalkthroughViewRename(res *StoredWalkthrough) *walkthroughviews.StoredWalkthroughView {
+	vres := &walkthroughviews.StoredWalkthroughView{
+		ID:   &res.ID,
+		Name: &res.Name,
 	}
 	return vres
 }

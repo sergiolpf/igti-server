@@ -27,15 +27,15 @@ import (
 func UsageCommands() string {
 	return `organization (list|show|add|remove|update)
 step (list|add|remove|update)
-walkthrough (list|show|add|remove|update|publish)
+walkthrough (list|show|add|remove|update|rename|publish)
 `
 }
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
 	return os.Args[0] + ` organization list` + "\n" +
-		os.Args[0] + ` step list --id "Facere omnis omnis."` + "\n" +
-		os.Args[0] + ` walkthrough list --id "Et excepturi."` + "\n" +
+		os.Args[0] + ` step list --id "Quia perferendis aut."` + "\n" +
+		os.Args[0] + ` walkthrough list --id "Aut mollitia modi."` + "\n" +
 		""
 }
 
@@ -98,6 +98,9 @@ func ParseEndpoint(
 		walkthroughUpdateFlags    = flag.NewFlagSet("update", flag.ExitOnError)
 		walkthroughUpdateBodyFlag = walkthroughUpdateFlags.String("body", "REQUIRED", "")
 
+		walkthroughRenameFlags    = flag.NewFlagSet("rename", flag.ExitOnError)
+		walkthroughRenameBodyFlag = walkthroughRenameFlags.String("body", "REQUIRED", "")
+
 		walkthroughPublishFlags  = flag.NewFlagSet("publish", flag.ExitOnError)
 		walkthroughPublishIDFlag = walkthroughPublishFlags.String("id", "REQUIRED", "ID of Walkthrough to be published")
 	)
@@ -120,6 +123,7 @@ func ParseEndpoint(
 	walkthroughAddFlags.Usage = walkthroughAddUsage
 	walkthroughRemoveFlags.Usage = walkthroughRemoveUsage
 	walkthroughUpdateFlags.Usage = walkthroughUpdateUsage
+	walkthroughRenameFlags.Usage = walkthroughRenameUsage
 	walkthroughPublishFlags.Usage = walkthroughPublishUsage
 
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
@@ -210,6 +214,9 @@ func ParseEndpoint(
 			case "update":
 				epf = walkthroughUpdateFlags
 
+			case "rename":
+				epf = walkthroughRenameFlags
+
 			case "publish":
 				epf = walkthroughPublishFlags
 
@@ -288,6 +295,9 @@ func ParseEndpoint(
 			case "update":
 				endpoint = c.Update()
 				data, err = walkthroughc.BuildUpdatePayload(*walkthroughUpdateBodyFlag)
+			case "rename":
+				endpoint = c.Rename()
+				data, err = walkthroughc.BuildRenamePayload(*walkthroughRenameBodyFlag)
 			case "publish":
 				endpoint = c.Publish()
 				data, err = walkthroughc.BuildPublishPayload(*walkthroughPublishIDFlag)
@@ -337,7 +347,7 @@ Show Organization by ID
     -view STRING: 
 
 Example:
-    `+os.Args[0]+` organization show --id "Reiciendis necessitatibus dolorem." --view "tiny"
+    `+os.Args[0]+` organization show --id "Et numquam maxime qui qui." --view "default"
 `, os.Args[0])
 }
 
@@ -362,7 +372,7 @@ Remove Organization from storage
     -id STRING: ID of Organization to remove
 
 Example:
-    `+os.Args[0]+` organization remove --id "Reiciendis eum mollitia consequuntur totam voluptatem."
+    `+os.Args[0]+` organization remove --id "Eius unde."
 `, os.Args[0])
 }
 
@@ -404,7 +414,7 @@ List all stored Steps for a given walkthrough
     -id STRING: ID of Walkthrough to search for steps 
 
 Example:
-    `+os.Args[0]+` step list --id "Facere omnis omnis."
+    `+os.Args[0]+` step list --id "Quia perferendis aut."
 `, os.Args[0])
 }
 
@@ -419,28 +429,14 @@ Example:
       "steps": [
          {
             "action": "next",
-            "sequence": 1055850916,
+            "sequence": 2114057729,
             "targetid": "",
             "type": "text",
             "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          },
          {
             "action": "next",
-            "sequence": 1055850916,
-            "targetid": "",
-            "type": "text",
-            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
-         },
-         {
-            "action": "next",
-            "sequence": 1055850916,
-            "targetid": "",
-            "type": "text",
-            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
-         },
-         {
-            "action": "next",
-            "sequence": 1055850916,
+            "sequence": 2114057729,
             "targetid": "",
             "type": "text",
             "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
@@ -458,7 +454,7 @@ Remove Steps from storage
     -id STRING: ID of Steps to remove
 
 Example:
-    `+os.Args[0]+` step remove --id "Dolorem consectetur itaque quis et."
+    `+os.Args[0]+` step remove --id "Est et excepturi velit."
 `, os.Args[0])
 }
 
@@ -474,28 +470,21 @@ Example:
       "steps": [
          {
             "action": "next",
-            "sequence": 1055850916,
+            "sequence": 2114057729,
             "targetid": "",
             "type": "text",
             "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          },
          {
             "action": "next",
-            "sequence": 1055850916,
+            "sequence": 2114057729,
             "targetid": "",
             "type": "text",
             "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          },
          {
             "action": "next",
-            "sequence": 1055850916,
-            "targetid": "",
-            "type": "text",
-            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
-         },
-         {
-            "action": "next",
-            "sequence": 1055850916,
+            "sequence": 2114057729,
             "targetid": "",
             "type": "text",
             "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
@@ -519,6 +508,7 @@ COMMAND:
     add: Add new Tutorial and return its ID.
     remove: Remove Walkthrough from storage
     update: Update Walkthrough with the given IDs.
+    rename: Rename Walkthrough with the given IDs.
     publish: Publishes Walkthrough with the given IDs.
 
 Additional help:
@@ -532,7 +522,7 @@ List all stored walkthrough for a given organization
     -id STRING: ID of Organization to search for 
 
 Example:
-    `+os.Args[0]+` walkthrough list --id "Et excepturi."
+    `+os.Args[0]+` walkthrough list --id "Aut mollitia modi."
 `, os.Args[0])
 }
 
@@ -544,7 +534,7 @@ Show Walkthrough by ID
     -view STRING: 
 
 Example:
-    `+os.Args[0]+` walkthrough show --id "Et cum rem delectus." --view "default"
+    `+os.Args[0]+` walkthrough show --id "Cum expedita voluptas eos doloremque quo aut." --view "tiny"
 `, os.Args[0])
 }
 
@@ -558,8 +548,8 @@ Example:
     `+os.Args[0]+` walkthrough add --body '{
       "baseURL": "http://www.google.com/",
       "name": "How to create a new process using the exception condition.",
-      "organization": "Fugit non.",
-      "publishedURL": "Tempore provident at fugit libero ut recusandae.",
+      "organization": "Asperiores maxime.",
+      "publishedURL": "Fugit non.",
       "status": "draft | published"
    }'
 `, os.Args[0])
@@ -572,7 +562,7 @@ Remove Walkthrough from storage
     -id STRING: ID of Walkthrough to remove
 
 Example:
-    `+os.Args[0]+` walkthrough remove --id "Ex enim minima itaque vitae."
+    `+os.Args[0]+` walkthrough remove --id "Et alias distinctio minima debitis consequatur consectetur."
 `, os.Args[0])
 }
 
@@ -587,9 +577,23 @@ Example:
       "baseURL": "http://www.google.com/",
       "id": "123abc",
       "name": "How to create a new process using the exception condition.",
-      "organization": "Animi dolores nisi cumque et.",
-      "publishedURL": "Et alias distinctio minima debitis consequatur consectetur.",
+      "organization": "Consequatur reiciendis perferendis nihil ut aperiam.",
+      "publishedURL": "Animi dolores nisi cumque et.",
       "status": "draft | published"
+   }'
+`, os.Args[0])
+}
+
+func walkthroughRenameUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] walkthrough rename -body JSON
+
+Rename Walkthrough with the given IDs.
+    -body JSON: 
+
+Example:
+    `+os.Args[0]+` walkthrough rename --body '{
+      "id": "Debitis et dicta corporis est aut ea.",
+      "name": "Enim repudiandae dolores ratione perspiciatis."
    }'
 `, os.Args[0])
 }
@@ -601,6 +605,6 @@ Publishes Walkthrough with the given IDs.
     -id STRING: ID of Walkthrough to be published
 
 Example:
-    `+os.Args[0]+` walkthrough publish --id "Debitis et dicta corporis est aut ea."
+    `+os.Args[0]+` walkthrough publish --id "Est odit asperiores."
 `, os.Args[0])
 }

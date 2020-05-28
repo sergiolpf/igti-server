@@ -193,6 +193,44 @@ func NewUpdateResponse() *walkthroughpb.UpdateResponse {
 	return message
 }
 
+// NewRenamePayload builds the payload of the "rename" endpoint of the
+// "walkthrough" service from the gRPC request type.
+func NewRenamePayload(message *walkthroughpb.RenameRequest) *walkthrough.RenamePayload {
+	v := &walkthrough.RenamePayload{
+		ID:   message.Id,
+		Name: message.Name,
+	}
+	return v
+}
+
+// NewRenameResponse builds the gRPC response type from the result of the
+// "rename" endpoint of the "walkthrough" service.
+func NewRenameResponse(result *walkthroughviews.StoredWalkthroughView) *walkthroughpb.RenameResponse {
+	message := &walkthroughpb.RenameResponse{}
+	if result.ID != nil {
+		message.Id = *result.ID
+	}
+	if result.Name != nil {
+		message.Name = *result.Name
+	}
+	if result.BaseURL != nil {
+		message.BaseUrl = *result.BaseURL
+	}
+	if result.Status != nil {
+		message.Status = *result.Status
+	}
+	if result.PublishedURL != nil {
+		message.PublishedUrl = *result.PublishedURL
+	}
+	if result.Organization != nil {
+		message.Organization = *result.Organization
+	}
+	if result.Status == nil {
+		message.Status = "draft"
+	}
+	return message
+}
+
 // NewPublishPayload builds the payload of the "publish" endpoint of the
 // "walkthrough" service from the gRPC request type.
 func NewPublishPayload(message *walkthroughpb.PublishRequest) *walkthrough.PublishPayload {

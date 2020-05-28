@@ -59,6 +59,8 @@ func EncodeShowResponse(encoder func(context.Context, http.ResponseWriter) goaht
 			body = NewShowResponseBody(res.Projected)
 		case "tiny":
 			body = NewShowResponseBodyTiny(res.Projected)
+		case "rename":
+			body = NewShowResponseBodyRename(res.Projected)
 		}
 		w.WriteHeader(http.StatusOK)
 		return enc.Encode(body)
@@ -136,6 +138,8 @@ func EncodeAddResponse(encoder func(context.Context, http.ResponseWriter) goahtt
 			body = NewAddResponseBody(res.Projected)
 		case "tiny":
 			body = NewAddResponseBodyTiny(res.Projected)
+		case "rename":
+			body = NewAddResponseBodyRename(res.Projected)
 		}
 		w.WriteHeader(http.StatusCreated)
 		return enc.Encode(body)
@@ -221,6 +225,44 @@ func DecodeUpdateRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 			return nil, err
 		}
 		payload := NewUpdateStoredWalkthrough(&body)
+
+		return payload, nil
+	}
+}
+
+// EncodeRenameResponse returns an encoder for responses returned by the
+// walkthrough rename endpoint.
+func EncodeRenameResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
+	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
+		res := v.(*walkthroughviews.StoredWalkthrough)
+		w.Header().Set("goa-view", res.View)
+		enc := encoder(ctx, w)
+		body := NewRenameResponseBodyTiny(res.Projected)
+		w.WriteHeader(http.StatusOK)
+		return enc.Encode(body)
+	}
+}
+
+// DecodeRenameRequest returns a decoder for requests sent to the walkthrough
+// rename endpoint.
+func DecodeRenameRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			body RenameRequestBody
+			err  error
+		)
+		err = decoder(r).Decode(&body)
+		if err != nil {
+			if err == io.EOF {
+				return nil, goa.MissingPayloadError()
+			}
+			return nil, goa.DecodePayloadError(err.Error())
+		}
+		err = ValidateRenameRequestBody(&body)
+		if err != nil {
+			return nil, err
+		}
+		payload := NewRenamePayload(&body)
 
 		return payload, nil
 	}

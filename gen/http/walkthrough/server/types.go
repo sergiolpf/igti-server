@@ -47,6 +47,15 @@ type UpdateRequestBody struct {
 	Organization *string `form:"organization,omitempty" json:"organization,omitempty" xml:"organization,omitempty"`
 }
 
+// RenameRequestBody is the type of the "walkthrough" service "rename" endpoint
+// HTTP request body.
+type RenameRequestBody struct {
+	// ID of Walkthrough to be renamed
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+	// New Name to the walkthrough
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
+}
+
 // StoredWalkthroughResponseTinyCollection is the type of the "walkthrough"
 // service "list" endpoint HTTP response body.
 type StoredWalkthroughResponseTinyCollection []*StoredWalkthroughResponseTiny
@@ -81,6 +90,15 @@ type ShowResponseBodyTiny struct {
 	Organization string `form:"organization" json:"organization" xml:"organization"`
 }
 
+// ShowResponseBodyRename is the type of the "walkthrough" service "show"
+// endpoint HTTP response body.
+type ShowResponseBodyRename struct {
+	// ID is the unique id of the Walkthrough.
+	ID string `form:"id" json:"id" xml:"id"`
+	// Name of the Tutorial
+	Name string `form:"name" json:"name" xml:"name"`
+}
+
 // AddResponseBody is the type of the "walkthrough" service "add" endpoint HTTP
 // response body.
 type AddResponseBody struct {
@@ -101,6 +119,28 @@ type AddResponseBody struct {
 // AddResponseBodyTiny is the type of the "walkthrough" service "add" endpoint
 // HTTP response body.
 type AddResponseBodyTiny struct {
+	// ID is the unique id of the Walkthrough.
+	ID string `form:"id" json:"id" xml:"id"`
+	// Name of the Tutorial
+	Name string `form:"name" json:"name" xml:"name"`
+	// base url for your tutorial to start from
+	BaseURL string `form:"baseURL" json:"baseURL" xml:"baseURL"`
+	// ID of the organization this tutorial belongs to
+	Organization string `form:"organization" json:"organization" xml:"organization"`
+}
+
+// AddResponseBodyRename is the type of the "walkthrough" service "add"
+// endpoint HTTP response body.
+type AddResponseBodyRename struct {
+	// ID is the unique id of the Walkthrough.
+	ID string `form:"id" json:"id" xml:"id"`
+	// Name of the Tutorial
+	Name string `form:"name" json:"name" xml:"name"`
+}
+
+// RenameResponseBodyTiny is the type of the "walkthrough" service "rename"
+// endpoint HTTP response body.
+type RenameResponseBodyTiny struct {
 	// ID is the unique id of the Walkthrough.
 	ID string `form:"id" json:"id" xml:"id"`
 	// Name of the Tutorial
@@ -174,6 +214,16 @@ func NewShowResponseBodyTiny(res *walkthroughviews.StoredWalkthroughView) *ShowR
 	return body
 }
 
+// NewShowResponseBodyRename builds the HTTP response body from the result of
+// the "show" endpoint of the "walkthrough" service.
+func NewShowResponseBodyRename(res *walkthroughviews.StoredWalkthroughView) *ShowResponseBodyRename {
+	body := &ShowResponseBodyRename{
+		ID:   *res.ID,
+		Name: *res.Name,
+	}
+	return body
+}
+
 // NewAddResponseBody builds the HTTP response body from the result of the
 // "add" endpoint of the "walkthrough" service.
 func NewAddResponseBody(res *walkthroughviews.StoredWalkthroughView) *AddResponseBody {
@@ -197,6 +247,28 @@ func NewAddResponseBody(res *walkthroughviews.StoredWalkthroughView) *AddRespons
 // "add" endpoint of the "walkthrough" service.
 func NewAddResponseBodyTiny(res *walkthroughviews.StoredWalkthroughView) *AddResponseBodyTiny {
 	body := &AddResponseBodyTiny{
+		ID:           *res.ID,
+		Name:         *res.Name,
+		BaseURL:      *res.BaseURL,
+		Organization: *res.Organization,
+	}
+	return body
+}
+
+// NewAddResponseBodyRename builds the HTTP response body from the result of
+// the "add" endpoint of the "walkthrough" service.
+func NewAddResponseBodyRename(res *walkthroughviews.StoredWalkthroughView) *AddResponseBodyRename {
+	body := &AddResponseBodyRename{
+		ID:   *res.ID,
+		Name: *res.Name,
+	}
+	return body
+}
+
+// NewRenameResponseBodyTiny builds the HTTP response body from the result of
+// the "rename" endpoint of the "walkthrough" service.
+func NewRenameResponseBodyTiny(res *walkthroughviews.StoredWalkthroughView) *RenameResponseBodyTiny {
+	body := &RenameResponseBodyTiny{
 		ID:           *res.ID,
 		Name:         *res.Name,
 		BaseURL:      *res.BaseURL,
@@ -278,6 +350,16 @@ func NewUpdateStoredWalkthrough(body *UpdateRequestBody) *walkthrough.StoredWalk
 	return v
 }
 
+// NewRenamePayload builds a walkthrough service rename endpoint payload.
+func NewRenamePayload(body *RenameRequestBody) *walkthrough.RenamePayload {
+	v := &walkthrough.RenamePayload{
+		ID:   *body.ID,
+		Name: *body.Name,
+	}
+
+	return v
+}
+
 // NewPublishPayload builds a walkthrough service publish endpoint payload.
 func NewPublishPayload(id string) *walkthrough.PublishPayload {
 	v := &walkthrough.PublishPayload{}
@@ -339,6 +421,17 @@ func ValidateUpdateRequestBody(body *UpdateRequestBody) (err error) {
 		if !(*body.Status == "draft" || *body.Status == "completed" || *body.Status == "removed") {
 			err = goa.MergeErrors(err, goa.InvalidEnumValueError("body.status", *body.Status, []interface{}{"draft", "completed", "removed"}))
 		}
+	}
+	return
+}
+
+// ValidateRenameRequestBody runs the validations defined on RenameRequestBody
+func ValidateRenameRequestBody(body *RenameRequestBody) (err error) {
+	if body.ID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
+	}
+	if body.Name == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
 	}
 	return
 }

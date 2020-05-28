@@ -36,6 +36,11 @@ func UpdateWalkthroughPath() string {
 	return "/walkthrough/update"
 }
 
+// RenameWalkthroughPath returns the URL path to the walkthrough service rename HTTP endpoint.
+func RenameWalkthroughPath() string {
+	return "/walkthrough/rename"
+}
+
 // PublishWalkthroughPath returns the URL path to the walkthrough service publish HTTP endpoint.
 func PublishWalkthroughPath(id string) string {
 	return fmt.Sprintf("/walkthrough/publish/%v", id)
