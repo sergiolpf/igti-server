@@ -59,13 +59,13 @@ func (c *Client) Show(ctx context.Context, p *ShowPayload) (res *StoredWalkthrou
 }
 
 // Add calls the "add" endpoint of the "walkthrough" service.
-func (c *Client) Add(ctx context.Context, p *Walkthrough) (res string, err error) {
+func (c *Client) Add(ctx context.Context, p *Walkthrough) (res *StoredWalkthrough, err error) {
 	var ires interface{}
 	ires, err = c.AddEndpoint(ctx, p)
 	if err != nil {
 		return
 	}
-	return ires.(string), nil
+	return ires.(*StoredWalkthrough), nil
 }
 
 // Remove calls the "remove" endpoint of the "walkthrough" service.

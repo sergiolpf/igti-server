@@ -132,12 +132,22 @@ func EncodeAddRequest(ctx context.Context, v interface{}, md *metadata.MD) (inte
 
 // DecodeAddResponse decodes responses from the walkthrough add endpoint.
 func DecodeAddResponse(ctx context.Context, v interface{}, hdr, trlr metadata.MD) (interface{}, error) {
+	var view string
+	{
+		if vals := hdr.Get("goa-view"); len(vals) > 0 {
+			view = vals[0]
+		}
+	}
 	message, ok := v.(*walkthroughpb.AddResponse)
 	if !ok {
 		return nil, goagrpc.ErrInvalidType("walkthrough", "add", "*walkthroughpb.AddResponse", v)
 	}
 	res := NewAddResult(message)
-	return res, nil
+	vres := &walkthroughviews.StoredWalkthrough{Projected: res, View: view}
+	if err := walkthroughviews.ValidateStoredWalkthrough(vres); err != nil {
+		return nil, err
+	}
+	return walkthrough.NewStoredWalkthrough(vres), nil
 }
 
 // BuildRemoveFunc builds the remote method to invoke for "walkthrough" service

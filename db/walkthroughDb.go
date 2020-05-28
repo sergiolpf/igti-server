@@ -2,8 +2,8 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -23,6 +23,17 @@ type WalkthroughModel struct {
 	PublishedURL *string
 	// ID of the organization this tutorial belongs to
 	Organization string
+}
+
+func convertIdToString(id primitive.ObjectID) string {
+
+	newId, err := id.MarshalJSON()
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	stringId := strings.Replace(string(newId), "\"", "", -1)
+	return stringId
 }
 
 func (m *Mongo) UpdateStatusWalkthrough(wtid string, wgStatus string) error {
@@ -126,7 +137,7 @@ func (m *Mongo) LoadWalkthrough(id string) (*walkthrough.StoredWalkthrough, erro
 
 	var storedObject walkthrough.StoredWalkthrough
 	storedObject = walkthrough.StoredWalkthrough{
-		ID:           element.ID.String(),
+		ID:           convertIdToString(element.ID),
 		BaseURL:      element.BaseURL,
 		Organization: element.Organization,
 		Name:         element.Name,
@@ -168,7 +179,7 @@ func (m *Mongo) LoadAllWalkthroughs(id string) (walkthrough.StoredWalkthroughCol
 
 		var storedObject walkthrough.StoredWalkthrough
 		storedObject = walkthrough.StoredWalkthrough{
-			ID:           element.ID.String(),
+			ID:           convertIdToString(element.ID),
 			BaseURL:      element.BaseURL,
 			Organization: element.Organization,
 			Name:         element.Name,
@@ -186,16 +197,24 @@ func (m *Mongo) LoadAllWalkthroughs(id string) (walkthrough.StoredWalkthroughCol
 	return listOfStoredWalkthroughs, err
 }
 
-func (m *Mongo) SaveWalkthrough(wt walkthrough.Walkthrough) (string, error) {
+func (m *Mongo) SaveWalkthrough(wt walkthrough.Walkthrough) (*walkthrough.StoredWalkthrough, error) {
 
 	collection := m.getCollection(WT_COLLNAME)
 
 	res, err := collection.InsertOne(context.Background(), wt)
 	if err != nil {
 		log.Println(err)
-		return "", ErrNotFound
+		return nil, ErrNotFound
 	}
 
-	return fmt.Sprintf("%v", res.InsertedID), err
+	element := walkthrough.StoredWalkthrough{
+		ID:           convertIdToString(res.InsertedID.(primitive.ObjectID)),
+		BaseURL:      wt.BaseURL,
+		Name:         wt.Name,
+		Organization: wt.Organization,
+		PublishedURL: wt.PublishedURL,
+		Status:       wt.Status,
+	}
+	return &element, err
 
 }

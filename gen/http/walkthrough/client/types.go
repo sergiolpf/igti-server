@@ -68,6 +68,23 @@ type ShowResponseBody struct {
 	Organization *string `form:"organization,omitempty" json:"organization,omitempty" xml:"organization,omitempty"`
 }
 
+// AddResponseBody is the type of the "walkthrough" service "add" endpoint HTTP
+// response body.
+type AddResponseBody struct {
+	// ID is the unique id of the Walkthrough.
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+	// Name of the Tutorial
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
+	// base url for your tutorial to start from
+	BaseURL *string `form:"baseURL,omitempty" json:"baseURL,omitempty" xml:"baseURL,omitempty"`
+	// Status of the walkthrough [draft|published]
+	Status *string `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
+	// Code to be added into an existing page to make it visible locally
+	PublishedURL *string `form:"publishedURL,omitempty" json:"publishedURL,omitempty" xml:"publishedURL,omitempty"`
+	// ID of the organization this tutorial belongs to
+	Organization *string `form:"organization,omitempty" json:"organization,omitempty" xml:"organization,omitempty"`
+}
+
 // ShowNotFoundResponseBody is the type of the "walkthrough" service "show"
 // endpoint HTTP response body for the "not_found" error.
 type ShowNotFoundResponseBody struct {
@@ -154,6 +171,25 @@ func NewShowNotFound(body *ShowNotFoundResponseBody) *walkthrough.ElementNotFoun
 	v := &walkthrough.ElementNotFound{
 		Message: *body.Message,
 		ID:      *body.ID,
+	}
+
+	return v
+}
+
+// NewAddStoredWalkthroughCreated builds a "walkthrough" service "add" endpoint
+// result from a HTTP "Created" response.
+func NewAddStoredWalkthroughCreated(body *AddResponseBody) *walkthroughviews.StoredWalkthroughView {
+	v := &walkthroughviews.StoredWalkthroughView{
+		ID:           body.ID,
+		Name:         body.Name,
+		BaseURL:      body.BaseURL,
+		Status:       body.Status,
+		PublishedURL: body.PublishedURL,
+		Organization: body.Organization,
+	}
+	if body.Status == nil {
+		var tmp string = "draft"
+		v.Status = &tmp
 	}
 
 	return v

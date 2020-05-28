@@ -125,9 +125,29 @@ func NewAddPayload(message *walkthroughpb.AddRequest) *walkthrough.Walkthrough {
 
 // NewAddResponse builds the gRPC response type from the result of the "add"
 // endpoint of the "walkthrough" service.
-func NewAddResponse(result string) *walkthroughpb.AddResponse {
+func NewAddResponse(result *walkthroughviews.StoredWalkthroughView) *walkthroughpb.AddResponse {
 	message := &walkthroughpb.AddResponse{}
-	message.Field = result
+	if result.ID != nil {
+		message.Id = *result.ID
+	}
+	if result.Name != nil {
+		message.Name = *result.Name
+	}
+	if result.BaseURL != nil {
+		message.BaseUrl = *result.BaseURL
+	}
+	if result.Status != nil {
+		message.Status = *result.Status
+	}
+	if result.PublishedURL != nil {
+		message.PublishedUrl = *result.PublishedURL
+	}
+	if result.Organization != nil {
+		message.Organization = *result.Organization
+	}
+	if result.Status == nil {
+		message.Status = "draft"
+	}
 	return message
 }
 

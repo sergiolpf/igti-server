@@ -102,10 +102,12 @@ func DecodeShowRequest(ctx context.Context, v interface{}, md metadata.MD) (inte
 // EncodeAddResponse encodes responses from the "walkthrough" service "add"
 // endpoint.
 func EncodeAddResponse(ctx context.Context, v interface{}, hdr, trlr *metadata.MD) (interface{}, error) {
-	result, ok := v.(string)
+	vres, ok := v.(*walkthroughviews.StoredWalkthrough)
 	if !ok {
-		return nil, goagrpc.ErrInvalidType("walkthrough", "add", "string", v)
+		return nil, goagrpc.ErrInvalidType("walkthrough", "add", "*walkthroughviews.StoredWalkthrough", v)
 	}
+	result := vres.Projected
+	(*hdr).Append("goa-view", vres.View)
 	resp := NewAddResponse(result)
 	return resp, nil
 }

@@ -66,7 +66,7 @@ var _ = Service("walkthrough", func() {
 
 		Payload(Walkthrough)
 
-		Result(String)
+		Result(StoredWalkthrough)
 
 		HTTP(func() {
 			POST("/")

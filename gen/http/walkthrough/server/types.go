@@ -81,6 +81,36 @@ type ShowResponseBodyTiny struct {
 	Organization string `form:"organization" json:"organization" xml:"organization"`
 }
 
+// AddResponseBody is the type of the "walkthrough" service "add" endpoint HTTP
+// response body.
+type AddResponseBody struct {
+	// ID is the unique id of the Walkthrough.
+	ID string `form:"id" json:"id" xml:"id"`
+	// Name of the Tutorial
+	Name string `form:"name" json:"name" xml:"name"`
+	// base url for your tutorial to start from
+	BaseURL string `form:"baseURL" json:"baseURL" xml:"baseURL"`
+	// Status of the walkthrough [draft|published]
+	Status string `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
+	// Code to be added into an existing page to make it visible locally
+	PublishedURL *string `form:"publishedURL,omitempty" json:"publishedURL,omitempty" xml:"publishedURL,omitempty"`
+	// ID of the organization this tutorial belongs to
+	Organization string `form:"organization" json:"organization" xml:"organization"`
+}
+
+// AddResponseBodyTiny is the type of the "walkthrough" service "add" endpoint
+// HTTP response body.
+type AddResponseBodyTiny struct {
+	// ID is the unique id of the Walkthrough.
+	ID string `form:"id" json:"id" xml:"id"`
+	// Name of the Tutorial
+	Name string `form:"name" json:"name" xml:"name"`
+	// base url for your tutorial to start from
+	BaseURL string `form:"baseURL" json:"baseURL" xml:"baseURL"`
+	// ID of the organization this tutorial belongs to
+	Organization string `form:"organization" json:"organization" xml:"organization"`
+}
+
 // ShowNotFoundResponseBody is the type of the "walkthrough" service "show"
 // endpoint HTTP response body for the "not_found" error.
 type ShowNotFoundResponseBody struct {
@@ -136,6 +166,37 @@ func NewShowResponseBody(res *walkthroughviews.StoredWalkthroughView) *ShowRespo
 // "show" endpoint of the "walkthrough" service.
 func NewShowResponseBodyTiny(res *walkthroughviews.StoredWalkthroughView) *ShowResponseBodyTiny {
 	body := &ShowResponseBodyTiny{
+		ID:           *res.ID,
+		Name:         *res.Name,
+		BaseURL:      *res.BaseURL,
+		Organization: *res.Organization,
+	}
+	return body
+}
+
+// NewAddResponseBody builds the HTTP response body from the result of the
+// "add" endpoint of the "walkthrough" service.
+func NewAddResponseBody(res *walkthroughviews.StoredWalkthroughView) *AddResponseBody {
+	body := &AddResponseBody{
+		ID:           *res.ID,
+		Name:         *res.Name,
+		BaseURL:      *res.BaseURL,
+		PublishedURL: res.PublishedURL,
+		Organization: *res.Organization,
+	}
+	if res.Status != nil {
+		body.Status = *res.Status
+	}
+	if res.Status == nil {
+		body.Status = "draft"
+	}
+	return body
+}
+
+// NewAddResponseBodyTiny builds the HTTP response body from the result of the
+// "add" endpoint of the "walkthrough" service.
+func NewAddResponseBodyTiny(res *walkthroughviews.StoredWalkthroughView) *AddResponseBodyTiny {
+	body := &AddResponseBodyTiny{
 		ID:           *res.ID,
 		Name:         *res.Name,
 		BaseURL:      *res.BaseURL,

@@ -238,14 +238,21 @@ func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody
 		switch resp.StatusCode {
 		case http.StatusCreated:
 			var (
-				body string
+				body AddResponseBody
 				err  error
 			)
 			err = decoder(resp).Decode(&body)
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("walkthrough", "add", err)
 			}
-			return body, nil
+			p := NewAddStoredWalkthroughCreated(&body)
+			view := resp.Header.Get("goa-view")
+			vres := &walkthroughviews.StoredWalkthrough{Projected: p, View: view}
+			if err = walkthroughviews.ValidateStoredWalkthrough(vres); err != nil {
+				return nil, goahttp.ErrValidationError("walkthrough", "add", err)
+			}
+			res := walkthrough.NewStoredWalkthrough(vres)
+			return res, nil
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("walkthrough", "add", resp.StatusCode, string(body))

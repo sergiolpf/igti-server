@@ -108,8 +108,23 @@ func NewAddRequest(payload *walkthrough.Walkthrough) *walkthroughpb.AddRequest {
 
 // NewAddResult builds the result type of the "add" endpoint of the
 // "walkthrough" service from the gRPC response type.
-func NewAddResult(message *walkthroughpb.AddResponse) string {
-	result := message.Field
+func NewAddResult(message *walkthroughpb.AddResponse) *walkthroughviews.StoredWalkthroughView {
+	result := &walkthroughviews.StoredWalkthroughView{
+		ID:           &message.Id,
+		Name:         &message.Name,
+		BaseURL:      &message.BaseUrl,
+		Organization: &message.Organization,
+	}
+	if message.Status != "" {
+		result.Status = &message.Status
+	}
+	if message.PublishedUrl != "" {
+		result.PublishedURL = &message.PublishedUrl
+	}
+	if message.Status == "" {
+		var tmp string = "draft"
+		result.Status = &tmp
+	}
 	return result
 }
 
@@ -174,6 +189,20 @@ func ValidateStoredWalkthrough(message *walkthroughpb.StoredWalkthrough) (err er
 
 // ValidateShowResponse runs the validations defined on ShowResponse.
 func ValidateShowResponse(message *walkthroughpb.ShowResponse) (err error) {
+	if utf8.RuneCountInString(message.Name) > 100 {
+		err = goa.MergeErrors(err, goa.InvalidLengthError("message.name", message.Name, utf8.RuneCountInString(message.Name), 100, false))
+	}
+	err = goa.MergeErrors(err, goa.ValidatePattern("message.baseURL", message.BaseUrl, "(?i)^(https?|ftp)://[^\\s/$.?#].[^\\s]*$"))
+	if message.Status != "" {
+		if !(message.Status == "draft" || message.Status == "completed" || message.Status == "removed") {
+			err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.status", message.Status, []interface{}{"draft", "completed", "removed"}))
+		}
+	}
+	return
+}
+
+// ValidateAddResponse runs the validations defined on AddResponse.
+func ValidateAddResponse(message *walkthroughpb.AddResponse) (err error) {
 	if utf8.RuneCountInString(message.Name) > 100 {
 		err = goa.MergeErrors(err, goa.InvalidLengthError("message.name", message.Name, utf8.RuneCountInString(message.Name), 100, false))
 	}

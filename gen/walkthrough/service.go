@@ -24,7 +24,10 @@ type Service interface {
 	//	- "tiny"
 	Show(context.Context, *ShowPayload) (res *StoredWalkthrough, view string, err error)
 	// Add new Tutorial and return its ID.
-	Add(context.Context, *Walkthrough) (res string, err error)
+	// The "view" return value must have one of the following views
+	//	- "default"
+	//	- "tiny"
+	Add(context.Context, *Walkthrough) (res *StoredWalkthrough, view string, err error)
 	// Remove Walkthrough from storage
 	Remove(context.Context, *RemovePayload) (err error)
 	// Update Walkthrough with the given IDs.

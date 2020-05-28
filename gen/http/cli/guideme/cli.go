@@ -34,8 +34,8 @@ walkthrough (list|show|add|remove|update|publish)
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
 	return os.Args[0] + ` organization list` + "\n" +
-		os.Args[0] + ` step list --id "Illum consequuntur et fugit alias neque vero."` + "\n" +
-		os.Args[0] + ` walkthrough list --id "Est culpa atque accusamus quaerat aut."` + "\n" +
+		os.Args[0] + ` step list --id "Facere omnis omnis."` + "\n" +
+		os.Args[0] + ` walkthrough list --id "Et excepturi."` + "\n" +
 		""
 }
 
@@ -337,7 +337,7 @@ Show Organization by ID
     -view STRING: 
 
 Example:
-    `+os.Args[0]+` organization show --id "Consequuntur doloremque esse esse facere in." --view "default"
+    `+os.Args[0]+` organization show --id "Reiciendis necessitatibus dolorem." --view "tiny"
 `, os.Args[0])
 }
 
@@ -362,7 +362,7 @@ Remove Organization from storage
     -id STRING: ID of Organization to remove
 
 Example:
-    `+os.Args[0]+` organization remove --id "Facere omnis omnis."
+    `+os.Args[0]+` organization remove --id "Reiciendis eum mollitia consequuntur totam voluptatem."
 `, os.Args[0])
 }
 
@@ -404,7 +404,7 @@ List all stored Steps for a given walkthrough
     -id STRING: ID of Walkthrough to search for steps 
 
 Example:
-    `+os.Args[0]+` step list --id "Illum consequuntur et fugit alias neque vero."
+    `+os.Args[0]+` step list --id "Facere omnis omnis."
 `, os.Args[0])
 }
 
@@ -418,29 +418,29 @@ Example:
     `+os.Args[0]+` step add --body '{
       "steps": [
          {
-            "action": "end",
-            "sequence": 1779034664,
+            "action": "next",
+            "sequence": 1055850916,
             "targetid": "",
             "type": "text",
             "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          },
          {
-            "action": "end",
-            "sequence": 1779034664,
+            "action": "next",
+            "sequence": 1055850916,
             "targetid": "",
             "type": "text",
             "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          },
          {
-            "action": "end",
-            "sequence": 1779034664,
+            "action": "next",
+            "sequence": 1055850916,
             "targetid": "",
             "type": "text",
             "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          },
          {
-            "action": "end",
-            "sequence": 1779034664,
+            "action": "next",
+            "sequence": 1055850916,
             "targetid": "",
             "type": "text",
             "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
@@ -458,7 +458,7 @@ Remove Steps from storage
     -id STRING: ID of Steps to remove
 
 Example:
-    `+os.Args[0]+` step remove --id "Ipsam praesentium."
+    `+os.Args[0]+` step remove --id "Dolorem consectetur itaque quis et."
 `, os.Args[0])
 }
 
@@ -473,29 +473,29 @@ Example:
       "id": "123abc",
       "steps": [
          {
-            "action": "end",
-            "sequence": 1779034664,
+            "action": "next",
+            "sequence": 1055850916,
             "targetid": "",
             "type": "text",
             "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          },
          {
-            "action": "end",
-            "sequence": 1779034664,
+            "action": "next",
+            "sequence": 1055850916,
             "targetid": "",
             "type": "text",
             "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          },
          {
-            "action": "end",
-            "sequence": 1779034664,
+            "action": "next",
+            "sequence": 1055850916,
             "targetid": "",
             "type": "text",
             "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          },
          {
-            "action": "end",
-            "sequence": 1779034664,
+            "action": "next",
+            "sequence": 1055850916,
             "targetid": "",
             "type": "text",
             "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
@@ -532,7 +532,7 @@ List all stored walkthrough for a given organization
     -id STRING: ID of Organization to search for 
 
 Example:
-    `+os.Args[0]+` walkthrough list --id "Est culpa atque accusamus quaerat aut."
+    `+os.Args[0]+` walkthrough list --id "Et excepturi."
 `, os.Args[0])
 }
 
@@ -544,7 +544,7 @@ Show Walkthrough by ID
     -view STRING: 
 
 Example:
-    `+os.Args[0]+` walkthrough show --id "Et maiores cum expedita voluptas." --view "tiny"
+    `+os.Args[0]+` walkthrough show --id "Et cum rem delectus." --view "default"
 `, os.Args[0])
 }
 

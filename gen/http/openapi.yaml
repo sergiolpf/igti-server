@@ -237,7 +237,7 @@ paths:
         "201":
           description: Created response.
           schema:
-            type: string
+            $ref: '#/definitions/WalkthroughAddResponseBody'
       schemes:
       - http
   /walkthrough/{id}:
@@ -472,14 +472,14 @@ definitions:
           $ref: '#/definitions/StepRequestBody'
         description: List of steps for a given walkthrough.
         example:
-        - action: end
-          sequence: 1779034664
+        - action: next
+          sequence: 1055850916
           targetid: ""
           type: text
           value: This dropdown contains values from the list of status, for our scenario
             we want to chose 'active'
-        - action: end
-          sequence: 1779034664
+        - action: next
+          sequence: 1055850916
           targetid: ""
           type: text
           value: This dropdown contains values from the list of status, for our scenario
@@ -490,26 +490,26 @@ definitions:
         example: abc234235
     example:
       steps:
-      - action: end
-        sequence: 1779034664
+      - action: next
+        sequence: 1055850916
         targetid: ""
         type: text
         value: This dropdown contains values from the list of status, for our scenario
           we want to chose 'active'
-      - action: end
-        sequence: 1779034664
+      - action: next
+        sequence: 1055850916
         targetid: ""
         type: text
         value: This dropdown contains values from the list of status, for our scenario
           we want to chose 'active'
-      - action: end
-        sequence: 1779034664
+      - action: next
+        sequence: 1055850916
         targetid: ""
         type: text
         value: This dropdown contains values from the list of status, for our scenario
           we want to chose 'active'
-      - action: end
-        sequence: 1779034664
+      - action: next
+        sequence: 1055850916
         targetid: ""
         type: text
         value: This dropdown contains values from the list of status, for our scenario
@@ -529,26 +529,26 @@ definitions:
           $ref: '#/definitions/StepResponseBody'
         description: List of steps for a given walkthrough.
         example:
-        - action: next
-          sequence: 533876857
+        - action: end
+          sequence: 1127337816
           targetid: ""
           type: text
           value: This dropdown contains values from the list of status, for our scenario
             we want to chose 'active'
-        - action: next
-          sequence: 533876857
+        - action: end
+          sequence: 1127337816
           targetid: ""
           type: text
           value: This dropdown contains values from the list of status, for our scenario
             we want to chose 'active'
-        - action: next
-          sequence: 533876857
+        - action: end
+          sequence: 1127337816
           targetid: ""
           type: text
           value: This dropdown contains values from the list of status, for our scenario
             we want to chose 'active'
-        - action: next
-          sequence: 533876857
+        - action: end
+          sequence: 1127337816
           targetid: ""
           type: text
           value: This dropdown contains values from the list of status, for our scenario
@@ -561,20 +561,20 @@ definitions:
     example:
       id: 123abc
       steps:
-      - action: next
-        sequence: 533876857
+      - action: end
+        sequence: 1127337816
         targetid: ""
         type: text
         value: This dropdown contains values from the list of status, for our scenario
           we want to chose 'active'
-      - action: next
-        sequence: 533876857
+      - action: end
+        sequence: 1127337816
         targetid: ""
         type: text
         value: This dropdown contains values from the list of status, for our scenario
           we want to chose 'active'
-      - action: next
-        sequence: 533876857
+      - action: end
+        sequence: 1127337816
         targetid: ""
         type: text
         value: This dropdown contains values from the list of status, for our scenario
@@ -694,20 +694,20 @@ definitions:
           $ref: '#/definitions/StepRequestBody'
         description: List of steps for a given walkthrough.
         example:
-        - action: end
-          sequence: 1779034664
+        - action: next
+          sequence: 1055850916
           targetid: ""
           type: text
           value: This dropdown contains values from the list of status, for our scenario
             we want to chose 'active'
-        - action: end
-          sequence: 1779034664
+        - action: next
+          sequence: 1055850916
           targetid: ""
           type: text
           value: This dropdown contains values from the list of status, for our scenario
             we want to chose 'active'
-        - action: end
-          sequence: 1779034664
+        - action: next
+          sequence: 1055850916
           targetid: ""
           type: text
           value: This dropdown contains values from the list of status, for our scenario
@@ -719,14 +719,14 @@ definitions:
     example:
       id: 123abc
       steps:
-      - action: end
-        sequence: 1779034664
+      - action: next
+        sequence: 1055850916
         targetid: ""
         type: text
         value: This dropdown contains values from the list of status, for our scenario
           we want to chose 'active'
-      - action: end
-        sequence: 1779034664
+      - action: next
+        sequence: 1055850916
         targetid: ""
         type: text
         value: This dropdown contains values from the list of status, for our scenario
@@ -810,6 +810,52 @@ definitions:
       organization:
         type: string
         description: ID of the organization this tutorial belongs to
+        example: Ipsum vitae et ut libero animi.
+      publishedURL:
+        type: string
+        description: Code to be added into an existing page to make it visible locally
+        example: Dolor ducimus perspiciatis aut a suscipit amet.
+      status:
+        type: string
+        description: 'Status of the walkthrough [draft|published] '
+        default: draft
+        example: draft | published
+        enum:
+        - draft
+        - completed
+        - removed
+    example:
+      baseURL: http://www.google.com/
+      name: How to create a new process using the exception condition.
+      organization: Repellat assumenda fuga eos.
+      publishedURL: Aliquid ea eaque et.
+      status: draft | published
+    required:
+    - name
+    - baseURL
+    - organization
+  WalkthroughAddResponseBody:
+    title: 'Mediatype identifier: application/vnd.goa.guide.me.stored-walkthrough;
+      view=default'
+    type: object
+    properties:
+      baseURL:
+        type: string
+        description: base url for your tutorial to start from
+        example: http://www.google.com/
+        pattern: (?i)^(https?|ftp)://[^\s/$.?#].[^\s]*$
+      id:
+        type: string
+        description: ID is the unique id of the Walkthrough.
+        example: 123abc
+      name:
+        type: string
+        description: Name of the Tutorial
+        example: How to create a new process using the exception condition.
+        maxLength: 100
+      organization:
+        type: string
+        description: ID of the organization this tutorial belongs to
         example: Eum alias adipisci iste autem.
       publishedURL:
         type: string
@@ -824,13 +870,16 @@ definitions:
         - draft
         - completed
         - removed
+    description: AddResponseBody result type (default view)
     example:
       baseURL: http://www.google.com/
+      id: 123abc
       name: How to create a new process using the exception condition.
       organization: Sunt quo laborum enim et adipisci sed.
       publishedURL: Id voluptatibus autem.
       status: draft | published
     required:
+    - id
     - name
     - baseURL
     - organization
@@ -914,26 +963,26 @@ definitions:
     - baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Veniam et.
-      publishedURL: Quo aut molestiae laudantium aliquam non.
+      organization: Laudantium aliquam non nostrum veniam et sapiente.
+      publishedURL: Cum expedita voluptas eos doloremque quo aut.
       status: draft | published
     - baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Veniam et.
-      publishedURL: Quo aut molestiae laudantium aliquam non.
+      organization: Laudantium aliquam non nostrum veniam et sapiente.
+      publishedURL: Cum expedita voluptas eos doloremque quo aut.
       status: draft | published
     - baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Veniam et.
-      publishedURL: Quo aut molestiae laudantium aliquam non.
+      organization: Laudantium aliquam non nostrum veniam et sapiente.
+      publishedURL: Cum expedita voluptas eos doloremque quo aut.
       status: draft | published
     - baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Veniam et.
-      publishedURL: Quo aut molestiae laudantium aliquam non.
+      organization: Laudantium aliquam non nostrum veniam et sapiente.
+      publishedURL: Cum expedita voluptas eos doloremque quo aut.
       status: draft | published
   WalkthroughUpdateRequestBody:
     title: WalkthroughUpdateRequestBody
@@ -956,11 +1005,11 @@ definitions:
       organization:
         type: string
         description: ID of the organization this tutorial belongs to
-        example: Ipsum vitae et ut libero animi.
+        example: Ut explicabo.
       publishedURL:
         type: string
         description: Code to be added into an existing page to make it visible locally
-        example: Dolor ducimus perspiciatis aut a suscipit amet.
+        example: Exercitationem et unde optio magnam.
       status:
         type: string
         description: 'Status of the walkthrough [draft|published] '
@@ -974,8 +1023,8 @@ definitions:
       baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Repellat assumenda fuga eos.
-      publishedURL: Aliquid ea eaque et.
+      organization: Ratione sunt consequuntur quia exercitationem.
+      publishedURL: Provident et repellat nemo eius inventore saepe.
       status: draft | published
     required:
     - id

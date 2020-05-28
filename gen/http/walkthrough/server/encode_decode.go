@@ -127,9 +127,16 @@ func EncodeShowError(encoder func(context.Context, http.ResponseWriter) goahttp.
 // walkthrough add endpoint.
 func EncodeAddResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(string)
+		res := v.(*walkthroughviews.StoredWalkthrough)
+		w.Header().Set("goa-view", res.View)
 		enc := encoder(ctx, w)
-		body := res
+		var body interface{}
+		switch res.View {
+		case "default", "":
+			body = NewAddResponseBody(res.Projected)
+		case "tiny":
+			body = NewAddResponseBodyTiny(res.Projected)
+		}
 		w.WriteHeader(http.StatusCreated)
 		return enc.Encode(body)
 	}

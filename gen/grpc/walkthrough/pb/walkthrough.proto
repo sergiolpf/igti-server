@@ -94,7 +94,18 @@ message AddRequest {
 }
 
 message AddResponse {
-	string field = 1;
+	// ID is the unique id of the Walkthrough.
+	string id = 1;
+	// Name of the Tutorial
+	string name = 2;
+	// base url for your tutorial to start from
+	string base_url = 3;
+	// Status of the walkthrough [draft|published]
+	string status = 4;
+	// Code to be added into an existing page to make it visible locally
+	string published_url = 5;
+	// ID of the organization this tutorial belongs to
+	string organization = 6;
 }
 
 message RemoveRequest {

@@ -72,16 +72,16 @@ func (s *walkthroughsrvc) Show(ctx context.Context, p *walkthrough.ShowPayload) 
 }
 
 // Add new Tutorial and return its ID.
-func (s *walkthroughsrvc) Add(ctx context.Context, p *walkthrough.Walkthrough) (res string, err error) {
+func (s *walkthroughsrvc) Add(ctx context.Context, p *walkthrough.Walkthrough) (res *walkthrough.StoredWalkthrough, view string, err error) {
+	res = &walkthrough.StoredWalkthrough{}
+	view = "tiny"
 	s.logger.Print("walkthrough.add")
-
 	res, err = s.db.SaveWalkthrough(*p)
 	if err != nil {
 		log.Println(err)
-		return "", err
+		return nil, view, err
 	}
-	return res, err
-
+	return res, view, err
 }
 
 // Remove Walkthrough from storage

@@ -78,7 +78,12 @@ func NewShowEndpoint(s Service) goa.Endpoint {
 func NewAddEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*Walkthrough)
-		return s.Add(ctx, p)
+		res, view, err := s.Add(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+		vres := NewViewedStoredWalkthrough(res, view)
+		return vres, nil
 	}
 }
 
