@@ -38,7 +38,7 @@ var _ = Service("organization", func() {
 
 		Result(StoredOrganization)
 
-		Error("not_found", OrgNotFound, "Organization not found")
+		Error("not_found", ElementNotFound, "Organization not found")
 
 		HTTP(func() {
 			GET("/{id}")
@@ -81,7 +81,7 @@ var _ = Service("organization", func() {
 			Required("id")
 		})
 
-		Error("not_found", OrgNotFound, "Organization not found")
+		Error("not_found", ElementNotFound, "Organization not found")
 
 		HTTP(func() {
 			DELETE("/{id}")
@@ -91,38 +91,15 @@ var _ = Service("organization", func() {
 		GRPC(func() {
 			Response(CodeOK)
 		})
+
 	})
 
-	Method("multi_add", func() {
-		Description("Add n number of Organizations and return their IDs. This is a multipart request and each part has field name 'organization' and contains the encoded organization info to be added.")
-
-		Payload(ArrayOf(Organization))
-
-		Result(ArrayOf(String))
+	Method("update", func() {
+		Description("Update organization with the given IDs.")
+		Payload(StoredOrganization)
 
 		HTTP(func() {
-			POST("/multi_add")
-			MultipartRequest()
-		})
-
-		GRPC(func() {
-			Response(CodeOK)
-		})
-	})
-
-	Method("multi_update", func() {
-		Description("Update Organizations with the given IDs. This is a multipart request and each part has field name 'organizations' and contains the encoded Organizations info to be updated. The IDs in the query parameter is mapped to each part in the request.")
-
-		Payload(func() {
-			Field(1, "ids", ArrayOf(String), "IDs of the Organizations to be updated")
-			Field(2, "organizations", ArrayOf(Organization), "Array of bottle info that matches the ids attribute")
-			Required("ids", "organizations")
-		})
-
-		HTTP(func() {
-			PUT("/multi_update")
-			Param("ids")
-			MultipartRequest()
+			PUT("/update")
 			Response(StatusNoContent)
 		})
 		GRPC(func() {

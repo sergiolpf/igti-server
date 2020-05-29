@@ -10,7 +10,6 @@ package views
 import (
 	"unicode/utf8"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	goa "goa.design/goa/v3/pkg"
 )
 
@@ -39,7 +38,7 @@ type StoredOrganizationCollectionView []*StoredOrganizationView
 // StoredOrganizationView is a type that runs validations on a projected type.
 type StoredOrganizationView struct {
 	// ID is the unique id of the Organization.
-	ID *primitive.ObjectId
+	ID *string
 	// Name of Organization
 	Name *string
 	// Company website URL
@@ -138,8 +137,8 @@ func ValidateStoredOrganizationView(result *StoredOrganizationView) (err error) 
 		err = goa.MergeErrors(err, goa.MissingFieldError("url", "result"))
 	}
 	if result.Name != nil {
-		if utf8.RuneCountInString(*result.Name) > 100 {
-			err = goa.MergeErrors(err, goa.InvalidLengthError("result.name", *result.Name, utf8.RuneCountInString(*result.Name), 100, false))
+		if utf8.RuneCountInString(*result.Name) > 200 {
+			err = goa.MergeErrors(err, goa.InvalidLengthError("result.name", *result.Name, utf8.RuneCountInString(*result.Name), 200, false))
 		}
 	}
 	if result.URL != nil {
@@ -158,8 +157,8 @@ func ValidateStoredOrganizationViewTiny(result *StoredOrganizationView) (err err
 		err = goa.MergeErrors(err, goa.MissingFieldError("name", "result"))
 	}
 	if result.Name != nil {
-		if utf8.RuneCountInString(*result.Name) > 100 {
-			err = goa.MergeErrors(err, goa.InvalidLengthError("result.name", *result.Name, utf8.RuneCountInString(*result.Name), 100, false))
+		if utf8.RuneCountInString(*result.Name) > 200 {
+			err = goa.MergeErrors(err, goa.InvalidLengthError("result.name", *result.Name, utf8.RuneCountInString(*result.Name), 200, false))
 		}
 	}
 	return

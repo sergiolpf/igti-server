@@ -15,23 +15,21 @@ import (
 
 // Endpoints wraps the "organization" service endpoints.
 type Endpoints struct {
-	List        goa.Endpoint
-	Show        goa.Endpoint
-	Add         goa.Endpoint
-	Remove      goa.Endpoint
-	MultiAdd    goa.Endpoint
-	MultiUpdate goa.Endpoint
+	List   goa.Endpoint
+	Show   goa.Endpoint
+	Add    goa.Endpoint
+	Remove goa.Endpoint
+	Update goa.Endpoint
 }
 
 // NewEndpoints wraps the methods of the "organization" service with endpoints.
 func NewEndpoints(s Service) *Endpoints {
 	return &Endpoints{
-		List:        NewListEndpoint(s),
-		Show:        NewShowEndpoint(s),
-		Add:         NewAddEndpoint(s),
-		Remove:      NewRemoveEndpoint(s),
-		MultiAdd:    NewMultiAddEndpoint(s),
-		MultiUpdate: NewMultiUpdateEndpoint(s),
+		List:   NewListEndpoint(s),
+		Show:   NewShowEndpoint(s),
+		Add:    NewAddEndpoint(s),
+		Remove: NewRemoveEndpoint(s),
+		Update: NewUpdateEndpoint(s),
 	}
 }
 
@@ -41,8 +39,7 @@ func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
 	e.Show = m(e.Show)
 	e.Add = m(e.Add)
 	e.Remove = m(e.Remove)
-	e.MultiAdd = m(e.MultiAdd)
-	e.MultiUpdate = m(e.MultiUpdate)
+	e.Update = m(e.Update)
 }
 
 // NewListEndpoint returns an endpoint function that calls the method "list" of
@@ -90,20 +87,11 @@ func NewRemoveEndpoint(s Service) goa.Endpoint {
 	}
 }
 
-// NewMultiAddEndpoint returns an endpoint function that calls the method
-// "multi_add" of service "organization".
-func NewMultiAddEndpoint(s Service) goa.Endpoint {
+// NewUpdateEndpoint returns an endpoint function that calls the method
+// "update" of service "organization".
+func NewUpdateEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		p := req.([]*Organization)
-		return s.MultiAdd(ctx, p)
-	}
-}
-
-// NewMultiUpdateEndpoint returns an endpoint function that calls the method
-// "multi_update" of service "organization".
-func NewMultiUpdateEndpoint(s Service) goa.Endpoint {
-	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		p := req.(*MultiUpdatePayload)
-		return nil, s.MultiUpdate(ctx, p)
+		p := req.(*StoredOrganization)
+		return nil, s.Update(ctx, p)
 	}
 }

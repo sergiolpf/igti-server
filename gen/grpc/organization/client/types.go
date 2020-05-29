@@ -59,8 +59,8 @@ func NewShowResult(message *organizationpb.ShowResponse) *organizationviews.Stor
 
 // NewShowNotFoundError builds the error type of the "show" endpoint of the
 // "organization" service from the gRPC error response type.
-func NewShowNotFoundError(message *organizationpb.ShowNotFoundError) *organization.OrgNotFound {
-	er := &organization.OrgNotFound{
+func NewShowNotFoundError(message *organizationpb.ShowNotFoundError) *organization.ElementNotFound {
+	er := &organization.ElementNotFound{
 		Message: message.Message_,
 		ID:      message.Id,
 	}
@@ -93,48 +93,13 @@ func NewRemoveRequest(payload *organization.RemovePayload) *organizationpb.Remov
 	return message
 }
 
-// NewMultiAddRequest builds the gRPC request type from the payload of the
-// "multi_add" endpoint of the "organization" service.
-func NewMultiAddRequest(payload []*organization.Organization) *organizationpb.MultiAddRequest {
-	message := &organizationpb.MultiAddRequest{}
-	message.Field = make([]*organizationpb.Organization1, len(payload))
-	for i, val := range payload {
-		message.Field[i] = &organizationpb.Organization1{
-			Name: val.Name,
-			Url:  val.URL,
-		}
-	}
-	return message
-}
-
-// NewMultiAddResult builds the result type of the "multi_add" endpoint of the
-// "organization" service from the gRPC response type.
-func NewMultiAddResult(message *organizationpb.MultiAddResponse) []string {
-	result := make([]string, len(message.Field))
-	for i, val := range message.Field {
-		result[i] = val
-	}
-	return result
-}
-
-// NewMultiUpdateRequest builds the gRPC request type from the payload of the
-// "multi_update" endpoint of the "organization" service.
-func NewMultiUpdateRequest(payload *organization.MultiUpdatePayload) *organizationpb.MultiUpdateRequest {
-	message := &organizationpb.MultiUpdateRequest{}
-	if payload.Ids != nil {
-		message.Ids = make([]string, len(payload.Ids))
-		for i, val := range payload.Ids {
-			message.Ids[i] = val
-		}
-	}
-	if payload.Organizations != nil {
-		message.Organizations = make([]*organizationpb.Organization1, len(payload.Organizations))
-		for i, val := range payload.Organizations {
-			message.Organizations[i] = &organizationpb.Organization1{
-				Name: val.Name,
-				Url:  val.URL,
-			}
-		}
+// NewUpdateRequest builds the gRPC request type from the payload of the
+// "update" endpoint of the "organization" service.
+func NewUpdateRequest(payload *organization.StoredOrganization) *organizationpb.UpdateRequest {
+	message := &organizationpb.UpdateRequest{
+		Id:   payload.ID,
+		Name: payload.Name,
+		Url:  payload.URL,
 	}
 	return message
 }
@@ -155,8 +120,8 @@ func ValidateStoredOrganizationCollection(message *organizationpb.StoredOrganiza
 // ValidateStoredOrganization runs the validations defined on
 // StoredOrganization.
 func ValidateStoredOrganization(message *organizationpb.StoredOrganization) (err error) {
-	if utf8.RuneCountInString(message.Name) > 100 {
-		err = goa.MergeErrors(err, goa.InvalidLengthError("message.name", message.Name, utf8.RuneCountInString(message.Name), 100, false))
+	if utf8.RuneCountInString(message.Name) > 200 {
+		err = goa.MergeErrors(err, goa.InvalidLengthError("message.name", message.Name, utf8.RuneCountInString(message.Name), 200, false))
 	}
 	err = goa.MergeErrors(err, goa.ValidatePattern("message.url", message.Url, "(?i)^(https?|ftp)://[^\\s/$.?#].[^\\s]*$"))
 	return
@@ -164,8 +129,8 @@ func ValidateStoredOrganization(message *organizationpb.StoredOrganization) (err
 
 // ValidateShowResponse runs the validations defined on ShowResponse.
 func ValidateShowResponse(message *organizationpb.ShowResponse) (err error) {
-	if utf8.RuneCountInString(message.Name) > 100 {
-		err = goa.MergeErrors(err, goa.InvalidLengthError("message.name", message.Name, utf8.RuneCountInString(message.Name), 100, false))
+	if utf8.RuneCountInString(message.Name) > 200 {
+		err = goa.MergeErrors(err, goa.InvalidLengthError("message.name", message.Name, utf8.RuneCountInString(message.Name), 200, false))
 	}
 	err = goa.MergeErrors(err, goa.ValidatePattern("message.url", message.Url, "(?i)^(https?|ftp)://[^\\s/$.?#].[^\\s]*$"))
 	return

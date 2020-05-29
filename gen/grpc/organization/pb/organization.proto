@@ -22,15 +22,8 @@ service Organization {
 	rpc Add (AddRequest) returns (AddResponse);
 	// Remove Organization from storage
 	rpc Remove (RemoveRequest) returns (RemoveResponse);
-	// Add n number of Organizations and return their IDs. This is a multipart
-// request and each part has field name 'organization' and contains the encoded
-// organization info to be added.
-	rpc MultiAdd (MultiAddRequest) returns (MultiAddResponse);
-	// Update Organizations with the given IDs. This is a multipart request and
-// each part has field name 'organizations' and contains the encoded
-// Organizations info to be updated. The IDs in the query parameter is mapped
-// to each part in the request.
-	rpc MultiUpdate (MultiUpdateRequest) returns (MultiUpdateResponse);
+	// Update organization with the given IDs.
+	rpc Update (UpdateRequest) returns (UpdateResponse);
 }
 
 message ListRequest {
@@ -53,7 +46,7 @@ message StoredOrganization {
 message ShowNotFoundError {
 	// Message of error
 	string message_ = 1;
-	// ID of missing Organization
+	// ID of missing element
 	string id = 2;
 }
 
@@ -90,27 +83,14 @@ message RemoveRequest {
 message RemoveResponse {
 }
 
-message MultiAddRequest {
-	repeated Organization1 field = 1;
-}
-// Organization describes an Organization to be stored.
-message Organization1 {
+message UpdateRequest {
+	// ID is the unique id of the Organization.
+	string id = 1;
 	// Name of Organization
-	string name = 1;
+	string name = 2;
 	// Company website URL
-	string url = 2;
+	string url = 3;
 }
 
-message MultiAddResponse {
-	repeated string field = 1;
-}
-
-message MultiUpdateRequest {
-	// IDs of the Organizations to be updated
-	repeated string ids = 1;
-	// Array of bottle info that matches the ids attribute
-	repeated Organization1 organizations = 2;
-}
-
-message MultiUpdateResponse {
+message UpdateResponse {
 }

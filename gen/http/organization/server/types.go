@@ -10,7 +10,6 @@ package server
 import (
 	"unicode/utf8"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	goa "goa.design/goa/v3/pkg"
 	organization "guide.me/gen/organization"
 	organizationviews "guide.me/gen/organization/views"
@@ -25,11 +24,15 @@ type AddRequestBody struct {
 	URL *string `form:"url,omitempty" json:"url,omitempty" xml:"url,omitempty"`
 }
 
-// MultiUpdateRequestBody is the type of the "organization" service
-// "multi_update" endpoint HTTP request body.
-type MultiUpdateRequestBody struct {
-	// Array of bottle info that matches the ids attribute
-	Organizations []*OrganizationRequestBody `form:"organizations,omitempty" json:"organizations,omitempty" xml:"organizations,omitempty"`
+// UpdateRequestBody is the type of the "organization" service "update"
+// endpoint HTTP request body.
+type UpdateRequestBody struct {
+	// ID is the unique id of the Organization.
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+	// Name of Organization
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
+	// Company website URL
+	URL *string `form:"url,omitempty" json:"url,omitempty" xml:"url,omitempty"`
 }
 
 // StoredOrganizationResponseTinyCollection is the type of the "organization"
@@ -40,7 +43,7 @@ type StoredOrganizationResponseTinyCollection []*StoredOrganizationResponseTiny
 // HTTP response body.
 type ShowResponseBody struct {
 	// ID is the unique id of the Organization.
-	ID primitive.ObjectId `form:"id" json:"id" xml:"id"`
+	ID string `form:"id" json:"id" xml:"id"`
 	// Name of Organization
 	Name string `form:"name" json:"name" xml:"name"`
 	// Company website URL
@@ -51,7 +54,7 @@ type ShowResponseBody struct {
 // endpoint HTTP response body.
 type ShowResponseBodyTiny struct {
 	// ID is the unique id of the Organization.
-	ID primitive.ObjectId `form:"id" json:"id" xml:"id"`
+	ID string `form:"id" json:"id" xml:"id"`
 	// Name of Organization
 	Name string `form:"name" json:"name" xml:"name"`
 }
@@ -61,7 +64,7 @@ type ShowResponseBodyTiny struct {
 type ShowNotFoundResponseBody struct {
 	// Message of error
 	Message string `form:"message" json:"message" xml:"message"`
-	// ID of missing Organization
+	// ID of missing element
 	ID string `form:"id" json:"id" xml:"id"`
 }
 
@@ -69,17 +72,9 @@ type ShowNotFoundResponseBody struct {
 // types.
 type StoredOrganizationResponseTiny struct {
 	// ID is the unique id of the Organization.
-	ID primitive.ObjectId `form:"id" json:"id" xml:"id"`
+	ID string `form:"id" json:"id" xml:"id"`
 	// Name of Organization
 	Name string `form:"name" json:"name" xml:"name"`
-}
-
-// OrganizationRequestBody is used to define fields on request body types.
-type OrganizationRequestBody struct {
-	// Name of Organization
-	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
-	// Company website URL
-	URL *string `form:"url,omitempty" json:"url,omitempty" xml:"url,omitempty"`
 }
 
 // NewStoredOrganizationResponseTinyCollection builds the HTTP response body
@@ -115,7 +110,7 @@ func NewShowResponseBodyTiny(res *organizationviews.StoredOrganizationView) *Sho
 
 // NewShowNotFoundResponseBody builds the HTTP response body from the result of
 // the "show" endpoint of the "organization" service.
-func NewShowNotFoundResponseBody(res *organization.OrgNotFound) *ShowNotFoundResponseBody {
+func NewShowNotFoundResponseBody(res *organization.ElementNotFound) *ShowNotFoundResponseBody {
 	body := &ShowNotFoundResponseBody{
 		Message: res.Message,
 		ID:      res.ID,
@@ -150,25 +145,14 @@ func NewRemovePayload(id string) *organization.RemovePayload {
 	return v
 }
 
-// NewMultiAddOrganization builds a organization service multi_add endpoint
+// NewUpdateStoredOrganization builds a organization service update endpoint
 // payload.
-func NewMultiAddOrganization(body []*OrganizationRequestBody) []*organization.Organization {
-	v := make([]*organization.Organization, len(body))
-	for i, val := range body {
-		v[i] = unmarshalOrganizationRequestBodyToOrganizationOrganization(val)
+func NewUpdateStoredOrganization(body *UpdateRequestBody) *organization.StoredOrganization {
+	v := &organization.StoredOrganization{
+		ID:   *body.ID,
+		Name: *body.Name,
+		URL:  *body.URL,
 	}
-	return v
-}
-
-// NewMultiUpdatePayload builds a organization service multi_update endpoint
-// payload.
-func NewMultiUpdatePayload(body *MultiUpdateRequestBody, ids []string) *organization.MultiUpdatePayload {
-	v := &organization.MultiUpdatePayload{}
-	v.Organizations = make([]*organization.Organization, len(body.Organizations))
-	for i, val := range body.Organizations {
-		v.Organizations[i] = unmarshalOrganizationRequestBodyToOrganizationOrganization(val)
-	}
-	v.Ids = ids
 
 	return v
 }
@@ -182,8 +166,8 @@ func ValidateAddRequestBody(body *AddRequestBody) (err error) {
 		err = goa.MergeErrors(err, goa.MissingFieldError("url", "body"))
 	}
 	if body.Name != nil {
-		if utf8.RuneCountInString(*body.Name) > 100 {
-			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", *body.Name, utf8.RuneCountInString(*body.Name), 100, false))
+		if utf8.RuneCountInString(*body.Name) > 200 {
+			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", *body.Name, utf8.RuneCountInString(*body.Name), 200, false))
 		}
 	}
 	if body.URL != nil {
@@ -192,25 +176,11 @@ func ValidateAddRequestBody(body *AddRequestBody) (err error) {
 	return
 }
 
-// ValidateMultiUpdateRequestBody runs the validations defined on
-// multi_update_request_body
-func ValidateMultiUpdateRequestBody(body *MultiUpdateRequestBody) (err error) {
-	if body.Organizations == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("organizations", "body"))
+// ValidateUpdateRequestBody runs the validations defined on UpdateRequestBody
+func ValidateUpdateRequestBody(body *UpdateRequestBody) (err error) {
+	if body.ID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
 	}
-	for _, e := range body.Organizations {
-		if e != nil {
-			if err2 := ValidateOrganizationRequestBody(e); err2 != nil {
-				err = goa.MergeErrors(err, err2)
-			}
-		}
-	}
-	return
-}
-
-// ValidateOrganizationRequestBody runs the validations defined on
-// OrganizationRequestBody
-func ValidateOrganizationRequestBody(body *OrganizationRequestBody) (err error) {
 	if body.Name == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
 	}
@@ -218,8 +188,8 @@ func ValidateOrganizationRequestBody(body *OrganizationRequestBody) (err error) 
 		err = goa.MergeErrors(err, goa.MissingFieldError("url", "body"))
 	}
 	if body.Name != nil {
-		if utf8.RuneCountInString(*body.Name) > 100 {
-			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", *body.Name, utf8.RuneCountInString(*body.Name), 100, false))
+		if utf8.RuneCountInString(*body.Name) > 200 {
+			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", *body.Name, utf8.RuneCountInString(*body.Name), 200, false))
 		}
 	}
 	if body.URL != nil {

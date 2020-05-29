@@ -14,12 +14,18 @@ import (
 	"google.golang.org/grpc/reflection"
 	organizationpb "guide.me/gen/grpc/organization/pb"
 	organizationsvr "guide.me/gen/grpc/organization/server"
+	steppb "guide.me/gen/grpc/step/pb"
+	stepsvr "guide.me/gen/grpc/step/server"
+	walkthroughpb "guide.me/gen/grpc/walkthrough/pb"
+	walkthroughsvr "guide.me/gen/grpc/walkthrough/server"
 	organization "guide.me/gen/organization"
+	step "guide.me/gen/step"
+	walkthrough "guide.me/gen/walkthrough"
 )
 
 // handleGRPCServer starts configures and starts a gRPC server on the given
 // URL. It shuts down the server if any error is received in the error channel.
-func handleGRPCServer(ctx context.Context, u *url.URL, organizationEndpoints *organization.Endpoints, wg *sync.WaitGroup, errc chan error, logger *log.Logger, debug bool) {
+func handleGRPCServer(ctx context.Context, u *url.URL, organizationEndpoints *organization.Endpoints, walkthroughEndpoints *walkthrough.Endpoints, stepEndpoints *step.Endpoints, wg *sync.WaitGroup, errc chan error, logger *log.Logger, debug bool) {
 
 	// Setup goa log adapter.
 	var (
@@ -35,9 +41,13 @@ func handleGRPCServer(ctx context.Context, u *url.URL, organizationEndpoints *or
 	// responses.
 	var (
 		organizationServer *organizationsvr.Server
+		walkthroughServer  *walkthroughsvr.Server
+		stepServer         *stepsvr.Server
 	)
 	{
 		organizationServer = organizationsvr.New(organizationEndpoints, nil)
+		walkthroughServer = walkthroughsvr.New(walkthroughEndpoints, nil)
+		stepServer = stepsvr.New(stepEndpoints, nil)
 	}
 
 	// Initialize gRPC server with the middleware.
@@ -50,6 +60,8 @@ func handleGRPCServer(ctx context.Context, u *url.URL, organizationEndpoints *or
 
 	// Register the servers.
 	organizationpb.RegisterOrganizationServer(srv, organizationServer)
+	walkthroughpb.RegisterWalkthroughServer(srv, walkthroughServer)
+	steppb.RegisterStepServer(srv, stepServer)
 
 	for svc, info := range srv.GetServiceInfo() {
 		for _, m := range info.Methods {

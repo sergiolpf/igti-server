@@ -196,7 +196,7 @@ type ShowNotFoundError struct {
 
 	// Message of error
 	Message_ string `protobuf:"bytes,1,opt,name=message_,json=message,proto3" json:"message_,omitempty"`
-	// ID of missing Organization
+	// ID of missing element
 	Id string `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
 }
 
@@ -550,16 +550,21 @@ func (*RemoveResponse) Descriptor() ([]byte, []int) {
 	return file_organization_proto_rawDescGZIP(), []int{9}
 }
 
-type MultiAddRequest struct {
+type UpdateRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Field []*Organization1 `protobuf:"bytes,1,rep,name=field,proto3" json:"field,omitempty"`
+	// ID is the unique id of the Organization.
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// Name of Organization
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// Company website URL
+	Url string `protobuf:"bytes,3,opt,name=url,proto3" json:"url,omitempty"`
 }
 
-func (x *MultiAddRequest) Reset() {
-	*x = MultiAddRequest{}
+func (x *UpdateRequest) Reset() {
+	*x = UpdateRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_organization_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -567,13 +572,13 @@ func (x *MultiAddRequest) Reset() {
 	}
 }
 
-func (x *MultiAddRequest) String() string {
+func (x *UpdateRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MultiAddRequest) ProtoMessage() {}
+func (*UpdateRequest) ProtoMessage() {}
 
-func (x *MultiAddRequest) ProtoReflect() protoreflect.Message {
+func (x *UpdateRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_organization_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -585,32 +590,40 @@ func (x *MultiAddRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use MultiAddRequest.ProtoReflect.Descriptor instead.
-func (*MultiAddRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use UpdateRequest.ProtoReflect.Descriptor instead.
+func (*UpdateRequest) Descriptor() ([]byte, []int) {
 	return file_organization_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *MultiAddRequest) GetField() []*Organization1 {
+func (x *UpdateRequest) GetId() string {
 	if x != nil {
-		return x.Field
+		return x.Id
 	}
-	return nil
+	return ""
 }
 
-// Organization describes an Organization to be stored.
-type Organization1 struct {
+func (x *UpdateRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UpdateRequest) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+type UpdateResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	// Name of Organization
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// Company website URL
-	Url string `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
 }
 
-func (x *Organization1) Reset() {
-	*x = Organization1{}
+func (x *UpdateResponse) Reset() {
+	*x = UpdateResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_organization_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -618,13 +631,13 @@ func (x *Organization1) Reset() {
 	}
 }
 
-func (x *Organization1) String() string {
+func (x *UpdateResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Organization1) ProtoMessage() {}
+func (*UpdateResponse) ProtoMessage() {}
 
-func (x *Organization1) ProtoReflect() protoreflect.Message {
+func (x *UpdateResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_organization_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -636,165 +649,9 @@ func (x *Organization1) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Organization1.ProtoReflect.Descriptor instead.
-func (*Organization1) Descriptor() ([]byte, []int) {
+// Deprecated: Use UpdateResponse.ProtoReflect.Descriptor instead.
+func (*UpdateResponse) Descriptor() ([]byte, []int) {
 	return file_organization_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *Organization1) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Organization1) GetUrl() string {
-	if x != nil {
-		return x.Url
-	}
-	return ""
-}
-
-type MultiAddResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Field []string `protobuf:"bytes,1,rep,name=field,proto3" json:"field,omitempty"`
-}
-
-func (x *MultiAddResponse) Reset() {
-	*x = MultiAddResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_organization_proto_msgTypes[12]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MultiAddResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MultiAddResponse) ProtoMessage() {}
-
-func (x *MultiAddResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_organization_proto_msgTypes[12]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use MultiAddResponse.ProtoReflect.Descriptor instead.
-func (*MultiAddResponse) Descriptor() ([]byte, []int) {
-	return file_organization_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *MultiAddResponse) GetField() []string {
-	if x != nil {
-		return x.Field
-	}
-	return nil
-}
-
-type MultiUpdateRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// IDs of the Organizations to be updated
-	Ids []string `protobuf:"bytes,1,rep,name=ids,proto3" json:"ids,omitempty"`
-	// Array of bottle info that matches the ids attribute
-	Organizations []*Organization1 `protobuf:"bytes,2,rep,name=organizations,proto3" json:"organizations,omitempty"`
-}
-
-func (x *MultiUpdateRequest) Reset() {
-	*x = MultiUpdateRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_organization_proto_msgTypes[13]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MultiUpdateRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MultiUpdateRequest) ProtoMessage() {}
-
-func (x *MultiUpdateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_organization_proto_msgTypes[13]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use MultiUpdateRequest.ProtoReflect.Descriptor instead.
-func (*MultiUpdateRequest) Descriptor() ([]byte, []int) {
-	return file_organization_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *MultiUpdateRequest) GetIds() []string {
-	if x != nil {
-		return x.Ids
-	}
-	return nil
-}
-
-func (x *MultiUpdateRequest) GetOrganizations() []*Organization1 {
-	if x != nil {
-		return x.Organizations
-	}
-	return nil
-}
-
-type MultiUpdateResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *MultiUpdateResponse) Reset() {
-	*x = MultiUpdateResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_organization_proto_msgTypes[14]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MultiUpdateResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MultiUpdateResponse) ProtoMessage() {}
-
-func (x *MultiUpdateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_organization_proto_msgTypes[14]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use MultiUpdateResponse.ProtoReflect.Descriptor instead.
-func (*MultiUpdateResponse) Descriptor() ([]byte, []int) {
-	return file_organization_proto_rawDescGZIP(), []int{14}
 }
 
 var File_organization_proto protoreflect.FileDescriptor
@@ -832,26 +689,13 @@ var file_organization_proto_rawDesc = []byte{
 	0x65, 0x6c, 0x64, 0x22, 0x1f, 0x0a, 0x0d, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x71,
 	0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
 	0x52, 0x02, 0x69, 0x64, 0x22, 0x10, 0x0a, 0x0e, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x44, 0x0a, 0x0f, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x41,
-	0x64, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x31, 0x0a, 0x05, 0x66, 0x69, 0x65,
-	0x6c, 0x64, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x6f, 0x72, 0x67, 0x61, 0x6e,
-	0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x4f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x31, 0x52, 0x05, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x22, 0x35, 0x0a, 0x0d,
-	0x4f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x31, 0x12, 0x12, 0x0a,
-	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d,
-	0x65, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03,
-	0x75, 0x72, 0x6c, 0x22, 0x28, 0x0a, 0x10, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x41, 0x64, 0x64, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x66, 0x69, 0x65, 0x6c, 0x64,
-	0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x05, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x22, 0x69, 0x0a,
-	0x12, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x69, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09,
-	0x52, 0x03, 0x69, 0x64, 0x73, 0x12, 0x41, 0x0a, 0x0d, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x6f,
-	0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x4f, 0x72, 0x67, 0x61,
-	0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x31, 0x52, 0x0d, 0x6f, 0x72, 0x67, 0x61, 0x6e,
-	0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x22, 0x15, 0x0a, 0x13, 0x4d, 0x75, 0x6c, 0x74,
-	0x69, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32,
-	0xbc, 0x03, 0x0a, 0x0c, 0x4f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x45, 0x0a, 0x0d, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x75,
+	0x72, 0x6c, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72, 0x6c, 0x22, 0x10, 0x0a,
+	0x0e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32,
+	0xe2, 0x02, 0x0a, 0x0c, 0x4f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e,
 	0x12, 0x4d, 0x0a, 0x04, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x19, 0x2e, 0x6f, 0x72, 0x67, 0x61, 0x6e,
 	0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75,
 	0x65, 0x73, 0x74, 0x1a, 0x2a, 0x2e, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69,
@@ -869,18 +713,12 @@ var file_organization_proto_rawDesc = []byte{
 	0x69, 0x6f, 0x6e, 0x2e, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
 	0x74, 0x1a, 0x1c, 0x2e, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e,
 	0x2e, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x49, 0x0a, 0x08, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x41, 0x64, 0x64, 0x12, 0x1d, 0x2e, 0x6f, 0x72,
-	0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x4d, 0x75, 0x6c, 0x74, 0x69,
-	0x41, 0x64, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x6f, 0x72, 0x67,
-	0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x41,
-	0x64, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x52, 0x0a, 0x0b, 0x4d, 0x75,
-	0x6c, 0x74, 0x69, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x12, 0x20, 0x2e, 0x6f, 0x72, 0x67, 0x61,
-	0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x55, 0x70,
-	0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x21, 0x2e, 0x6f, 0x72,
-	0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x4d, 0x75, 0x6c, 0x74, 0x69,
-	0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x10,
-	0x5a, 0x0e, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x70, 0x62,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x43, 0x0a, 0x06, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x12, 0x1b, 0x2e, 0x6f, 0x72, 0x67, 0x61,
+	0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1c, 0x2e, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x42, 0x10, 0x5a, 0x0e, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -895,7 +733,7 @@ func file_organization_proto_rawDescGZIP() []byte {
 	return file_organization_proto_rawDescData
 }
 
-var file_organization_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_organization_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_organization_proto_goTypes = []interface{}{
 	(*ListRequest)(nil),                  // 0: organization.ListRequest
 	(*StoredOrganizationCollection)(nil), // 1: organization.StoredOrganizationCollection
@@ -907,33 +745,26 @@ var file_organization_proto_goTypes = []interface{}{
 	(*AddResponse)(nil),                  // 7: organization.AddResponse
 	(*RemoveRequest)(nil),                // 8: organization.RemoveRequest
 	(*RemoveResponse)(nil),               // 9: organization.RemoveResponse
-	(*MultiAddRequest)(nil),              // 10: organization.MultiAddRequest
-	(*Organization1)(nil),                // 11: organization.Organization1
-	(*MultiAddResponse)(nil),             // 12: organization.MultiAddResponse
-	(*MultiUpdateRequest)(nil),           // 13: organization.MultiUpdateRequest
-	(*MultiUpdateResponse)(nil),          // 14: organization.MultiUpdateResponse
+	(*UpdateRequest)(nil),                // 10: organization.UpdateRequest
+	(*UpdateResponse)(nil),               // 11: organization.UpdateResponse
 }
 var file_organization_proto_depIdxs = []int32{
 	2,  // 0: organization.StoredOrganizationCollection.field:type_name -> organization.StoredOrganization
-	11, // 1: organization.MultiAddRequest.field:type_name -> organization.Organization1
-	11, // 2: organization.MultiUpdateRequest.organizations:type_name -> organization.Organization1
-	0,  // 3: organization.Organization.List:input_type -> organization.ListRequest
-	4,  // 4: organization.Organization.Show:input_type -> organization.ShowRequest
-	6,  // 5: organization.Organization.Add:input_type -> organization.AddRequest
-	8,  // 6: organization.Organization.Remove:input_type -> organization.RemoveRequest
-	10, // 7: organization.Organization.MultiAdd:input_type -> organization.MultiAddRequest
-	13, // 8: organization.Organization.MultiUpdate:input_type -> organization.MultiUpdateRequest
-	1,  // 9: organization.Organization.List:output_type -> organization.StoredOrganizationCollection
-	5,  // 10: organization.Organization.Show:output_type -> organization.ShowResponse
-	7,  // 11: organization.Organization.Add:output_type -> organization.AddResponse
-	9,  // 12: organization.Organization.Remove:output_type -> organization.RemoveResponse
-	12, // 13: organization.Organization.MultiAdd:output_type -> organization.MultiAddResponse
-	14, // 14: organization.Organization.MultiUpdate:output_type -> organization.MultiUpdateResponse
-	9,  // [9:15] is the sub-list for method output_type
-	3,  // [3:9] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	0,  // 1: organization.Organization.List:input_type -> organization.ListRequest
+	4,  // 2: organization.Organization.Show:input_type -> organization.ShowRequest
+	6,  // 3: organization.Organization.Add:input_type -> organization.AddRequest
+	8,  // 4: organization.Organization.Remove:input_type -> organization.RemoveRequest
+	10, // 5: organization.Organization.Update:input_type -> organization.UpdateRequest
+	1,  // 6: organization.Organization.List:output_type -> organization.StoredOrganizationCollection
+	5,  // 7: organization.Organization.Show:output_type -> organization.ShowResponse
+	7,  // 8: organization.Organization.Add:output_type -> organization.AddResponse
+	9,  // 9: organization.Organization.Remove:output_type -> organization.RemoveResponse
+	11, // 10: organization.Organization.Update:output_type -> organization.UpdateResponse
+	6,  // [6:11] is the sub-list for method output_type
+	1,  // [1:6] is the sub-list for method input_type
+	1,  // [1:1] is the sub-list for extension type_name
+	1,  // [1:1] is the sub-list for extension extendee
+	0,  // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_organization_proto_init() }
@@ -1063,7 +894,7 @@ func file_organization_proto_init() {
 			}
 		}
 		file_organization_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MultiAddRequest); i {
+			switch v := v.(*UpdateRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1075,43 +906,7 @@ func file_organization_proto_init() {
 			}
 		}
 		file_organization_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Organization1); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_organization_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MultiAddResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_organization_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MultiUpdateRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_organization_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MultiUpdateResponse); i {
+			switch v := v.(*UpdateResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1129,7 +924,7 @@ func file_organization_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_organization_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -1163,15 +958,8 @@ type OrganizationClient interface {
 	Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*AddResponse, error)
 	// Remove Organization from storage
 	Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveResponse, error)
-	// Add n number of Organizations and return their IDs. This is a multipart
-	// request and each part has field name 'organization' and contains the encoded
-	// organization info to be added.
-	MultiAdd(ctx context.Context, in *MultiAddRequest, opts ...grpc.CallOption) (*MultiAddResponse, error)
-	// Update Organizations with the given IDs. This is a multipart request and
-	// each part has field name 'organizations' and contains the encoded
-	// Organizations info to be updated. The IDs in the query parameter is mapped
-	// to each part in the request.
-	MultiUpdate(ctx context.Context, in *MultiUpdateRequest, opts ...grpc.CallOption) (*MultiUpdateResponse, error)
+	// Update organization with the given IDs.
+	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error)
 }
 
 type organizationClient struct {
@@ -1218,18 +1006,9 @@ func (c *organizationClient) Remove(ctx context.Context, in *RemoveRequest, opts
 	return out, nil
 }
 
-func (c *organizationClient) MultiAdd(ctx context.Context, in *MultiAddRequest, opts ...grpc.CallOption) (*MultiAddResponse, error) {
-	out := new(MultiAddResponse)
-	err := c.cc.Invoke(ctx, "/organization.Organization/MultiAdd", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *organizationClient) MultiUpdate(ctx context.Context, in *MultiUpdateRequest, opts ...grpc.CallOption) (*MultiUpdateResponse, error) {
-	out := new(MultiUpdateResponse)
-	err := c.cc.Invoke(ctx, "/organization.Organization/MultiUpdate", in, out, opts...)
+func (c *organizationClient) Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error) {
+	out := new(UpdateResponse)
+	err := c.cc.Invoke(ctx, "/organization.Organization/Update", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1246,15 +1025,8 @@ type OrganizationServer interface {
 	Add(context.Context, *AddRequest) (*AddResponse, error)
 	// Remove Organization from storage
 	Remove(context.Context, *RemoveRequest) (*RemoveResponse, error)
-	// Add n number of Organizations and return their IDs. This is a multipart
-	// request and each part has field name 'organization' and contains the encoded
-	// organization info to be added.
-	MultiAdd(context.Context, *MultiAddRequest) (*MultiAddResponse, error)
-	// Update Organizations with the given IDs. This is a multipart request and
-	// each part has field name 'organizations' and contains the encoded
-	// Organizations info to be updated. The IDs in the query parameter is mapped
-	// to each part in the request.
-	MultiUpdate(context.Context, *MultiUpdateRequest) (*MultiUpdateResponse, error)
+	// Update organization with the given IDs.
+	Update(context.Context, *UpdateRequest) (*UpdateResponse, error)
 }
 
 // UnimplementedOrganizationServer can be embedded to have forward compatible implementations.
@@ -1273,11 +1045,8 @@ func (*UnimplementedOrganizationServer) Add(context.Context, *AddRequest) (*AddR
 func (*UnimplementedOrganizationServer) Remove(context.Context, *RemoveRequest) (*RemoveResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
 }
-func (*UnimplementedOrganizationServer) MultiAdd(context.Context, *MultiAddRequest) (*MultiAddResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method MultiAdd not implemented")
-}
-func (*UnimplementedOrganizationServer) MultiUpdate(context.Context, *MultiUpdateRequest) (*MultiUpdateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method MultiUpdate not implemented")
+func (*UnimplementedOrganizationServer) Update(context.Context, *UpdateRequest) (*UpdateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
 
 func RegisterOrganizationServer(s *grpc.Server, srv OrganizationServer) {
@@ -1356,38 +1125,20 @@ func _Organization_Remove_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Organization_MultiAdd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MultiAddRequest)
+func _Organization_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrganizationServer).MultiAdd(ctx, in)
+		return srv.(OrganizationServer).Update(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/organization.Organization/MultiAdd",
+		FullMethod: "/organization.Organization/Update",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrganizationServer).MultiAdd(ctx, req.(*MultiAddRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Organization_MultiUpdate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MultiUpdateRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OrganizationServer).MultiUpdate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/organization.Organization/MultiUpdate",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrganizationServer).MultiUpdate(ctx, req.(*MultiUpdateRequest))
+		return srv.(OrganizationServer).Update(ctx, req.(*UpdateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1413,12 +1164,8 @@ var _Organization_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Organization_Remove_Handler,
 		},
 		{
-			MethodName: "MultiAdd",
-			Handler:    _Organization_MultiAdd_Handler,
-		},
-		{
-			MethodName: "MultiUpdate",
-			Handler:    _Organization_MultiUpdate_Handler,
+			MethodName: "Update",
+			Handler:    _Organization_Update_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

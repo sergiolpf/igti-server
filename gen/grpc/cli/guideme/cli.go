@@ -15,6 +15,8 @@ import (
 	goa "goa.design/goa/v3/pkg"
 	grpc "google.golang.org/grpc"
 	organizationc "guide.me/gen/grpc/organization/client"
+	stepc "guide.me/gen/grpc/step/client"
+	walkthroughc "guide.me/gen/grpc/walkthrough/client"
 )
 
 // UsageCommands returns the set of commands and sub-commands using the format
@@ -22,13 +24,21 @@ import (
 //    command (subcommand1|subcommand2|...)
 //
 func UsageCommands() string {
-	return `organization (list|show|add|remove|multi-add|multi-update)
+	return `organization (list|show|add|remove|update)
+step (list|add|remove|update)
+walkthrough (list|show|add|remove|update|rename|publish)
 `
 }
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
 	return os.Args[0] + ` organization list` + "\n" +
+		os.Args[0] + ` step list --message '{
+      "id": "Optio et architecto omnis ab accusamus est."
+   }'` + "\n" +
+		os.Args[0] + ` walkthrough list --message '{
+      "id": "Incidunt quo."
+   }'` + "\n" +
 		""
 }
 
@@ -50,19 +60,68 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 		organizationRemoveFlags       = flag.NewFlagSet("remove", flag.ExitOnError)
 		organizationRemoveMessageFlag = organizationRemoveFlags.String("message", "", "")
 
-		organizationMultiAddFlags       = flag.NewFlagSet("multi-add", flag.ExitOnError)
-		organizationMultiAddMessageFlag = organizationMultiAddFlags.String("message", "", "")
+		organizationUpdateFlags       = flag.NewFlagSet("update", flag.ExitOnError)
+		organizationUpdateMessageFlag = organizationUpdateFlags.String("message", "", "")
 
-		organizationMultiUpdateFlags       = flag.NewFlagSet("multi-update", flag.ExitOnError)
-		organizationMultiUpdateMessageFlag = organizationMultiUpdateFlags.String("message", "", "")
+		stepFlags = flag.NewFlagSet("step", flag.ContinueOnError)
+
+		stepListFlags       = flag.NewFlagSet("list", flag.ExitOnError)
+		stepListMessageFlag = stepListFlags.String("message", "", "")
+
+		stepAddFlags       = flag.NewFlagSet("add", flag.ExitOnError)
+		stepAddMessageFlag = stepAddFlags.String("message", "", "")
+
+		stepRemoveFlags       = flag.NewFlagSet("remove", flag.ExitOnError)
+		stepRemoveMessageFlag = stepRemoveFlags.String("message", "", "")
+
+		stepUpdateFlags       = flag.NewFlagSet("update", flag.ExitOnError)
+		stepUpdateMessageFlag = stepUpdateFlags.String("message", "", "")
+
+		walkthroughFlags = flag.NewFlagSet("walkthrough", flag.ContinueOnError)
+
+		walkthroughListFlags       = flag.NewFlagSet("list", flag.ExitOnError)
+		walkthroughListMessageFlag = walkthroughListFlags.String("message", "", "")
+
+		walkthroughShowFlags       = flag.NewFlagSet("show", flag.ExitOnError)
+		walkthroughShowMessageFlag = walkthroughShowFlags.String("message", "", "")
+		walkthroughShowViewFlag    = walkthroughShowFlags.String("view", "", "")
+
+		walkthroughAddFlags       = flag.NewFlagSet("add", flag.ExitOnError)
+		walkthroughAddMessageFlag = walkthroughAddFlags.String("message", "", "")
+
+		walkthroughRemoveFlags       = flag.NewFlagSet("remove", flag.ExitOnError)
+		walkthroughRemoveMessageFlag = walkthroughRemoveFlags.String("message", "", "")
+
+		walkthroughUpdateFlags       = flag.NewFlagSet("update", flag.ExitOnError)
+		walkthroughUpdateMessageFlag = walkthroughUpdateFlags.String("message", "", "")
+
+		walkthroughRenameFlags       = flag.NewFlagSet("rename", flag.ExitOnError)
+		walkthroughRenameMessageFlag = walkthroughRenameFlags.String("message", "", "")
+
+		walkthroughPublishFlags       = flag.NewFlagSet("publish", flag.ExitOnError)
+		walkthroughPublishMessageFlag = walkthroughPublishFlags.String("message", "", "")
 	)
 	organizationFlags.Usage = organizationUsage
 	organizationListFlags.Usage = organizationListUsage
 	organizationShowFlags.Usage = organizationShowUsage
 	organizationAddFlags.Usage = organizationAddUsage
 	organizationRemoveFlags.Usage = organizationRemoveUsage
-	organizationMultiAddFlags.Usage = organizationMultiAddUsage
-	organizationMultiUpdateFlags.Usage = organizationMultiUpdateUsage
+	organizationUpdateFlags.Usage = organizationUpdateUsage
+
+	stepFlags.Usage = stepUsage
+	stepListFlags.Usage = stepListUsage
+	stepAddFlags.Usage = stepAddUsage
+	stepRemoveFlags.Usage = stepRemoveUsage
+	stepUpdateFlags.Usage = stepUpdateUsage
+
+	walkthroughFlags.Usage = walkthroughUsage
+	walkthroughListFlags.Usage = walkthroughListUsage
+	walkthroughShowFlags.Usage = walkthroughShowUsage
+	walkthroughAddFlags.Usage = walkthroughAddUsage
+	walkthroughRemoveFlags.Usage = walkthroughRemoveUsage
+	walkthroughUpdateFlags.Usage = walkthroughUpdateUsage
+	walkthroughRenameFlags.Usage = walkthroughRenameUsage
+	walkthroughPublishFlags.Usage = walkthroughPublishUsage
 
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		return nil, nil, err
@@ -81,6 +140,10 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 		switch svcn {
 		case "organization":
 			svcf = organizationFlags
+		case "step":
+			svcf = stepFlags
+		case "walkthrough":
+			svcf = walkthroughFlags
 		default:
 			return nil, nil, fmt.Errorf("unknown service %q", svcn)
 		}
@@ -110,11 +173,49 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 			case "remove":
 				epf = organizationRemoveFlags
 
-			case "multi-add":
-				epf = organizationMultiAddFlags
+			case "update":
+				epf = organizationUpdateFlags
 
-			case "multi-update":
-				epf = organizationMultiUpdateFlags
+			}
+
+		case "step":
+			switch epn {
+			case "list":
+				epf = stepListFlags
+
+			case "add":
+				epf = stepAddFlags
+
+			case "remove":
+				epf = stepRemoveFlags
+
+			case "update":
+				epf = stepUpdateFlags
+
+			}
+
+		case "walkthrough":
+			switch epn {
+			case "list":
+				epf = walkthroughListFlags
+
+			case "show":
+				epf = walkthroughShowFlags
+
+			case "add":
+				epf = walkthroughAddFlags
+
+			case "remove":
+				epf = walkthroughRemoveFlags
+
+			case "update":
+				epf = walkthroughUpdateFlags
+
+			case "rename":
+				epf = walkthroughRenameFlags
+
+			case "publish":
+				epf = walkthroughPublishFlags
 
 			}
 
@@ -153,12 +254,50 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 			case "remove":
 				endpoint = c.Remove()
 				data, err = organizationc.BuildRemovePayload(*organizationRemoveMessageFlag)
-			case "multi-add":
-				endpoint = c.MultiAdd()
-				data, err = organizationc.BuildMultiAddPayload(*organizationMultiAddMessageFlag)
-			case "multi-update":
-				endpoint = c.MultiUpdate()
-				data, err = organizationc.BuildMultiUpdatePayload(*organizationMultiUpdateMessageFlag)
+			case "update":
+				endpoint = c.Update()
+				data, err = organizationc.BuildUpdatePayload(*organizationUpdateMessageFlag)
+			}
+		case "step":
+			c := stepc.NewClient(cc, opts...)
+			switch epn {
+			case "list":
+				endpoint = c.List()
+				data, err = stepc.BuildListPayload(*stepListMessageFlag)
+			case "add":
+				endpoint = c.Add()
+				data, err = stepc.BuildAddPayload(*stepAddMessageFlag)
+			case "remove":
+				endpoint = c.Remove()
+				data, err = stepc.BuildRemovePayload(*stepRemoveMessageFlag)
+			case "update":
+				endpoint = c.Update()
+				data, err = stepc.BuildUpdatePayload(*stepUpdateMessageFlag)
+			}
+		case "walkthrough":
+			c := walkthroughc.NewClient(cc, opts...)
+			switch epn {
+			case "list":
+				endpoint = c.List()
+				data, err = walkthroughc.BuildListPayload(*walkthroughListMessageFlag)
+			case "show":
+				endpoint = c.Show()
+				data, err = walkthroughc.BuildShowPayload(*walkthroughShowMessageFlag, *walkthroughShowViewFlag)
+			case "add":
+				endpoint = c.Add()
+				data, err = walkthroughc.BuildAddPayload(*walkthroughAddMessageFlag)
+			case "remove":
+				endpoint = c.Remove()
+				data, err = walkthroughc.BuildRemovePayload(*walkthroughRemoveMessageFlag)
+			case "update":
+				endpoint = c.Update()
+				data, err = walkthroughc.BuildUpdatePayload(*walkthroughUpdateMessageFlag)
+			case "rename":
+				endpoint = c.Rename()
+				data, err = walkthroughc.BuildRenamePayload(*walkthroughRenameMessageFlag)
+			case "publish":
+				endpoint = c.Publish()
+				data, err = walkthroughc.BuildPublishPayload(*walkthroughPublishMessageFlag)
 			}
 		}
 	}
@@ -181,8 +320,7 @@ COMMAND:
     show: Show Organization by ID
     add: Add new bottle and return its ID.
     remove: Remove Organization from storage
-    multi-add: Add n number of Organizations and return their IDs. This is a multipart request and each part has field name 'organization' and contains the encoded organization info to be added.
-    multi-update: Update Organizations with the given IDs. This is a multipart request and each part has field name 'organizations' and contains the encoded Organizations info to be updated. The IDs in the query parameter is mapped to each part in the request.
+    update: Update organization with the given IDs.
 
 Additional help:
     %s organization COMMAND --help
@@ -207,7 +345,7 @@ Show Organization by ID
 
 Example:
     `+os.Args[0]+` organization show --message '{
-      "id": "Velit est culpa."
+      "id": "Minima cum consequatur occaecati commodi."
    }' --view "default"
 `, os.Args[0])
 }
@@ -220,7 +358,7 @@ Add new bottle and return its ID.
 
 Example:
     `+os.Args[0]+` organization add --message '{
-      "name": "Blue\'s Cuvee",
+      "name": "Creating a new request in netflix!",
       "url": "http://www.google.com/"
    }'
 `, os.Args[0])
@@ -234,71 +372,273 @@ Remove Organization from storage
 
 Example:
     `+os.Args[0]+` organization remove --message '{
-      "id": "Rem delectus."
+      "id": "Aut sed quod repudiandae sed."
    }'
 `, os.Args[0])
 }
 
-func organizationMultiAddUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] organization multi-add -message JSON
+func organizationUpdateUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] organization update -message JSON
 
-Add n number of Organizations and return their IDs. This is a multipart request and each part has field name 'organization' and contains the encoded organization info to be added.
+Update organization with the given IDs.
     -message JSON: 
 
 Example:
-    `+os.Args[0]+` organization multi-add --message '{
-      "field": [
+    `+os.Args[0]+` organization update --message '{
+      "id": "123abc",
+      "name": "Creating a new request in netflix!",
+      "url": "http://www.google.com/"
+   }'
+`, os.Args[0])
+}
+
+// stepUsage displays the usage of the step command and its subcommands.
+func stepUsage() {
+	fmt.Fprintf(os.Stderr, `The Step service makes it possible to view, add, modify or remove Steps of a Walkthrough.
+Usage:
+    %s [globalflags] step COMMAND [flags]
+
+COMMAND:
+    list: List all stored Steps for a given walkthrough
+    add: Add new Steps to walkthrough and return ID.
+    remove: Remove Steps from storage
+    update: Update Steps with the given IDs.
+
+Additional help:
+    %s step COMMAND --help
+`, os.Args[0], os.Args[0])
+}
+func stepListUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] step list -message JSON
+
+List all stored Steps for a given walkthrough
+    -message JSON: 
+
+Example:
+    `+os.Args[0]+` step list --message '{
+      "id": "Optio et architecto omnis ab accusamus est."
+   }'
+`, os.Args[0])
+}
+
+func stepAddUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] step add -message JSON
+
+Add new Steps to walkthrough and return ID.
+    -message JSON: 
+
+Example:
+    `+os.Args[0]+` step add --message '{
+      "steps": [
          {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
+            "action": "next",
+            "sequence": 1093668274,
+            "targetid": "",
+            "type": "text",
+            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          },
          {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
+            "action": "next",
+            "sequence": 1093668274,
+            "targetid": "",
+            "type": "text",
+            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          },
          {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
+            "action": "next",
+            "sequence": 1093668274,
+            "targetid": "",
+            "type": "text",
+            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          },
          {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
+            "action": "next",
+            "sequence": 1093668274,
+            "targetid": "",
+            "type": "text",
+            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          }
-      ]
-   }'
-`, os.Args[0])
-}
-
-func organizationMultiUpdateUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] organization multi-update -message JSON
-
-Update Organizations with the given IDs. This is a multipart request and each part has field name 'organizations' and contains the encoded Organizations info to be updated. The IDs in the query parameter is mapped to each part in the request.
-    -message JSON: 
-
-Example:
-    `+os.Args[0]+` organization multi-update --message '{
-      "ids": [
-         "Recusandae corporis fugit non.",
-         "Asperiores maxime."
       ],
-      "organizations": [
+      "wtId": "abc234235"
+   }'
+`, os.Args[0])
+}
+
+func stepRemoveUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] step remove -message JSON
+
+Remove Steps from storage
+    -message JSON: 
+
+Example:
+    `+os.Args[0]+` step remove --message '{
+      "id": "Facere non et."
+   }'
+`, os.Args[0])
+}
+
+func stepUpdateUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] step update -message JSON
+
+Update Steps with the given IDs.
+    -message JSON: 
+
+Example:
+    `+os.Args[0]+` step update --message '{
+      "id": "123abc",
+      "steps": [
          {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
+            "action": "next",
+            "sequence": 1093668274,
+            "targetid": "",
+            "type": "text",
+            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          },
          {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
+            "action": "next",
+            "sequence": 1093668274,
+            "targetid": "",
+            "type": "text",
+            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          },
          {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
+            "action": "next",
+            "sequence": 1093668274,
+            "targetid": "",
+            "type": "text",
+            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          },
          {
-            "name": "Blue\'s Cuvee",
-            "url": "http://www.google.com/"
+            "action": "next",
+            "sequence": 1093668274,
+            "targetid": "",
+            "type": "text",
+            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
          }
-      ]
+      ],
+      "wtId": "abc234235"
+   }'
+`, os.Args[0])
+}
+
+// walkthroughUsage displays the usage of the walkthrough command and its
+// subcommands.
+func walkthroughUsage() {
+	fmt.Fprintf(os.Stderr, `The walkthrough service makes it possible to view, add, modify or remove walkthroughs.
+Usage:
+    %s [globalflags] walkthrough COMMAND [flags]
+
+COMMAND:
+    list: List all stored walkthrough for a given organization
+    show: Show Walkthrough by ID
+    add: Add new Tutorial and return its ID.
+    remove: Remove Walkthrough from storage
+    update: Update Walkthrough with the given IDs.
+    rename: Rename Walkthrough with the given IDs.
+    publish: Publishes Walkthrough with the given IDs.
+
+Additional help:
+    %s walkthrough COMMAND --help
+`, os.Args[0], os.Args[0])
+}
+func walkthroughListUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] walkthrough list -message JSON
+
+List all stored walkthrough for a given organization
+    -message JSON: 
+
+Example:
+    `+os.Args[0]+` walkthrough list --message '{
+      "id": "Incidunt quo."
+   }'
+`, os.Args[0])
+}
+
+func walkthroughShowUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] walkthrough show -message JSON -view STRING
+
+Show Walkthrough by ID
+    -message JSON: 
+    -view STRING: 
+
+Example:
+    `+os.Args[0]+` walkthrough show --message '{
+      "id": "Ipsum ratione eum."
+   }' --view "default"
+`, os.Args[0])
+}
+
+func walkthroughAddUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] walkthrough add -message JSON
+
+Add new Tutorial and return its ID.
+    -message JSON: 
+
+Example:
+    `+os.Args[0]+` walkthrough add --message '{
+      "baseURL": "http://www.google.com/",
+      "name": "How to create a new process using the exception condition.",
+      "organization": "Quia fugiat et delectus quo.",
+      "publishedURL": "Voluptates occaecati aliquid veniam ipsa in.",
+      "status": "draft | published"
+   }'
+`, os.Args[0])
+}
+
+func walkthroughRemoveUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] walkthrough remove -message JSON
+
+Remove Walkthrough from storage
+    -message JSON: 
+
+Example:
+    `+os.Args[0]+` walkthrough remove --message '{
+      "id": "Aut aliquid et."
+   }'
+`, os.Args[0])
+}
+
+func walkthroughUpdateUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] walkthrough update -message JSON
+
+Update Walkthrough with the given IDs.
+    -message JSON: 
+
+Example:
+    `+os.Args[0]+` walkthrough update --message '{
+      "baseURL": "http://www.google.com/",
+      "id": "123abc",
+      "name": "How to create a new process using the exception condition.",
+      "organization": "Rerum harum.",
+      "publishedURL": "Dolor incidunt.",
+      "status": "draft | published"
+   }'
+`, os.Args[0])
+}
+
+func walkthroughRenameUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] walkthrough rename -message JSON
+
+Rename Walkthrough with the given IDs.
+    -message JSON: 
+
+Example:
+    `+os.Args[0]+` walkthrough rename --message '{
+      "id": "Et consequuntur doloremque et.",
+      "name": "Qui repellat officiis aut et dolorum voluptatem."
+   }'
+`, os.Args[0])
+}
+
+func walkthroughPublishUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] walkthrough publish -message JSON
+
+Publishes Walkthrough with the given IDs.
+    -message JSON: 
+
+Example:
+    `+os.Args[0]+` walkthrough publish --message '{
+      "id": "Nihil beatae."
    }'
 `, os.Args[0])
 }

@@ -53,10 +53,10 @@ func BuildAddPayload(organizationAddBody string) (*organization.Organization, er
 	{
 		err = json.Unmarshal([]byte(organizationAddBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"name\": \"Blue\\'s Cuvee\",\n      \"url\": \"http://www.google.com/\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"name\": \"Creating a new request in netflix!\",\n      \"url\": \"http://www.google.com/\"\n   }'")
 		}
-		if utf8.RuneCountInString(body.Name) > 100 {
-			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", body.Name, utf8.RuneCountInString(body.Name), 100, false))
+		if utf8.RuneCountInString(body.Name) > 200 {
+			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", body.Name, utf8.RuneCountInString(body.Name), 200, false))
 		}
 		err = goa.MergeErrors(err, goa.ValidatePattern("body.url", body.URL, "(?i)^(https?|ftp)://[^\\s/$.?#].[^\\s]*$"))
 		if err != nil {
@@ -84,63 +84,29 @@ func BuildRemovePayload(organizationRemoveID string) (*organization.RemovePayloa
 	return v, nil
 }
 
-// BuildMultiAddPayload builds the payload for the organization multi_add
-// endpoint from CLI flags.
-func BuildMultiAddPayload(organizationMultiAddBody string) ([]*organization.Organization, error) {
+// BuildUpdatePayload builds the payload for the organization update endpoint
+// from CLI flags.
+func BuildUpdatePayload(organizationUpdateBody string) (*organization.StoredOrganization, error) {
 	var err error
-	var body []*OrganizationRequestBody
+	var body UpdateRequestBody
 	{
-		err = json.Unmarshal([]byte(organizationMultiAddBody), &body)
+		err = json.Unmarshal([]byte(organizationUpdateBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'[\n      {\n         \"name\": \"Blue\\'s Cuvee\",\n         \"url\": \"http://www.google.com/\"\n      },\n      {\n         \"name\": \"Blue\\'s Cuvee\",\n         \"url\": \"http://www.google.com/\"\n      },\n      {\n         \"name\": \"Blue\\'s Cuvee\",\n         \"url\": \"http://www.google.com/\"\n      },\n      {\n         \"name\": \"Blue\\'s Cuvee\",\n         \"url\": \"http://www.google.com/\"\n      }\n   ]'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"id\": \"123abc\",\n      \"name\": \"Creating a new request in netflix!\",\n      \"url\": \"http://www.google.com/\"\n   }'")
 		}
-	}
-	v := make([]*organization.Organization, len(body))
-	for i, val := range body {
-		v[i] = marshalOrganizationRequestBodyToOrganizationOrganization(val)
-	}
-	return v, nil
-}
-
-// BuildMultiUpdatePayload builds the payload for the organization multi_update
-// endpoint from CLI flags.
-func BuildMultiUpdatePayload(organizationMultiUpdateBody string, organizationMultiUpdateIds string) (*organization.MultiUpdatePayload, error) {
-	var err error
-	var body MultiUpdateRequestBody
-	{
-		err = json.Unmarshal([]byte(organizationMultiUpdateBody), &body)
-		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"organizations\": [\n         {\n            \"name\": \"Blue\\'s Cuvee\",\n            \"url\": \"http://www.google.com/\"\n         },\n         {\n            \"name\": \"Blue\\'s Cuvee\",\n            \"url\": \"http://www.google.com/\"\n         }\n      ]\n   }'")
+		if utf8.RuneCountInString(body.Name) > 200 {
+			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", body.Name, utf8.RuneCountInString(body.Name), 200, false))
 		}
-		if body.Organizations == nil {
-			err = goa.MergeErrors(err, goa.MissingFieldError("organizations", "body"))
-		}
-		for _, e := range body.Organizations {
-			if e != nil {
-				if err2 := ValidateOrganizationRequestBody(e); err2 != nil {
-					err = goa.MergeErrors(err, err2)
-				}
-			}
-		}
+		err = goa.MergeErrors(err, goa.ValidatePattern("body.url", body.URL, "(?i)^(https?|ftp)://[^\\s/$.?#].[^\\s]*$"))
 		if err != nil {
 			return nil, err
 		}
 	}
-	var ids []string
-	{
-		err = json.Unmarshal([]byte(organizationMultiUpdateIds), &ids)
-		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for ids, example of valid JSON:\n%s", "'[\n      \"Aut voluptatum non ut odit.\",\n      \"Nobis pariatur ratione dolorem consectetur itaque.\",\n      \"Et quo sunt amet quis et ipsam.\"\n   ]'")
-		}
+	v := &organization.StoredOrganization{
+		ID:   body.ID,
+		Name: body.Name,
+		URL:  body.URL,
 	}
-	v := &organization.MultiUpdatePayload{}
-	if body.Organizations != nil {
-		v.Organizations = make([]*organization.Organization, len(body.Organizations))
-		for i, val := range body.Organizations {
-			v.Organizations[i] = marshalOrganizationRequestBodyToOrganizationOrganization(val)
-		}
-	}
-	v.Ids = ids
 
 	return v, nil
 }

@@ -102,29 +102,13 @@ func (c *Client) Remove() goa.Endpoint {
 	}
 }
 
-// MultiAdd calls the "MultiAdd" function in organizationpb.OrganizationClient
+// Update calls the "Update" function in organizationpb.OrganizationClient
 // interface.
-func (c *Client) MultiAdd() goa.Endpoint {
+func (c *Client) Update() goa.Endpoint {
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
 		inv := goagrpc.NewInvoker(
-			BuildMultiAddFunc(c.grpccli, c.opts...),
-			EncodeMultiAddRequest,
-			DecodeMultiAddResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			return nil, goa.Fault(err.Error())
-		}
-		return res, nil
-	}
-}
-
-// MultiUpdate calls the "MultiUpdate" function in
-// organizationpb.OrganizationClient interface.
-func (c *Client) MultiUpdate() goa.Endpoint {
-	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		inv := goagrpc.NewInvoker(
-			BuildMultiUpdateFunc(c.grpccli, c.opts...),
-			EncodeMultiUpdateRequest,
+			BuildUpdateFunc(c.grpccli, c.opts...),
+			EncodeUpdateRequest,
 			nil)
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {
