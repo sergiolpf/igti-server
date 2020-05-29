@@ -1,0 +1,7 @@
+#ignoring vscode
+/.vscode
+
+# Ignore files with extension `.class` & `.sm`
+*.exe
+*.sh
+
