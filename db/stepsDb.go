@@ -74,7 +74,8 @@ func (m *Mongo) LoadWalkthroughSteps(id string) (*step.StoredSteps, error) {
 	}
 
 	storedObject = step.StoredSteps{
-		ID:    element.ID.String(),
+		ID:    convertIdToString(element.ID),
+		WtID:  convertIdToString(element.ID),
 		Steps: listOfSteps,
 	}
 

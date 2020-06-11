@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"log"
-	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -24,17 +23,6 @@ type WalkthroughModel struct {
 	PublishedURL *string
 	// ID of the organization this tutorial belongs to
 	Organization string
-}
-
-func convertIdToString(id primitive.ObjectID) string {
-
-	newId, err := id.MarshalJSON()
-	if err != nil {
-		log.Println(err)
-		return ""
-	}
-	stringId := strings.Replace(string(newId), "\"", "", -1)
-	return stringId
 }
 
 func (m *Mongo) UpdateStatusWalkthrough(wtid string, wgStatus string) error {
