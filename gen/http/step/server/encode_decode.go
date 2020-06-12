@@ -22,7 +22,7 @@ import (
 // list endpoint.
 func EncodeListResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(*stepviews.StoredSteps)
+		res := v.(*stepviews.StoredListOfSteps)
 		enc := encoder(ctx, w)
 		body := NewListResponseBody(res.Projected)
 		w.WriteHeader(http.StatusOK)
@@ -90,75 +90,27 @@ func DecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Dec
 	}
 }
 
-// EncodeRemoveResponse returns an encoder for responses returned by the step
-// remove endpoint.
-func EncodeRemoveResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
-	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		w.WriteHeader(http.StatusNoContent)
-		return nil
-	}
-}
-
-// DecodeRemoveRequest returns a decoder for requests sent to the step remove
-// endpoint.
-func DecodeRemoveRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
-	return func(r *http.Request) (interface{}, error) {
-		var (
-			id string
-
-			params = mux.Vars(r)
-		)
-		id = params["id"]
-		payload := NewRemovePayload(id)
-
-		return payload, nil
-	}
-}
-
-// EncodeUpdateResponse returns an encoder for responses returned by the step
-// update endpoint.
-func EncodeUpdateResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
-	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		w.WriteHeader(http.StatusNoContent)
-		return nil
-	}
-}
-
-// DecodeUpdateRequest returns a decoder for requests sent to the step update
-// endpoint.
-func DecodeUpdateRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
-	return func(r *http.Request) (interface{}, error) {
-		var (
-			body UpdateRequestBody
-			err  error
-		)
-		err = decoder(r).Decode(&body)
-		if err != nil {
-			if err == io.EOF {
-				return nil, goa.MissingPayloadError()
-			}
-			return nil, goa.DecodePayloadError(err.Error())
-		}
-		err = ValidateUpdateRequestBody(&body)
-		if err != nil {
-			return nil, err
-		}
-		payload := NewUpdateStoredSteps(&body)
-
-		return payload, nil
-	}
-}
-
-// marshalStepviewsStepViewToStepResponseBody builds a value of type
-// *StepResponseBody from a value of type *stepviews.StepView.
-func marshalStepviewsStepViewToStepResponseBody(v *stepviews.StepView) *StepResponseBody {
-	res := &StepResponseBody{
+// marshalStepviewsStoredStepViewToStoredStepResponseBody builds a value of
+// type *StoredStepResponseBody from a value of type *stepviews.StoredStepView.
+func marshalStepviewsStoredStepViewToStoredStepResponseBody(v *stepviews.StoredStepView) *StoredStepResponseBody {
+	res := &StoredStepResponseBody{
+		ID:         *v.ID,
 		Title:      *v.Title,
 		Target:     *v.Target,
 		StepNumber: *v.StepNumber,
-		Placement:  *v.Placement,
 		Content:    *v.Content,
-		Action:     *v.Action,
+	}
+	if v.Placement != nil {
+		res.Placement = *v.Placement
+	}
+	if v.Action != nil {
+		res.Action = *v.Action
+	}
+	if v.Placement == nil {
+		res.Placement = "right"
+	}
+	if v.Action == nil {
+		res.Action = "next"
 	}
 
 	return res
@@ -171,22 +123,6 @@ func unmarshalStepRequestBodyToStepStep(v *StepRequestBody) *step.Step {
 		return nil
 	}
 	res := &step.Step{
-		Title:      *v.Title,
-		Target:     *v.Target,
-		StepNumber: *v.StepNumber,
-		Placement:  *v.Placement,
-		Content:    *v.Content,
-		Action:     *v.Action,
-	}
-
-	return res
-}
-
-// marshalStepviewsStoredStepViewToStoredStepResponseBody builds a value of
-// type *StoredStepResponseBody from a value of type *stepviews.StoredStepView.
-func marshalStepviewsStoredStepViewToStoredStepResponseBody(v *stepviews.StoredStepView) *StoredStepResponseBody {
-	res := &StoredStepResponseBody{
-		ID:         *v.ID,
 		Title:      *v.Title,
 		Target:     *v.Target,
 		StepNumber: *v.StepNumber,

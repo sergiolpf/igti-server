@@ -25,21 +25,33 @@ func NewListRequest(payload *step.ListPayload) *steppb.ListRequest {
 
 // NewListResult builds the result type of the "list" endpoint of the "step"
 // service from the gRPC response type.
-func NewListResult(message *steppb.ListResponse) *stepviews.StoredStepsView {
-	result := &stepviews.StoredStepsView{
-		ID:   &message.Id,
+func NewListResult(message *steppb.ListResponse) *stepviews.StoredListOfStepsView {
+	result := &stepviews.StoredListOfStepsView{
 		WtID: &message.WtId,
 	}
 	if message.Steps != nil {
-		result.Steps = make([]*stepviews.StepView, len(message.Steps))
+		result.Steps = make([]*stepviews.StoredStepView, len(message.Steps))
 		for i, val := range message.Steps {
-			result.Steps[i] = &stepviews.StepView{
+			result.Steps[i] = &stepviews.StoredStepView{
+				ID:         &val.Id,
 				Title:      &val.Title,
 				Target:     &val.Target,
 				StepNumber: &val.StepNumber,
-				Placement:  &val.Placement,
 				Content:    &val.Content,
-				Action:     &val.Action,
+			}
+			if val.Placement != "" {
+				result.Steps[i].Placement = &val.Placement
+			}
+			if val.Action != "" {
+				result.Steps[i].Action = &val.Action
+			}
+			if val.Placement == "" {
+				var tmp string = "right"
+				result.Steps[i].Placement = &tmp
+			}
+			if val.Action == "" {
+				var tmp string = "next"
+				result.Steps[i].Action = &tmp
 			}
 		}
 	}
@@ -71,38 +83,6 @@ func NewAddResult(message *steppb.AddResponse) *stepviews.ResultStepView {
 	return result
 }
 
-// NewRemoveRequest builds the gRPC request type from the payload of the
-// "remove" endpoint of the "step" service.
-func NewRemoveRequest(payload *step.RemovePayload) *steppb.RemoveRequest {
-	message := &steppb.RemoveRequest{
-		Id: payload.ID,
-	}
-	return message
-}
-
-// NewUpdateRequest builds the gRPC request type from the payload of the
-// "update" endpoint of the "step" service.
-func NewUpdateRequest(payload *step.StoredSteps) *steppb.UpdateRequest {
-	message := &steppb.UpdateRequest{
-		Id:   payload.ID,
-		WtId: payload.WtID,
-	}
-	if payload.Steps != nil {
-		message.Steps = make([]*steppb.Step1, len(payload.Steps))
-		for i, val := range payload.Steps {
-			message.Steps[i] = &steppb.Step1{
-				Title:      val.Title,
-				Target:     val.Target,
-				StepNumber: val.StepNumber,
-				Placement:  val.Placement,
-				Content:    val.Content,
-				Action:     val.Action,
-			}
-		}
-	}
-	return message
-}
-
 // ValidateListResponse runs the validations defined on ListResponse.
 func ValidateListResponse(message *steppb.ListResponse) (err error) {
 	if message.Steps == nil {
@@ -110,7 +90,7 @@ func ValidateListResponse(message *steppb.ListResponse) (err error) {
 	}
 	for _, e := range message.Steps {
 		if e != nil {
-			if err2 := ValidateStep1(e); err2 != nil {
+			if err2 := ValidateStoredStep(e); err2 != nil {
 				err = goa.MergeErrors(err, err2)
 			}
 		}
@@ -118,13 +98,17 @@ func ValidateListResponse(message *steppb.ListResponse) (err error) {
 	return
 }
 
-// ValidateStep1 runs the validations defined on Step1.
-func ValidateStep1(message *steppb.Step1) (err error) {
-	if !(message.Placement == "left" || message.Placement == "right" || message.Placement == "top" || message.Placement == "buttom") {
-		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.placement", message.Placement, []interface{}{"left", "right", "top", "buttom"}))
+// ValidateStoredStep runs the validations defined on StoredStep.
+func ValidateStoredStep(message *steppb.StoredStep) (err error) {
+	if message.Placement != "" {
+		if !(message.Placement == "left" || message.Placement == "right" || message.Placement == "top" || message.Placement == "buttom") {
+			err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.placement", message.Placement, []interface{}{"left", "right", "top", "buttom"}))
+		}
 	}
-	if !(message.Action == "click" || message.Action == "next" || message.Action == "end") {
-		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.action", message.Action, []interface{}{"click", "next", "end"}))
+	if message.Action != "" {
+		if !(message.Action == "click" || message.Action == "next" || message.Action == "end") {
+			err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.action", message.Action, []interface{}{"click", "next", "end"}))
+		}
 	}
 	return
 }
@@ -138,17 +122,6 @@ func ValidateAddResponse(message *steppb.AddResponse) (err error) {
 		if err2 := ValidateStoredStep(message.Step); err2 != nil {
 			err = goa.MergeErrors(err, err2)
 		}
-	}
-	return
-}
-
-// ValidateStoredStep runs the validations defined on StoredStep.
-func ValidateStoredStep(message *steppb.StoredStep) (err error) {
-	if !(message.Placement == "left" || message.Placement == "right" || message.Placement == "top" || message.Placement == "buttom") {
-		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.placement", message.Placement, []interface{}{"left", "right", "top", "buttom"}))
-	}
-	if !(message.Action == "click" || message.Action == "next" || message.Action == "end") {
-		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.action", message.Action, []interface{}{"click", "next", "end"}))
 	}
 	return
 }

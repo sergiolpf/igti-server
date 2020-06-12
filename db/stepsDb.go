@@ -11,21 +11,11 @@ import (
 	step "guide.me/gen/step"
 )
 
-type StepModel struct {
-	// ID is the unique id of the Steps.
-	ID string `bson:"id,omitempty"`
+type StepsModel struct {
+	// walkthrough id.
+	ID primitive.ObjectID `bson:"_id,omitempty"`
 	// List of steps for a given walkthrough.
-	Title string `bson:"title,omitempty"`
-	// A string representing the HTML ID of an element
-	Target string `bson:"target,omitempty"`
-	// The number in the sequence that the step belongs to.
-	StepNumber int32 `bson:"stepNumber,omitempty"`
-	// The placement of the popup
-	Placement string `bson:"placement,omitempty"`
-	// The content of the message to be displayed
-	Content string `bson:"content,omitempty"`
-	// What action should trigger the next step
-	Action string `bson:"action,omitempty"`
+	Steps []*step.StoredStep `bson:"steps,omitempty"`
 }
 
 func (m *Mongo) SaveStep(wtSteps *step.AddStepPayload) (*step.ResultStep, error) {
@@ -78,46 +68,48 @@ func (m *Mongo) SaveStep(wtSteps *step.AddStepPayload) (*step.ResultStep, error)
 
 }
 
-// func (m *Mongo) LoadWalkthroughSteps(id string) (*step.StoredSteps, error) {
-// 	collection := m.getCollection(STEPS_COLLNAME)
+func (m *Mongo) LoadWalkthroughSteps(id string) (*step.StoredListOfSteps, error) {
+	collection := m.getCollection(STEPS_COLLNAME)
 
-// 	filterId, err := primitive.ObjectIDFromHex(id)
+	filterId, err := primitive.ObjectIDFromHex(id)
 
-// 	if err != nil {
-// 		log.Println(err)
-// 		return nil, ErrNotFound
-// 	}
+	if err != nil {
+		log.Println(err)
+		return nil, ErrNotFound
+	}
+	//log.Println("id passado por parametro eh:", id)
+	var element StepsModel
+	err = collection.FindOne(context.Background(), bson.M{"_id": filterId}).Decode(&element)
 
-// 	var element StepsModel
-// 	err = collection.FindOne(context.Background(), bson.M{"_id": filterId}).Decode(&element)
+	if err != nil {
+		log.Println(err)
+		return nil, ErrNotFound
+	}
+	// log.Println("resultado parece ter dados certo tamanho do array eh:", element)
+	// fmt.Printf("elemento dessa chibata eh %v", element)
+	// log.Println("")
 
-// 	if err != nil {
-// 		log.Println(err)
-// 		return nil, ErrNotFound
-// 	}
+	listOfSteps := make([]*step.StoredStep, 0, len(element.Steps))
 
-// 	var storedObject step.StoredSteps
-// 	listOfSteps := make([]*step.Step, 0, len(element.Steps))
+	for _, myStep := range element.Steps {
+		listOfSteps = append(listOfSteps, &step.StoredStep{
+			ID:         myStep.ID,
+			Action:     myStep.Action,
+			StepNumber: myStep.StepNumber,
+			Target:     myStep.Target,
+			Content:    myStep.Content,
+			Placement:  myStep.Placement,
+			Title:      myStep.Title,
+		})
+	}
 
-// 	for _, myStep := range element.Steps {
-// 		listOfSteps = append(listOfSteps, &step.Step{
+	response := step.StoredListOfSteps{
+		WtID:  id,
+		Steps: listOfSteps,
+	}
 
-// 			Action:   myStep.Action,
-// 			Sequence: myStep.Sequence,
-// 			Targetid: myStep.Targetid,
-// 			Type:     myStep.Type,
-// 			Value:    myStep.Value,
-// 		})
-// 	}
-
-// 	storedObject = step.StoredSteps{
-// 		WtID:  convertIdToString(element.ID),
-// 		Steps: listOfSteps,
-// 	}
-
-// 	return &storedObject, err
-
-// }
+	return &response, err
+}
 
 // func (m *Mongo) DeleteWalkthroughSteps(id string) error {
 // 	collection := m.getCollection(STEPS_COLLNAME)

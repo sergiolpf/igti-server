@@ -22,26 +22,13 @@ type AddRequestBody struct {
 	Step *StepRequestBody `form:"step,omitempty" json:"step,omitempty" xml:"step,omitempty"`
 }
 
-// UpdateRequestBody is the type of the "step" service "update" endpoint HTTP
-// request body.
-type UpdateRequestBody struct {
-	// ID is the unique id of the Step.
-	ID string `form:"id" json:"id" xml:"id"`
-	// The id of the Walkthrough those steps belong to.
-	WtID string `form:"wtId" json:"wtId" xml:"wtId"`
-	// List of steps for a given walkthrough.
-	Steps []*StepRequestBody `form:"steps" json:"steps" xml:"steps"`
-}
-
 // ListResponseBody is the type of the "step" service "list" endpoint HTTP
 // response body.
 type ListResponseBody struct {
-	// ID is the unique id of the Step.
-	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
-	// The id of the Walkthrough those steps belong to.
+	// ID is the unique id of the Walkthrough.
 	WtID *string `form:"wtId,omitempty" json:"wtId,omitempty" xml:"wtId,omitempty"`
-	// List of steps for a given walkthrough.
-	Steps []*StepResponseBody `form:"steps,omitempty" json:"steps,omitempty" xml:"steps,omitempty"`
+	// List of Stored steps
+	Steps []*StoredStepResponseBody `form:"steps,omitempty" json:"steps,omitempty" xml:"steps,omitempty"`
 }
 
 // AddResponseBody is the type of the "step" service "add" endpoint HTTP
@@ -53,8 +40,10 @@ type AddResponseBody struct {
 	Step *StoredStepResponseBody `form:"step,omitempty" json:"step,omitempty" xml:"step,omitempty"`
 }
 
-// StepResponseBody is used to define fields on response body types.
-type StepResponseBody struct {
+// StoredStepResponseBody is used to define fields on response body types.
+type StoredStepResponseBody struct {
+	// Unique id to this step
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
 	// Title for the given step
 	Title *string `form:"title,omitempty" json:"title,omitempty" xml:"title,omitempty"`
 	// Unique html if for the target
@@ -85,24 +74,6 @@ type StepRequestBody struct {
 	Action string `form:"action" json:"action" xml:"action"`
 }
 
-// StoredStepResponseBody is used to define fields on response body types.
-type StoredStepResponseBody struct {
-	// Unique id to this step
-	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
-	// Title for the given step
-	Title *string `form:"title,omitempty" json:"title,omitempty" xml:"title,omitempty"`
-	// Unique html if for the target
-	Target *string `form:"target,omitempty" json:"target,omitempty" xml:"target,omitempty"`
-	// The number in the sequence that the step belongs to
-	StepNumber *int32 `form:"stepNumber,omitempty" json:"stepNumber,omitempty" xml:"stepNumber,omitempty"`
-	// Where the popup will be anchored, left, right, top or buttom.
-	Placement *string `form:"placement,omitempty" json:"placement,omitempty" xml:"placement,omitempty"`
-	// The content of the message to be displayed
-	Content *string `form:"content,omitempty" json:"content,omitempty" xml:"content,omitempty"`
-	// What action should trigger the next step
-	Action *string `form:"action,omitempty" json:"action,omitempty" xml:"action,omitempty"`
-}
-
 // NewAddRequestBody builds the HTTP request body from the payload of the "add"
 // endpoint of the "step" service.
 func NewAddRequestBody(p *step.AddStepPayload) *AddRequestBody {
@@ -115,32 +86,15 @@ func NewAddRequestBody(p *step.AddStepPayload) *AddRequestBody {
 	return body
 }
 
-// NewUpdateRequestBody builds the HTTP request body from the payload of the
-// "update" endpoint of the "step" service.
-func NewUpdateRequestBody(p *step.StoredSteps) *UpdateRequestBody {
-	body := &UpdateRequestBody{
-		ID:   p.ID,
-		WtID: p.WtID,
-	}
-	if p.Steps != nil {
-		body.Steps = make([]*StepRequestBody, len(p.Steps))
-		for i, val := range p.Steps {
-			body.Steps[i] = marshalStepStepToStepRequestBody(val)
-		}
-	}
-	return body
-}
-
-// NewListStoredStepsOK builds a "step" service "list" endpoint result from a
-// HTTP "OK" response.
-func NewListStoredStepsOK(body *ListResponseBody) *stepviews.StoredStepsView {
-	v := &stepviews.StoredStepsView{
-		ID:   body.ID,
+// NewListStoredListOfStepsOK builds a "step" service "list" endpoint result
+// from a HTTP "OK" response.
+func NewListStoredListOfStepsOK(body *ListResponseBody) *stepviews.StoredListOfStepsView {
+	v := &stepviews.StoredListOfStepsView{
 		WtID: body.WtID,
 	}
-	v.Steps = make([]*stepviews.StepView, len(body.Steps))
+	v.Steps = make([]*stepviews.StoredStepView, len(body.Steps))
 	for i, val := range body.Steps {
-		v.Steps[i] = unmarshalStepResponseBodyToStepviewsStepView(val)
+		v.Steps[i] = unmarshalStoredStepResponseBodyToStepviewsStoredStepView(val)
 	}
 
 	return v
@@ -157,8 +111,12 @@ func NewAddResultStepCreated(body *AddResponseBody) *stepviews.ResultStepView {
 	return v
 }
 
-// ValidateStepResponseBody runs the validations defined on StepResponseBody
-func ValidateStepResponseBody(body *StepResponseBody) (err error) {
+// ValidateStoredStepResponseBody runs the validations defined on
+// StoredStepResponseBody
+func ValidateStoredStepResponseBody(body *StoredStepResponseBody) (err error) {
+	if body.ID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
+	}
 	if body.Title == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("title", "body"))
 	}
@@ -168,14 +126,8 @@ func ValidateStepResponseBody(body *StepResponseBody) (err error) {
 	if body.StepNumber == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("stepNumber", "body"))
 	}
-	if body.Placement == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("placement", "body"))
-	}
 	if body.Content == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("content", "body"))
-	}
-	if body.Action == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("action", "body"))
 	}
 	if body.Placement != nil {
 		if !(*body.Placement == "left" || *body.Placement == "right" || *body.Placement == "top" || *body.Placement == "buttom") {
@@ -197,43 +149,6 @@ func ValidateStepRequestBody(body *StepRequestBody) (err error) {
 	}
 	if !(body.Action == "click" || body.Action == "next" || body.Action == "end") {
 		err = goa.MergeErrors(err, goa.InvalidEnumValueError("body.action", body.Action, []interface{}{"click", "next", "end"}))
-	}
-	return
-}
-
-// ValidateStoredStepResponseBody runs the validations defined on
-// StoredStepResponseBody
-func ValidateStoredStepResponseBody(body *StoredStepResponseBody) (err error) {
-	if body.ID == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
-	}
-	if body.Title == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("title", "body"))
-	}
-	if body.Target == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("target", "body"))
-	}
-	if body.StepNumber == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("stepNumber", "body"))
-	}
-	if body.Content == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("content", "body"))
-	}
-	if body.Placement == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("placement", "body"))
-	}
-	if body.Action == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("action", "body"))
-	}
-	if body.Placement != nil {
-		if !(*body.Placement == "left" || *body.Placement == "right" || *body.Placement == "top" || *body.Placement == "buttom") {
-			err = goa.MergeErrors(err, goa.InvalidEnumValueError("body.placement", *body.Placement, []interface{}{"left", "right", "top", "buttom"}))
-		}
-	}
-	if body.Action != nil {
-		if !(*body.Action == "click" || *body.Action == "next" || *body.Action == "end") {
-			err = goa.MergeErrors(err, goa.InvalidEnumValueError("body.action", *body.Action, []interface{}{"click", "next", "end"}))
-		}
 	}
 	return
 }

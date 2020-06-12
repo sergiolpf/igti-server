@@ -19,7 +19,7 @@ var _ = Service("step", func() {
 			Required("id")
 		})
 
-		Result(StoredSteps, func() {
+		Result(StoredListOfSteps, func() {
 			View("default")
 		})
 
@@ -50,79 +50,39 @@ var _ = Service("step", func() {
 		})
 	})
 
-	Method("remove", func() {
-		Description("Remove Steps from storage")
+	// Method("remove", func() {
+	// 	Description("Remove Steps from storage")
 
-		Payload(func() {
-			Field(1, "id", String, "ID of Steps to remove")
-			Required("id")
-		})
+	// 	Payload(func() {
+	// 		Field(1, "id", String, "ID of Steps to remove")
+	// 		Required("id")
+	// 	})
 
-		Error("not_found", ElementNotFound, "Steps not found")
+	// 	Error("not_found", ElementNotFound, "Steps not found")
 
-		HTTP(func() {
-			DELETE("/{id}")
-			Response(StatusNoContent)
-		})
+	// 	HTTP(func() {
+	// 		DELETE("/{id}")
+	// 		Response(StatusNoContent)
+	// 	})
 
-		GRPC(func() {
-			Response(CodeOK)
-		})
+	// 	GRPC(func() {
+	// 		Response(CodeOK)
+	// 	})
 
-	})
+	// })
 
-	Method("update", func() {
-		Description("Update Steps with the given IDs.")
-		Payload(StoredSteps)
+	// Method("update", func() {
+	// 	Description("Update Steps with the given IDs.")
+	// 	Payload(StoredSteps)
 
-		HTTP(func() {
-			PUT("/update")
-			Response(StatusNoContent)
-		})
-		GRPC(func() {
-			Response(CodeOK)
-		})
-	})
-})
-
-var StoredSteps = ResultType("application/vnd.goa.guide.me.stored-steps", func() {
-	Description("A StoredStep describes all the Steps retrieved by the Steps service.")
-	Reference(Steps)
-	TypeName("StoredSteps")
-
-	Attributes(func() {
-		Attribute("id", String, "ID is the unique id of the Step.", func() {
-			Example("123abc")
-			Meta("rpc:tag", "1")
-
-		})
-		Field(2, "wtId")
-		Field(3, "steps")
-	})
-	View("default", func() {
-		Attribute("id")
-		Attribute("wtId")
-		Attribute("steps")
-
-	})
-	View("tiny", func() {
-		Attribute("id")
-		Attribute("wtId")
-		Attribute("steps")
-	})
-	Required("id", "wtId", "steps")
-})
-
-var Steps = Type("Steps", func() {
-	Description("Steps describes the entire chain of steps to be displayed as part of the walkthrough.")
-	Attribute("wtId", String, "The id of the Walkthrough those steps belong to.", func() {
-		Example("abc234235")
-		Meta("rpc:tag", "1")
-	})
-
-	Attribute("steps", ArrayOf(Step), "List of steps for a given walkthrough.", func() {
-		Meta("rpc:tag", "2")
-	})
+	// 	HTTP(func() {
+	// 		PUT("/update")
+	// 		Response(StatusNoContent)
+	// 	})
+	// 	GRPC(func() {
+	// 		Response(CodeOK)
+	// 	})
+	// })
 })
 
 var Step = Type("Step", func() {
@@ -192,6 +152,30 @@ var StoredStep = ResultType("application/vnd.goa.guide.me.stored-step", func() {
 		Attribute("content")
 	})
 	Required("id", "title", "target", "stepNumber", "content")
+})
+
+var StoredListOfSteps = ResultType("application/vnd.goa.guide.me.stored-listof-steps", func() {
+	Description("A StoredListOfSteps describes all the Steps retrieved by the Steps service.")
+	Reference(StoredStep)
+	TypeName("StoredListOfSteps")
+
+	Attributes(func() {
+		Attribute("wtId", String, "ID is the unique id of the Walkthrough.", func() {
+			Example("123abc")
+			Meta("rpc:tag", "1")
+
+		})
+		Attribute("steps", ArrayOf(StoredStep), "List of Stored steps", func() {
+
+			Meta("rpc:tag", "2")
+		})
+	})
+
+	View("default", func() {
+		Attribute("wtId")
+		Attribute("steps")
+	})
+	Required("wtId", "steps")
 })
 
 var AddStepPayload = Type("AddStepPayload", func() {

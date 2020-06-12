@@ -54,11 +54,11 @@ func DecodeListResponse(ctx context.Context, v interface{}, hdr, trlr metadata.M
 		return nil, goagrpc.ErrInvalidType("step", "list", "*steppb.ListResponse", v)
 	}
 	res := NewListResult(message)
-	vres := &stepviews.StoredSteps{Projected: res, View: view}
-	if err := stepviews.ValidateStoredSteps(vres); err != nil {
+	vres := &stepviews.StoredListOfSteps{Projected: res, View: view}
+	if err := stepviews.ValidateStoredListOfSteps(vres); err != nil {
 		return nil, err
 	}
-	return step.NewStoredSteps(vres), nil
+	return step.NewStoredListOfSteps(vres), nil
 }
 
 // BuildAddFunc builds the remote method to invoke for "step" service "add"
@@ -102,50 +102,4 @@ func DecodeAddResponse(ctx context.Context, v interface{}, hdr, trlr metadata.MD
 		return nil, err
 	}
 	return step.NewResultStep(vres), nil
-}
-
-// BuildRemoveFunc builds the remote method to invoke for "step" service
-// "remove" endpoint.
-func BuildRemoveFunc(grpccli steppb.StepClient, cliopts ...grpc.CallOption) goagrpc.RemoteFunc {
-	return func(ctx context.Context, reqpb interface{}, opts ...grpc.CallOption) (interface{}, error) {
-		for _, opt := range cliopts {
-			opts = append(opts, opt)
-		}
-		if reqpb != nil {
-			return grpccli.Remove(ctx, reqpb.(*steppb.RemoveRequest), opts...)
-		}
-		return grpccli.Remove(ctx, &steppb.RemoveRequest{}, opts...)
-	}
-}
-
-// EncodeRemoveRequest encodes requests sent to step remove endpoint.
-func EncodeRemoveRequest(ctx context.Context, v interface{}, md *metadata.MD) (interface{}, error) {
-	payload, ok := v.(*step.RemovePayload)
-	if !ok {
-		return nil, goagrpc.ErrInvalidType("step", "remove", "*step.RemovePayload", v)
-	}
-	return NewRemoveRequest(payload), nil
-}
-
-// BuildUpdateFunc builds the remote method to invoke for "step" service
-// "update" endpoint.
-func BuildUpdateFunc(grpccli steppb.StepClient, cliopts ...grpc.CallOption) goagrpc.RemoteFunc {
-	return func(ctx context.Context, reqpb interface{}, opts ...grpc.CallOption) (interface{}, error) {
-		for _, opt := range cliopts {
-			opts = append(opts, opt)
-		}
-		if reqpb != nil {
-			return grpccli.Update(ctx, reqpb.(*steppb.UpdateRequest), opts...)
-		}
-		return grpccli.Update(ctx, &steppb.UpdateRequest{}, opts...)
-	}
-}
-
-// EncodeUpdateRequest encodes requests sent to step update endpoint.
-func EncodeUpdateRequest(ctx context.Context, v interface{}, md *metadata.MD) (interface{}, error) {
-	payload, ok := v.(*step.StoredSteps)
-	if !ok {
-		return nil, goagrpc.ErrInvalidType("step", "update", "*step.StoredSteps", v)
-	}
-	return NewUpdateRequest(payload), nil
 }

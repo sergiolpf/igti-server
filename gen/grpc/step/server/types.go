@@ -25,18 +25,18 @@ func NewListPayload(message *steppb.ListRequest) *step.ListPayload {
 
 // NewListResponse builds the gRPC response type from the result of the "list"
 // endpoint of the "step" service.
-func NewListResponse(result *stepviews.StoredStepsView) *steppb.ListResponse {
+func NewListResponse(result *stepviews.StoredListOfStepsView) *steppb.ListResponse {
 	message := &steppb.ListResponse{}
-	if result.ID != nil {
-		message.Id = *result.ID
-	}
 	if result.WtID != nil {
 		message.WtId = *result.WtID
 	}
 	if result.Steps != nil {
-		message.Steps = make([]*steppb.Step1, len(result.Steps))
+		message.Steps = make([]*steppb.StoredStep, len(result.Steps))
 		for i, val := range result.Steps {
-			message.Steps[i] = &steppb.Step1{}
+			message.Steps[i] = &steppb.StoredStep{}
+			if val.ID != nil {
+				message.Steps[i].Id = *val.ID
+			}
 			if val.Title != nil {
 				message.Steps[i].Title = *val.Title
 			}
@@ -92,63 +92,6 @@ func NewAddResponse(result *stepviews.ResultStepView) *steppb.AddResponse {
 	return message
 }
 
-// NewRemovePayload builds the payload of the "remove" endpoint of the "step"
-// service from the gRPC request type.
-func NewRemovePayload(message *steppb.RemoveRequest) *step.RemovePayload {
-	v := &step.RemovePayload{
-		ID: message.Id,
-	}
-	return v
-}
-
-// NewRemoveResponse builds the gRPC response type from the result of the
-// "remove" endpoint of the "step" service.
-func NewRemoveResponse() *steppb.RemoveResponse {
-	message := &steppb.RemoveResponse{}
-	return message
-}
-
-// NewUpdatePayload builds the payload of the "update" endpoint of the "step"
-// service from the gRPC request type.
-func NewUpdatePayload(message *steppb.UpdateRequest) *step.StoredSteps {
-	v := &step.StoredSteps{
-		ID:   message.Id,
-		WtID: message.WtId,
-	}
-	if message.Steps != nil {
-		v.Steps = make([]*step.Step, len(message.Steps))
-		for i, val := range message.Steps {
-			v.Steps[i] = &step.Step{
-				Title:      val.Title,
-				Target:     val.Target,
-				StepNumber: val.StepNumber,
-				Placement:  val.Placement,
-				Content:    val.Content,
-				Action:     val.Action,
-			}
-		}
-	}
-	return v
-}
-
-// NewUpdateResponse builds the gRPC response type from the result of the
-// "update" endpoint of the "step" service.
-func NewUpdateResponse() *steppb.UpdateResponse {
-	message := &steppb.UpdateResponse{}
-	return message
-}
-
-// ValidateStep1 runs the validations defined on Step1.
-func ValidateStep1(message *steppb.Step1) (err error) {
-	if !(message.Placement == "left" || message.Placement == "right" || message.Placement == "top" || message.Placement == "buttom") {
-		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.placement", message.Placement, []interface{}{"left", "right", "top", "buttom"}))
-	}
-	if !(message.Action == "click" || message.Action == "next" || message.Action == "end") {
-		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.action", message.Action, []interface{}{"click", "next", "end"}))
-	}
-	return
-}
-
 // ValidateAddRequest runs the validations defined on AddRequest.
 func ValidateAddRequest(message *steppb.AddRequest) (err error) {
 	if message.Step != nil {
@@ -159,17 +102,13 @@ func ValidateAddRequest(message *steppb.AddRequest) (err error) {
 	return
 }
 
-// ValidateUpdateRequest runs the validations defined on UpdateRequest.
-func ValidateUpdateRequest(message *steppb.UpdateRequest) (err error) {
-	if message.Steps == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("steps", "message"))
+// ValidateStep1 runs the validations defined on Step1.
+func ValidateStep1(message *steppb.Step1) (err error) {
+	if !(message.Placement == "left" || message.Placement == "right" || message.Placement == "top" || message.Placement == "buttom") {
+		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.placement", message.Placement, []interface{}{"left", "right", "top", "buttom"}))
 	}
-	for _, e := range message.Steps {
-		if e != nil {
-			if err2 := ValidateStep1(e); err2 != nil {
-				err = goa.MergeErrors(err, err2)
-			}
-		}
+	if !(message.Action == "click" || message.Action == "next" || message.Action == "end") {
+		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.action", message.Action, []interface{}{"click", "next", "end"}))
 	}
 	return
 }

@@ -59,33 +59,3 @@ func (c *Client) Add() goa.Endpoint {
 		return res, nil
 	}
 }
-
-// Remove calls the "Remove" function in steppb.StepClient interface.
-func (c *Client) Remove() goa.Endpoint {
-	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		inv := goagrpc.NewInvoker(
-			BuildRemoveFunc(c.grpccli, c.opts...),
-			EncodeRemoveRequest,
-			nil)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			return nil, goa.Fault(err.Error())
-		}
-		return res, nil
-	}
-}
-
-// Update calls the "Update" function in steppb.StepClient interface.
-func (c *Client) Update() goa.Endpoint {
-	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		inv := goagrpc.NewInvoker(
-			BuildUpdateFunc(c.grpccli, c.opts...),
-			EncodeUpdateRequest,
-			nil)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			return nil, goa.Fault(err.Error())
-		}
-		return res, nil
-	}
-}
