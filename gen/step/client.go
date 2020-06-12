@@ -42,13 +42,13 @@ func (c *Client) List(ctx context.Context, p *ListPayload) (res *StoredSteps, er
 }
 
 // Add calls the "add" endpoint of the "step" service.
-func (c *Client) Add(ctx context.Context, p *Steps) (res string, err error) {
+func (c *Client) Add(ctx context.Context, p *AddStepPayload) (res *ResultStep, err error) {
 	var ires interface{}
 	ires, err = c.AddEndpoint(ctx, p)
 	if err != nil {
 		return
 	}
-	return ires.(string), nil
+	return ires.(*ResultStep), nil
 }
 
 // Remove calls the "remove" endpoint of the "step" service.

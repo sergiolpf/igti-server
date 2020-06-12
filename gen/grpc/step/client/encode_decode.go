@@ -77,21 +77,31 @@ func BuildAddFunc(grpccli steppb.StepClient, cliopts ...grpc.CallOption) goagrpc
 
 // EncodeAddRequest encodes requests sent to step add endpoint.
 func EncodeAddRequest(ctx context.Context, v interface{}, md *metadata.MD) (interface{}, error) {
-	payload, ok := v.(*step.Steps)
+	payload, ok := v.(*step.AddStepPayload)
 	if !ok {
-		return nil, goagrpc.ErrInvalidType("step", "add", "*step.Steps", v)
+		return nil, goagrpc.ErrInvalidType("step", "add", "*step.AddStepPayload", v)
 	}
 	return NewAddRequest(payload), nil
 }
 
 // DecodeAddResponse decodes responses from the step add endpoint.
 func DecodeAddResponse(ctx context.Context, v interface{}, hdr, trlr metadata.MD) (interface{}, error) {
+	var view string
+	{
+		if vals := hdr.Get("goa-view"); len(vals) > 0 {
+			view = vals[0]
+		}
+	}
 	message, ok := v.(*steppb.AddResponse)
 	if !ok {
 		return nil, goagrpc.ErrInvalidType("step", "add", "*steppb.AddResponse", v)
 	}
 	res := NewAddResult(message)
-	return res, nil
+	vres := &stepviews.ResultStep{Projected: res, View: view}
+	if err := stepviews.ValidateResultStep(vres); err != nil {
+		return nil, err
+	}
+	return step.NewResultStep(vres), nil
 }
 
 // BuildRemoveFunc builds the remote method to invoke for "step" service

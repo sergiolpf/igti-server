@@ -50,9 +50,16 @@ func DecodeListRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.De
 // endpoint.
 func EncodeAddResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(string)
+		res := v.(*stepviews.ResultStep)
+		w.Header().Set("goa-view", res.View)
 		enc := encoder(ctx, w)
-		body := res
+		var body interface{}
+		switch res.View {
+		case "default", "":
+			body = NewAddResponseBody(res.Projected)
+		case "tiny":
+			body = NewAddResponseBodyTiny(res.Projected)
+		}
 		w.WriteHeader(http.StatusCreated)
 		return enc.Encode(body)
 	}
@@ -77,7 +84,7 @@ func DecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Dec
 		if err != nil {
 			return nil, err
 		}
-		payload := NewAddSteps(&body)
+		payload := NewAddStepPayload(&body)
 
 		return payload, nil
 	}
@@ -146,11 +153,12 @@ func DecodeUpdateRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 // *StepResponseBody from a value of type *stepviews.StepView.
 func marshalStepviewsStepViewToStepResponseBody(v *stepviews.StepView) *StepResponseBody {
 	res := &StepResponseBody{
-		Targetid: *v.Targetid,
-		Type:     *v.Type,
-		Value:    *v.Value,
-		Sequence: *v.Sequence,
-		Action:   *v.Action,
+		Title:      *v.Title,
+		Target:     *v.Target,
+		StepNumber: *v.StepNumber,
+		Placement:  *v.Placement,
+		Content:    *v.Content,
+		Action:     *v.Action,
 	}
 
 	return res
@@ -163,11 +171,28 @@ func unmarshalStepRequestBodyToStepStep(v *StepRequestBody) *step.Step {
 		return nil
 	}
 	res := &step.Step{
-		Targetid: *v.Targetid,
-		Type:     *v.Type,
-		Value:    *v.Value,
-		Sequence: *v.Sequence,
-		Action:   *v.Action,
+		Title:      *v.Title,
+		Target:     *v.Target,
+		StepNumber: *v.StepNumber,
+		Placement:  *v.Placement,
+		Content:    *v.Content,
+		Action:     *v.Action,
+	}
+
+	return res
+}
+
+// marshalStepviewsStoredStepViewToStoredStepResponseBody builds a value of
+// type *StoredStepResponseBody from a value of type *stepviews.StoredStepView.
+func marshalStepviewsStoredStepViewToStoredStepResponseBody(v *stepviews.StoredStepView) *StoredStepResponseBody {
+	res := &StoredStepResponseBody{
+		ID:         *v.ID,
+		Title:      *v.Title,
+		Target:     *v.Target,
+		StepNumber: *v.StepNumber,
+		Placement:  *v.Placement,
+		Content:    *v.Content,
+		Action:     *v.Action,
 	}
 
 	return res

@@ -24,7 +24,7 @@ func BuildListPayload(stepListMessage string) (*step.ListPayload, error) {
 		if stepListMessage != "" {
 			err = json.Unmarshal([]byte(stepListMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Optio et architecto omnis ab accusamus est.\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Quia fugiat et delectus quo.\"\n   }'")
 			}
 		}
 	}
@@ -36,32 +36,23 @@ func BuildListPayload(stepListMessage string) (*step.ListPayload, error) {
 }
 
 // BuildAddPayload builds the payload for the step add endpoint from CLI flags.
-func BuildAddPayload(stepAddMessage string) (*step.Steps, error) {
+func BuildAddPayload(stepAddMessage string) (*step.AddStepPayload, error) {
 	var err error
 	var message steppb.AddRequest
 	{
 		if stepAddMessage != "" {
 			err = json.Unmarshal([]byte(stepAddMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"steps\": [\n         {\n            \"action\": \"next\",\n            \"sequence\": 1093668274,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"next\",\n            \"sequence\": 1093668274,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"next\",\n            \"sequence\": 1093668274,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"next\",\n            \"sequence\": 1093668274,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         }\n      ],\n      \"wtId\": \"abc234235\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"step\": {\n         \"action\": \"end\",\n         \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n         \"placement\": \"top\",\n         \"stepNumber\": 1917719943,\n         \"target\": \"Sed et sit dolor aut voluptas.\",\n         \"title\": \"Click here to make it work!\"\n      },\n      \"wtId\": \"Illum commodi deleniti qui.\"\n   }'")
 			}
 		}
 	}
-	v := &step.Steps{}
+	v := &step.AddStepPayload{}
 	if message.WtId != "" {
 		v.WtID = &message.WtId
 	}
-	if message.Steps != nil {
-		v.Steps = make([]*step.Step, len(message.Steps))
-		for i, val := range message.Steps {
-			v.Steps[i] = &step.Step{
-				Targetid: val.Targetid,
-				Type:     val.Type,
-				Value:    val.Value,
-				Sequence: val.Sequence,
-				Action:   val.Action,
-			}
-		}
+	if message.Step != nil {
+		v.Step = protobufSteppbStep1ToStepStep(message.Step)
 	}
 
 	return v, nil
@@ -76,7 +67,7 @@ func BuildRemovePayload(stepRemoveMessage string) (*step.RemovePayload, error) {
 		if stepRemoveMessage != "" {
 			err = json.Unmarshal([]byte(stepRemoveMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Facere non et.\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Aliquid et aut dolor.\"\n   }'")
 			}
 		}
 	}
@@ -96,7 +87,7 @@ func BuildUpdatePayload(stepUpdateMessage string) (*step.StoredSteps, error) {
 		if stepUpdateMessage != "" {
 			err = json.Unmarshal([]byte(stepUpdateMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"123abc\",\n      \"steps\": [\n         {\n            \"action\": \"next\",\n            \"sequence\": 1093668274,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"next\",\n            \"sequence\": 1093668274,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"next\",\n            \"sequence\": 1093668274,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"next\",\n            \"sequence\": 1093668274,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         }\n      ],\n      \"wtId\": \"abc234235\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"123abc\",\n      \"steps\": [\n         {\n            \"action\": \"end\",\n            \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n            \"placement\": \"top\",\n            \"stepNumber\": 1917719943,\n            \"target\": \"Sed et sit dolor aut voluptas.\",\n            \"title\": \"Click here to make it work!\"\n         },\n         {\n            \"action\": \"end\",\n            \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n            \"placement\": \"top\",\n            \"stepNumber\": 1917719943,\n            \"target\": \"Sed et sit dolor aut voluptas.\",\n            \"title\": \"Click here to make it work!\"\n         },\n         {\n            \"action\": \"end\",\n            \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n            \"placement\": \"top\",\n            \"stepNumber\": 1917719943,\n            \"target\": \"Sed et sit dolor aut voluptas.\",\n            \"title\": \"Click here to make it work!\"\n         }\n      ],\n      \"wtId\": \"abc234235\"\n   }'")
 			}
 		}
 	}
@@ -108,11 +99,12 @@ func BuildUpdatePayload(stepUpdateMessage string) (*step.StoredSteps, error) {
 		v.Steps = make([]*step.Step, len(message.Steps))
 		for i, val := range message.Steps {
 			v.Steps[i] = &step.Step{
-				Targetid: val.Targetid,
-				Type:     val.Type,
-				Value:    val.Value,
-				Sequence: val.Sequence,
-				Action:   val.Action,
+				Title:      val.Title,
+				Target:     val.Target,
+				StepNumber: val.StepNumber,
+				Placement:  val.Placement,
+				Content:    val.Content,
+				Action:     val.Action,
 			}
 		}
 	}

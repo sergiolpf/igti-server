@@ -25,7 +25,7 @@ func BuildShowPayload(organizationShowMessage string, organizationShowView strin
 		if organizationShowMessage != "" {
 			err = json.Unmarshal([]byte(organizationShowMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Minima cum consequatur occaecati commodi.\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Ipsum ratione eum.\"\n   }'")
 			}
 		}
 	}
@@ -81,7 +81,7 @@ func BuildRemovePayload(organizationRemoveMessage string) (*organization.RemoveP
 		if organizationRemoveMessage != "" {
 			err = json.Unmarshal([]byte(organizationRemoveMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Aut sed quod repudiandae sed.\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Voluptates occaecati aliquid veniam ipsa in.\"\n   }'")
 			}
 		}
 	}

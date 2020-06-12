@@ -104,9 +104,9 @@ func (c *Client) BuildAddRequest(ctx context.Context, v interface{}) (*http.Requ
 // EncodeAddRequest returns an encoder for requests sent to the step add server.
 func EncodeAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
 	return func(req *http.Request, v interface{}) error {
-		p, ok := v.(*step.Steps)
+		p, ok := v.(*step.AddStepPayload)
 		if !ok {
-			return goahttp.ErrInvalidType("step", "add", "*step.Steps", v)
+			return goahttp.ErrInvalidType("step", "add", "*step.AddStepPayload", v)
 		}
 		body := NewAddRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
@@ -136,14 +136,21 @@ func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody
 		switch resp.StatusCode {
 		case http.StatusCreated:
 			var (
-				body string
+				body AddResponseBody
 				err  error
 			)
 			err = decoder(resp).Decode(&body)
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("step", "add", err)
 			}
-			return body, nil
+			p := NewAddResultStepCreated(&body)
+			view := resp.Header.Get("goa-view")
+			vres := &stepviews.ResultStep{Projected: p, View: view}
+			if err = stepviews.ValidateResultStep(vres); err != nil {
+				return nil, goahttp.ErrValidationError("step", "add", err)
+			}
+			res := step.NewResultStep(vres)
+			return res, nil
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("step", "add", resp.StatusCode, string(body))
@@ -265,11 +272,12 @@ func DecodeUpdateResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 // *stepviews.StepView from a value of type *StepResponseBody.
 func unmarshalStepResponseBodyToStepviewsStepView(v *StepResponseBody) *stepviews.StepView {
 	res := &stepviews.StepView{
-		Targetid: v.Targetid,
-		Type:     v.Type,
-		Value:    v.Value,
-		Sequence: v.Sequence,
-		Action:   v.Action,
+		Title:      v.Title,
+		Target:     v.Target,
+		StepNumber: v.StepNumber,
+		Placement:  v.Placement,
+		Content:    v.Content,
+		Action:     v.Action,
 	}
 
 	return res
@@ -282,11 +290,12 @@ func marshalStepStepToStepRequestBody(v *step.Step) *StepRequestBody {
 		return nil
 	}
 	res := &StepRequestBody{
-		Targetid: v.Targetid,
-		Type:     v.Type,
-		Value:    v.Value,
-		Sequence: v.Sequence,
-		Action:   v.Action,
+		Title:      v.Title,
+		Target:     v.Target,
+		StepNumber: v.StepNumber,
+		Placement:  v.Placement,
+		Content:    v.Content,
+		Action:     v.Action,
 	}
 
 	return res
@@ -299,11 +308,28 @@ func marshalStepRequestBodyToStepStep(v *StepRequestBody) *step.Step {
 		return nil
 	}
 	res := &step.Step{
-		Targetid: v.Targetid,
-		Type:     v.Type,
-		Value:    v.Value,
-		Sequence: v.Sequence,
-		Action:   v.Action,
+		Title:      v.Title,
+		Target:     v.Target,
+		StepNumber: v.StepNumber,
+		Placement:  v.Placement,
+		Content:    v.Content,
+		Action:     v.Action,
+	}
+
+	return res
+}
+
+// unmarshalStoredStepResponseBodyToStepviewsStoredStepView builds a value of
+// type *stepviews.StoredStepView from a value of type *StoredStepResponseBody.
+func unmarshalStoredStepResponseBodyToStepviewsStoredStepView(v *StoredStepResponseBody) *stepviews.StoredStepView {
+	res := &stepviews.StoredStepView{
+		ID:         v.ID,
+		Title:      v.Title,
+		Target:     v.Target,
+		StepNumber: v.StepNumber,
+		Placement:  v.Placement,
+		Content:    v.Content,
+		Action:     v.Action,
 	}
 
 	return res

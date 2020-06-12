@@ -49,10 +49,12 @@ func DecodeListRequest(ctx context.Context, v interface{}, md metadata.MD) (inte
 
 // EncodeAddResponse encodes responses from the "step" service "add" endpoint.
 func EncodeAddResponse(ctx context.Context, v interface{}, hdr, trlr *metadata.MD) (interface{}, error) {
-	result, ok := v.(string)
+	vres, ok := v.(*stepviews.ResultStep)
 	if !ok {
-		return nil, goagrpc.ErrInvalidType("step", "add", "string", v)
+		return nil, goagrpc.ErrInvalidType("step", "add", "*stepviews.ResultStep", v)
 	}
+	result := vres.Projected
+	(*hdr).Append("goa-view", vres.View)
 	resp := NewAddResponse(result)
 	return resp, nil
 }
@@ -71,7 +73,7 @@ func DecodeAddRequest(ctx context.Context, v interface{}, md metadata.MD) (inter
 			return nil, err
 		}
 	}
-	var payload *step.Steps
+	var payload *step.AddStepPayload
 	{
 		payload = NewAddPayload(message)
 	}

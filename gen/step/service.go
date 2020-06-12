@@ -19,7 +19,10 @@ type Service interface {
 	// List all stored Steps for a given walkthrough
 	List(context.Context, *ListPayload) (res *StoredSteps, err error)
 	// Add new Steps to walkthrough and return ID.
-	Add(context.Context, *Steps) (res string, err error)
+	// The "view" return value must have one of the following views
+	//	- "default"
+	//	- "tiny"
+	Add(context.Context, *AddStepPayload) (res *ResultStep, view string, err error)
 	// Remove Steps from storage
 	Remove(context.Context, *RemovePayload) (err error)
 	// Update Steps with the given IDs.
@@ -52,12 +55,20 @@ type StoredSteps struct {
 	Steps []*Step
 }
 
-// Steps is the payload type of the step service add method.
-type Steps struct {
-	// The id of the Walkthrough those steps belong to.
+// AddStepPayload is the payload type of the step service add method.
+type AddStepPayload struct {
+	// Id of the walkthrough to have a step added to
 	WtID *string
-	// List of steps for a given walkthrough.
-	Steps []*Step
+	// step to be added
+	Step *Step
+}
+
+// ResultStep is the result type of the step service add method.
+type ResultStep struct {
+	// Id of the walkthrough to have a step added to
+	WtID string
+	// Modified step
+	Step *StoredStep
 }
 
 // RemovePayload is the payload type of the step service remove method.
@@ -68,14 +79,34 @@ type RemovePayload struct {
 
 // Step describes the basic details of your tutorials.
 type Step struct {
-	// A string representing the HTML ID of an element
-	Targetid string
-	// The type of step to be used
-	Type string
+	// Title for the given step
+	Title string
+	// Unique html if for the target
+	Target string
+	// The number in the sequence that the step belongs to
+	StepNumber int32
+	// Where the popup will be anchored, left, right, top or buttom.
+	Placement string
 	// The content of the message to be displayed
-	Value string
-	// The number in the sequence that the step belongs to.
-	Sequence int32
+	Content string
+	// What action should trigger the next step
+	Action string
+}
+
+// A StoredStep describes a step returned from the database.
+type StoredStep struct {
+	// Unique id to this step
+	ID string
+	// Title for the given step
+	Title string
+	// Unique html if for the target
+	Target string
+	// The number in the sequence that the step belongs to
+	StepNumber int32
+	// Where the popup will be anchored, left, right, top or buttom.
+	Placement string
+	// The content of the message to be displayed
+	Content string
 	// What action should trigger the next step
 	Action string
 }
@@ -121,6 +152,34 @@ func NewViewedStoredSteps(res *StoredSteps, view string) *stepviews.StoredSteps 
 	case "tiny":
 		p := newStoredStepsViewTiny(res)
 		vres = &stepviews.StoredSteps{Projected: p, View: "tiny"}
+	}
+	return vres
+}
+
+// NewResultStep initializes result type ResultStep from viewed result type
+// ResultStep.
+func NewResultStep(vres *stepviews.ResultStep) *ResultStep {
+	var res *ResultStep
+	switch vres.View {
+	case "default", "":
+		res = newResultStep(vres.Projected)
+	case "tiny":
+		res = newResultStepTiny(vres.Projected)
+	}
+	return res
+}
+
+// NewViewedResultStep initializes viewed result type ResultStep from result
+// type ResultStep using the given view.
+func NewViewedResultStep(res *ResultStep, view string) *stepviews.ResultStep {
+	var vres *stepviews.ResultStep
+	switch view {
+	case "default", "":
+		p := newResultStepView(res)
+		vres = &stepviews.ResultStep{Projected: p, View: "default"}
+	case "tiny":
+		p := newResultStepViewTiny(res)
+		vres = &stepviews.ResultStep{Projected: p, View: "tiny"}
 	}
 	return vres
 }
@@ -195,6 +254,138 @@ func newStoredStepsViewTiny(res *StoredSteps) *stepviews.StoredStepsView {
 	return vres
 }
 
+// newResultStep converts projected type ResultStep to service type ResultStep.
+func newResultStep(vres *stepviews.ResultStepView) *ResultStep {
+	res := &ResultStep{}
+	if vres.WtID != nil {
+		res.WtID = *vres.WtID
+	}
+	if vres.Step != nil {
+		res.Step = newStoredStep(vres.Step)
+	}
+	return res
+}
+
+// newResultStepTiny converts projected type ResultStep to service type
+// ResultStep.
+func newResultStepTiny(vres *stepviews.ResultStepView) *ResultStep {
+	res := &ResultStep{}
+	if vres.WtID != nil {
+		res.WtID = *vres.WtID
+	}
+	if vres.Step != nil {
+		res.Step = newStoredStep(vres.Step)
+	}
+	return res
+}
+
+// newResultStepView projects result type ResultStep to projected type
+// ResultStepView using the "default" view.
+func newResultStepView(res *ResultStep) *stepviews.ResultStepView {
+	vres := &stepviews.ResultStepView{
+		WtID: &res.WtID,
+	}
+	if res.Step != nil {
+		vres.Step = newStoredStepView(res.Step)
+	}
+	return vres
+}
+
+// newResultStepViewTiny projects result type ResultStep to projected type
+// ResultStepView using the "tiny" view.
+func newResultStepViewTiny(res *ResultStep) *stepviews.ResultStepView {
+	vres := &stepviews.ResultStepView{
+		WtID: &res.WtID,
+	}
+	if res.Step != nil {
+		vres.Step = newStoredStepView(res.Step)
+	}
+	return vres
+}
+
+// newStoredStep converts projected type StoredStep to service type StoredStep.
+func newStoredStep(vres *stepviews.StoredStepView) *StoredStep {
+	res := &StoredStep{}
+	if vres.ID != nil {
+		res.ID = *vres.ID
+	}
+	if vres.Title != nil {
+		res.Title = *vres.Title
+	}
+	if vres.Target != nil {
+		res.Target = *vres.Target
+	}
+	if vres.StepNumber != nil {
+		res.StepNumber = *vres.StepNumber
+	}
+	if vres.Placement != nil {
+		res.Placement = *vres.Placement
+	}
+	if vres.Content != nil {
+		res.Content = *vres.Content
+	}
+	if vres.Action != nil {
+		res.Action = *vres.Action
+	}
+	if vres.Placement == nil {
+		res.Placement = "right"
+	}
+	if vres.Action == nil {
+		res.Action = "next"
+	}
+	return res
+}
+
+// newStoredStepTiny converts projected type StoredStep to service type
+// StoredStep.
+func newStoredStepTiny(vres *stepviews.StoredStepView) *StoredStep {
+	res := &StoredStep{}
+	if vres.ID != nil {
+		res.ID = *vres.ID
+	}
+	if vres.Title != nil {
+		res.Title = *vres.Title
+	}
+	if vres.Target != nil {
+		res.Target = *vres.Target
+	}
+	if vres.StepNumber != nil {
+		res.StepNumber = *vres.StepNumber
+	}
+	if vres.Content != nil {
+		res.Content = *vres.Content
+	}
+	return res
+}
+
+// newStoredStepView projects result type StoredStep to projected type
+// StoredStepView using the "default" view.
+func newStoredStepView(res *StoredStep) *stepviews.StoredStepView {
+	vres := &stepviews.StoredStepView{
+		ID:         &res.ID,
+		Title:      &res.Title,
+		Target:     &res.Target,
+		StepNumber: &res.StepNumber,
+		Placement:  &res.Placement,
+		Content:    &res.Content,
+		Action:     &res.Action,
+	}
+	return vres
+}
+
+// newStoredStepViewTiny projects result type StoredStep to projected type
+// StoredStepView using the "tiny" view.
+func newStoredStepViewTiny(res *StoredStep) *stepviews.StoredStepView {
+	vres := &stepviews.StoredStepView{
+		ID:         &res.ID,
+		Title:      &res.Title,
+		Target:     &res.Target,
+		StepNumber: &res.StepNumber,
+		Content:    &res.Content,
+	}
+	return vres
+}
+
 // transformStepviewsStepViewToStep builds a value of type *Step from a value
 // of type *stepviews.StepView.
 func transformStepviewsStepViewToStep(v *stepviews.StepView) *Step {
@@ -202,11 +393,12 @@ func transformStepviewsStepViewToStep(v *stepviews.StepView) *Step {
 		return nil
 	}
 	res := &Step{
-		Targetid: *v.Targetid,
-		Type:     *v.Type,
-		Value:    *v.Value,
-		Sequence: *v.Sequence,
-		Action:   *v.Action,
+		Title:      *v.Title,
+		Target:     *v.Target,
+		StepNumber: *v.StepNumber,
+		Placement:  *v.Placement,
+		Content:    *v.Content,
+		Action:     *v.Action,
 	}
 
 	return res
@@ -216,11 +408,12 @@ func transformStepviewsStepViewToStep(v *stepviews.StepView) *Step {
 // from a value of type *Step.
 func transformStepToStepviewsStepView(v *Step) *stepviews.StepView {
 	res := &stepviews.StepView{
-		Targetid: &v.Targetid,
-		Type:     &v.Type,
-		Value:    &v.Value,
-		Sequence: &v.Sequence,
-		Action:   &v.Action,
+		Title:      &v.Title,
+		Target:     &v.Target,
+		StepNumber: &v.StepNumber,
+		Placement:  &v.Placement,
+		Content:    &v.Content,
+		Action:     &v.Action,
 	}
 
 	return res

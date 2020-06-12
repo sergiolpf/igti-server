@@ -39,27 +39,49 @@ message ListResponse {
 }
 // Step describes the basic details of your tutorials.
 message Step1 {
-	// A string representing the HTML ID of an element
-	string targetid = 1;
-	// The type of step to be used
-	string type = 2;
+	// Title for the given step
+	string title = 1;
+	// Unique html if for the target
+	string target = 2;
+	// The number in the sequence that the step belongs to
+	sint32 step_number = 3;
+	// Where the popup will be anchored, left, right, top or buttom.
+	string placement = 4;
 	// The content of the message to be displayed
-	string value = 3;
-	// The number in the sequence that the step belongs to.
-	sint32 sequence = 4;
+	string content = 5;
 	// What action should trigger the next step
-	string action = 5;
+	string action = 6;
 }
 
 message AddRequest {
-	// The id of the Walkthrough those steps belong to.
+	// Id of the walkthrough to have a step added to
 	string wt_id = 1;
-	// List of steps for a given walkthrough.
-	repeated Step1 steps = 2;
+	// step to be added
+	Step1 step = 2;
 }
 
 message AddResponse {
-	string field = 1;
+	// Id of the walkthrough to have a step added to
+	string wt_id = 1;
+	// Modified step
+	StoredStep step = 2;
+}
+// A StoredStep describes a step returned from the database.
+message StoredStep {
+	// Unique id to this step
+	string id = 1;
+	// Title for the given step
+	string title = 2;
+	// Unique html if for the target
+	string target = 3;
+	// The number in the sequence that the step belongs to
+	sint32 step_number = 4;
+	// Where the popup will be anchored, left, right, top or buttom.
+	string placement = 5;
+	// The content of the message to be displayed
+	string content = 6;
+	// What action should trigger the next step
+	string action = 7;
 }
 
 message RemoveRequest {

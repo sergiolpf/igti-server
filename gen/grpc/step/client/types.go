@@ -34,11 +34,12 @@ func NewListResult(message *steppb.ListResponse) *stepviews.StoredStepsView {
 		result.Steps = make([]*stepviews.StepView, len(message.Steps))
 		for i, val := range message.Steps {
 			result.Steps[i] = &stepviews.StepView{
-				Targetid: &val.Targetid,
-				Type:     &val.Type,
-				Value:    &val.Value,
-				Sequence: &val.Sequence,
-				Action:   &val.Action,
+				Title:      &val.Title,
+				Target:     &val.Target,
+				StepNumber: &val.StepNumber,
+				Placement:  &val.Placement,
+				Content:    &val.Content,
+				Action:     &val.Action,
 			}
 		}
 	}
@@ -47,30 +48,26 @@ func NewListResult(message *steppb.ListResponse) *stepviews.StoredStepsView {
 
 // NewAddRequest builds the gRPC request type from the payload of the "add"
 // endpoint of the "step" service.
-func NewAddRequest(payload *step.Steps) *steppb.AddRequest {
+func NewAddRequest(payload *step.AddStepPayload) *steppb.AddRequest {
 	message := &steppb.AddRequest{}
 	if payload.WtID != nil {
 		message.WtId = *payload.WtID
 	}
-	if payload.Steps != nil {
-		message.Steps = make([]*steppb.Step1, len(payload.Steps))
-		for i, val := range payload.Steps {
-			message.Steps[i] = &steppb.Step1{
-				Targetid: val.Targetid,
-				Type:     val.Type,
-				Value:    val.Value,
-				Sequence: val.Sequence,
-				Action:   val.Action,
-			}
-		}
+	if payload.Step != nil {
+		message.Step = svcStepStepToSteppbStep1(payload.Step)
 	}
 	return message
 }
 
 // NewAddResult builds the result type of the "add" endpoint of the "step"
 // service from the gRPC response type.
-func NewAddResult(message *steppb.AddResponse) string {
-	result := message.Field
+func NewAddResult(message *steppb.AddResponse) *stepviews.ResultStepView {
+	result := &stepviews.ResultStepView{
+		WtID: &message.WtId,
+	}
+	if message.Step != nil {
+		result.Step = protobufSteppbStoredStepToStepviewsStoredStepView(message.Step)
+	}
 	return result
 }
 
@@ -94,11 +91,12 @@ func NewUpdateRequest(payload *step.StoredSteps) *steppb.UpdateRequest {
 		message.Steps = make([]*steppb.Step1, len(payload.Steps))
 		for i, val := range payload.Steps {
 			message.Steps[i] = &steppb.Step1{
-				Targetid: val.Targetid,
-				Type:     val.Type,
-				Value:    val.Value,
-				Sequence: val.Sequence,
-				Action:   val.Action,
+				Title:      val.Title,
+				Target:     val.Target,
+				StepNumber: val.StepNumber,
+				Placement:  val.Placement,
+				Content:    val.Content,
+				Action:     val.Action,
 			}
 		}
 	}
@@ -122,11 +120,122 @@ func ValidateListResponse(message *steppb.ListResponse) (err error) {
 
 // ValidateStep1 runs the validations defined on Step1.
 func ValidateStep1(message *steppb.Step1) (err error) {
-	if !(message.Type == "text" || message.Type == "picture") {
-		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.type", message.Type, []interface{}{"text", "picture"}))
+	if !(message.Placement == "left" || message.Placement == "right" || message.Placement == "top" || message.Placement == "buttom") {
+		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.placement", message.Placement, []interface{}{"left", "right", "top", "buttom"}))
 	}
 	if !(message.Action == "click" || message.Action == "next" || message.Action == "end") {
 		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.action", message.Action, []interface{}{"click", "next", "end"}))
 	}
 	return
+}
+
+// ValidateAddResponse runs the validations defined on AddResponse.
+func ValidateAddResponse(message *steppb.AddResponse) (err error) {
+	if message.Step == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("step", "message"))
+	}
+	if message.Step != nil {
+		if err2 := ValidateStoredStep(message.Step); err2 != nil {
+			err = goa.MergeErrors(err, err2)
+		}
+	}
+	return
+}
+
+// ValidateStoredStep runs the validations defined on StoredStep.
+func ValidateStoredStep(message *steppb.StoredStep) (err error) {
+	if !(message.Placement == "left" || message.Placement == "right" || message.Placement == "top" || message.Placement == "buttom") {
+		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.placement", message.Placement, []interface{}{"left", "right", "top", "buttom"}))
+	}
+	if !(message.Action == "click" || message.Action == "next" || message.Action == "end") {
+		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.action", message.Action, []interface{}{"click", "next", "end"}))
+	}
+	return
+}
+
+// protobufSteppbStep1ToStepStep builds a value of type *step.Step from a value
+// of type *steppb.Step1.
+func protobufSteppbStep1ToStepStep(v *steppb.Step1) *step.Step {
+	if v == nil {
+		return nil
+	}
+	res := &step.Step{
+		Title:      v.Title,
+		Target:     v.Target,
+		StepNumber: v.StepNumber,
+		Placement:  v.Placement,
+		Content:    v.Content,
+		Action:     v.Action,
+	}
+
+	return res
+}
+
+// svcStepStepToSteppbStep1 builds a value of type *steppb.Step1 from a value
+// of type *step.Step.
+func svcStepStepToSteppbStep1(v *step.Step) *steppb.Step1 {
+	if v == nil {
+		return nil
+	}
+	res := &steppb.Step1{
+		Title:      v.Title,
+		Target:     v.Target,
+		StepNumber: v.StepNumber,
+		Placement:  v.Placement,
+		Content:    v.Content,
+		Action:     v.Action,
+	}
+
+	return res
+}
+
+// svcStepviewsStoredStepViewToSteppbStoredStep builds a value of type
+// *steppb.StoredStep from a value of type *stepviews.StoredStepView.
+func svcStepviewsStoredStepViewToSteppbStoredStep(v *stepviews.StoredStepView) *steppb.StoredStep {
+	res := &steppb.StoredStep{}
+	if v.ID != nil {
+		res.Id = *v.ID
+	}
+	if v.Title != nil {
+		res.Title = *v.Title
+	}
+	if v.Target != nil {
+		res.Target = *v.Target
+	}
+	if v.StepNumber != nil {
+		res.StepNumber = *v.StepNumber
+	}
+	if v.Placement != nil {
+		res.Placement = *v.Placement
+	}
+	if v.Content != nil {
+		res.Content = *v.Content
+	}
+	if v.Action != nil {
+		res.Action = *v.Action
+	}
+	if v.Placement == nil {
+		res.Placement = "right"
+	}
+	if v.Action == nil {
+		res.Action = "next"
+	}
+
+	return res
+}
+
+// protobufSteppbStoredStepToStepviewsStoredStepView builds a value of type
+// *stepviews.StoredStepView from a value of type *steppb.StoredStep.
+func protobufSteppbStoredStepToStepviewsStoredStepView(v *steppb.StoredStep) *stepviews.StoredStepView {
+	res := &stepviews.StoredStepView{
+		ID:         &v.Id,
+		Title:      &v.Title,
+		Target:     &v.Target,
+		StepNumber: &v.StepNumber,
+		Placement:  &v.Placement,
+		Content:    &v.Content,
+		Action:     &v.Action,
+	}
+
+	return res
 }

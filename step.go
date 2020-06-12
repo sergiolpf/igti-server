@@ -3,10 +3,10 @@ package guideme
 import (
 	"context"
 	"log"
-	"sort"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	db "guide.me/db"
+
 	step "guide.me/gen/step"
 )
 
@@ -33,41 +33,32 @@ func NewStep(client *mongo.Client, logger *log.Logger) (step.Service, error) {
 func (s *stepsrvc) List(ctx context.Context, p *step.ListPayload) (res *step.StoredSteps, err error) {
 	res = &step.StoredSteps{}
 	s.logger.Print("step.list")
-
-	res, err = s.db.LoadWalkthroughSteps(p.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	sort.Slice(res.Steps, func(i, j int) bool {
-		return res.Steps[i].Sequence < res.Steps[j].Sequence
-	})
-	return res, nil
+	return
 }
 
 // Add new Steps to walkthrough and return ID.
-func (s *stepsrvc) Add(ctx context.Context, p *step.Steps) (res string, err error) {
+func (s *stepsrvc) Add(ctx context.Context, p *step.AddStepPayload) (res *step.ResultStep, view string, err error) {
+	res = &step.ResultStep{}
+	view = "default"
 	s.logger.Print("step.add")
-	res, err = s.db.SaveSteps(*p)
+
+	res, err = s.db.SaveStep(p)
+
 	if err != nil {
 		log.Println(err)
-		return "", err
+		return res, view, err
 	}
-	return res, err
+	return res, view, err
 }
 
 // Remove Steps from storage
 func (s *stepsrvc) Remove(ctx context.Context, p *step.RemovePayload) (err error) {
 	s.logger.Print("step.remove")
-	err = s.db.DeleteWalkthroughSteps(p.ID)
-
-	return err
+	return
 }
 
 // Update Steps with the given IDs.
 func (s *stepsrvc) Update(ctx context.Context, p *step.StoredSteps) (err error) {
 	s.logger.Print("step.update")
-	err = s.db.UpdateWalkthroughSteps(*p)
-
-	return err
+	return
 }

@@ -36,9 +36,9 @@ var _ = Service("step", func() {
 	Method("add", func() {
 		Description("Add new Steps to walkthrough and return ID.")
 
-		Payload(Steps)
+		Payload(AddStepPayload)
 
-		Result(String)
+		Result(ResultStep)
 
 		HTTP(func() {
 			POST("/")
@@ -83,4 +83,152 @@ var _ = Service("step", func() {
 			Response(CodeOK)
 		})
 	})
+})
+
+var StoredSteps = ResultType("application/vnd.goa.guide.me.stored-steps", func() {
+	Description("A StoredStep describes all the Steps retrieved by the Steps service.")
+	Reference(Steps)
+	TypeName("StoredSteps")
+
+	Attributes(func() {
+		Attribute("id", String, "ID is the unique id of the Step.", func() {
+			Example("123abc")
+			Meta("rpc:tag", "1")
+
+		})
+		Field(2, "wtId")
+		Field(3, "steps")
+	})
+	View("default", func() {
+		Attribute("id")
+		Attribute("wtId")
+		Attribute("steps")
+
+	})
+	View("tiny", func() {
+		Attribute("id")
+		Attribute("wtId")
+		Attribute("steps")
+	})
+	Required("id", "wtId", "steps")
+})
+
+var Steps = Type("Steps", func() {
+	Description("Steps describes the entire chain of steps to be displayed as part of the walkthrough.")
+	Attribute("wtId", String, "The id of the Walkthrough those steps belong to.", func() {
+		Example("abc234235")
+		Meta("rpc:tag", "1")
+	})
+
+	Attribute("steps", ArrayOf(Step), "List of steps for a given walkthrough.", func() {
+		Meta("rpc:tag", "2")
+	})
+})
+
+var Step = Type("Step", func() {
+	Description("Step describes the basic details of your tutorials.")
+	Attribute("title", String, "Title for the given step", func() {
+		Example("Click here to make it work!")
+		Meta("rpc:tag", "1")
+	})
+	Attribute("target", String, "Unique html if for the target", func() {
+		Meta("rpc:tag", "2")
+	})
+	Attribute("stepNumber", Int32, "The number in the sequence that the step belongs to", func() {
+		Meta("rpc:tag", "3")
+	})
+	Attribute("placement", String, "Where the popup will be anchored, left, right, top or buttom.", func() {
+		Enum("left", "right", "top", "buttom")
+		Default("right")
+		Meta("rpc:tag", "4")
+	})
+	Attribute("content", String, "The content of the message to be displayed", func() {
+		Example("This dropdown contains values from the list of status, for our scenario we want to chose 'active'")
+		Meta("rpc:tag", "5")
+	})
+	Attribute("action", String, "What action should trigger the next step", func() {
+		Enum("click", "next", "end")
+		Default("next")
+		Meta("rpc:tag", "6")
+	})
+
+	Required("title", "target", "stepNumber", "placement", "content", "action")
+
+})
+
+var StoredStep = ResultType("application/vnd.goa.guide.me.stored-step", func() {
+	Description("A StoredStep describes a step returned from the database.")
+	TypeName("StoredStep")
+	Reference(Step)
+
+	Attributes(func() {
+		Attribute("id", String, "Unique id to this step", func() {
+
+			Meta("rpc:tag", "1")
+		})
+		Field(2, "title")
+		Field(3, "target")
+		Field(4, "stepNumber")
+		Field(5, "placement")
+		Field(6, "content")
+		Field(7, "action")
+
+	})
+	View("default", func() {
+		Attribute("id")
+		Attribute("title")
+		Attribute("target")
+		Attribute("stepNumber")
+		Attribute("placement")
+		Attribute("content")
+		Attribute("action")
+
+	})
+	View("tiny", func() {
+		Attribute("id")
+		Attribute("title")
+		Attribute("target")
+		Attribute("stepNumber")
+		Attribute("content")
+	})
+	Required("id", "title", "target", "stepNumber", "content")
+})
+
+var AddStepPayload = Type("AddStepPayload", func() {
+	Description("Payload to be used the POST method to add a new step for a walkthrough.")
+	Attribute("wtId", String, "Id of the walkthrough to have a step added to", func() {
+
+		Meta("rpc:tag", "1")
+	})
+	Attribute("step", Step, "step to be added", func() {
+
+		Meta("rpc:tag", "2")
+	})
+})
+
+var ResultStep = ResultType("application/vnd.goa.guide.me.result-steps", func() {
+	Description("A ResultStep describes the added/modified step for a given walkthrough.")
+	TypeName("ResultStep")
+
+	Attributes(func() {
+		Attribute("wtId", String, "Id of the walkthrough to have a step added to", func() {
+
+			Meta("rpc:tag", "1")
+		})
+		Attribute("step", StoredStep, "Modified step", func() {
+
+			Meta("rpc:tag", "2")
+		})
+
+	})
+	View("default", func() {
+		Attribute("wtId")
+		Attribute("step")
+
+	})
+	View("tiny", func() {
+		Attribute("wtId")
+		Attribute("step")
+	})
+	Required("wtId", "step")
 })

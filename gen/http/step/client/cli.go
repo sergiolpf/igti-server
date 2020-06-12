@@ -29,23 +29,20 @@ func BuildListPayload(stepListID string) (*step.ListPayload, error) {
 }
 
 // BuildAddPayload builds the payload for the step add endpoint from CLI flags.
-func BuildAddPayload(stepAddBody string) (*step.Steps, error) {
+func BuildAddPayload(stepAddBody string) (*step.AddStepPayload, error) {
 	var err error
 	var body AddRequestBody
 	{
 		err = json.Unmarshal([]byte(stepAddBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"steps\": [\n         {\n            \"action\": \"next\",\n            \"sequence\": 2114057729,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"next\",\n            \"sequence\": 2114057729,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         }\n      ],\n      \"wtId\": \"abc234235\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"step\": {\n         \"action\": \"next\",\n         \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n         \"placement\": \"right\",\n         \"stepNumber\": 1691423350,\n         \"target\": \"Et maiores cum expedita voluptas.\",\n         \"title\": \"Click here to make it work!\"\n      },\n      \"wtId\": \"Eos non eum et cum rem.\"\n   }'")
 		}
 	}
-	v := &step.Steps{
+	v := &step.AddStepPayload{
 		WtID: body.WtID,
 	}
-	if body.Steps != nil {
-		v.Steps = make([]*step.Step, len(body.Steps))
-		for i, val := range body.Steps {
-			v.Steps[i] = marshalStepRequestBodyToStepStep(val)
-		}
+	if body.Step != nil {
+		v.Step = marshalStepRequestBodyToStepStep(body.Step)
 	}
 
 	return v, nil
@@ -72,7 +69,7 @@ func BuildUpdatePayload(stepUpdateBody string) (*step.StoredSteps, error) {
 	{
 		err = json.Unmarshal([]byte(stepUpdateBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"id\": \"123abc\",\n      \"steps\": [\n         {\n            \"action\": \"next\",\n            \"sequence\": 2114057729,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"next\",\n            \"sequence\": 2114057729,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"next\",\n            \"sequence\": 2114057729,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         }\n      ],\n      \"wtId\": \"abc234235\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"id\": \"123abc\",\n      \"steps\": [\n         {\n            \"action\": \"next\",\n            \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n            \"placement\": \"right\",\n            \"stepNumber\": 1691423350,\n            \"target\": \"Et maiores cum expedita voluptas.\",\n            \"title\": \"Click here to make it work!\"\n         },\n         {\n            \"action\": \"next\",\n            \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n            \"placement\": \"right\",\n            \"stepNumber\": 1691423350,\n            \"target\": \"Et maiores cum expedita voluptas.\",\n            \"title\": \"Click here to make it work!\"\n         },\n         {\n            \"action\": \"next\",\n            \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n            \"placement\": \"right\",\n            \"stepNumber\": 1691423350,\n            \"target\": \"Et maiores cum expedita voluptas.\",\n            \"title\": \"Click here to make it work!\"\n         },\n         {\n            \"action\": \"next\",\n            \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n            \"placement\": \"right\",\n            \"stepNumber\": 1691423350,\n            \"target\": \"Et maiores cum expedita voluptas.\",\n            \"title\": \"Click here to make it work!\"\n         }\n      ],\n      \"wtId\": \"abc234235\"\n   }'")
 		}
 		if body.Steps == nil {
 			err = goa.MergeErrors(err, goa.MissingFieldError("steps", "body"))

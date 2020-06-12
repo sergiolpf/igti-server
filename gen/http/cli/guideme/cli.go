@@ -34,8 +34,8 @@ walkthrough (list|show|add|remove|update|rename|publish)
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
 	return os.Args[0] + ` organization list` + "\n" +
-		os.Args[0] + ` step list --id "Quia perferendis aut."` + "\n" +
-		os.Args[0] + ` walkthrough list --id "Aut mollitia modi."` + "\n" +
+		os.Args[0] + ` step list --id "Culpa atque."` + "\n" +
+		os.Args[0] + ` walkthrough list --id "Id reprehenderit."` + "\n" +
 		""
 }
 
@@ -347,7 +347,7 @@ Show Organization by ID
     -view STRING: 
 
 Example:
-    `+os.Args[0]+` organization show --id "Et numquam maxime qui qui." --view "default"
+    `+os.Args[0]+` organization show --id "Omnis aut eius." --view "default"
 `, os.Args[0])
 }
 
@@ -372,7 +372,7 @@ Remove Organization from storage
     -id STRING: ID of Organization to remove
 
 Example:
-    `+os.Args[0]+` organization remove --id "Eius unde."
+    `+os.Args[0]+` organization remove --id "Ipsam praesentium."
 `, os.Args[0])
 }
 
@@ -414,7 +414,7 @@ List all stored Steps for a given walkthrough
     -id STRING: ID of Walkthrough to search for steps 
 
 Example:
-    `+os.Args[0]+` step list --id "Quia perferendis aut."
+    `+os.Args[0]+` step list --id "Culpa atque."
 `, os.Args[0])
 }
 
@@ -426,23 +426,15 @@ Add new Steps to walkthrough and return ID.
 
 Example:
     `+os.Args[0]+` step add --body '{
-      "steps": [
-         {
-            "action": "next",
-            "sequence": 2114057729,
-            "targetid": "",
-            "type": "text",
-            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
-         },
-         {
-            "action": "next",
-            "sequence": 2114057729,
-            "targetid": "",
-            "type": "text",
-            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
-         }
-      ],
-      "wtId": "abc234235"
+      "step": {
+         "action": "next",
+         "content": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'",
+         "placement": "right",
+         "stepNumber": 1691423350,
+         "target": "Et maiores cum expedita voluptas.",
+         "title": "Click here to make it work!"
+      },
+      "wtId": "Eos non eum et cum rem."
    }'
 `, os.Args[0])
 }
@@ -454,7 +446,7 @@ Remove Steps from storage
     -id STRING: ID of Steps to remove
 
 Example:
-    `+os.Args[0]+` step remove --id "Est et excepturi velit."
+    `+os.Args[0]+` step remove --id "Asperiores maxime."
 `, os.Args[0])
 }
 
@@ -470,24 +462,35 @@ Example:
       "steps": [
          {
             "action": "next",
-            "sequence": 2114057729,
-            "targetid": "",
-            "type": "text",
-            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
+            "content": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'",
+            "placement": "right",
+            "stepNumber": 1691423350,
+            "target": "Et maiores cum expedita voluptas.",
+            "title": "Click here to make it work!"
          },
          {
             "action": "next",
-            "sequence": 2114057729,
-            "targetid": "",
-            "type": "text",
-            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
+            "content": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'",
+            "placement": "right",
+            "stepNumber": 1691423350,
+            "target": "Et maiores cum expedita voluptas.",
+            "title": "Click here to make it work!"
          },
          {
             "action": "next",
-            "sequence": 2114057729,
-            "targetid": "",
-            "type": "text",
-            "value": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'"
+            "content": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'",
+            "placement": "right",
+            "stepNumber": 1691423350,
+            "target": "Et maiores cum expedita voluptas.",
+            "title": "Click here to make it work!"
+         },
+         {
+            "action": "next",
+            "content": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'",
+            "placement": "right",
+            "stepNumber": 1691423350,
+            "target": "Et maiores cum expedita voluptas.",
+            "title": "Click here to make it work!"
          }
       ],
       "wtId": "abc234235"
@@ -522,7 +525,7 @@ List all stored walkthrough for a given organization
     -id STRING: ID of Organization to search for 
 
 Example:
-    `+os.Args[0]+` walkthrough list --id "Aut mollitia modi."
+    `+os.Args[0]+` walkthrough list --id "Id reprehenderit."
 `, os.Args[0])
 }
 
@@ -534,7 +537,7 @@ Show Walkthrough by ID
     -view STRING: 
 
 Example:
-    `+os.Args[0]+` walkthrough show --id "Cum expedita voluptas eos doloremque quo aut." --view "tiny"
+    `+os.Args[0]+` walkthrough show --id "Et alias distinctio minima debitis consequatur consectetur." --view "tiny"
 `, os.Args[0])
 }
 
@@ -548,8 +551,8 @@ Example:
     `+os.Args[0]+` walkthrough add --body '{
       "baseURL": "http://www.google.com/",
       "name": "How to create a new process using the exception condition.",
-      "organization": "Asperiores maxime.",
-      "publishedURL": "Fugit non.",
+      "organization": "Quia dolores unde et non.",
+      "publishedURL": "Deserunt excepturi sint quas.",
       "status": "draft | published"
    }'
 `, os.Args[0])
@@ -562,7 +565,7 @@ Remove Walkthrough from storage
     -id STRING: ID of Walkthrough to remove
 
 Example:
-    `+os.Args[0]+` walkthrough remove --id "Et alias distinctio minima debitis consequatur consectetur."
+    `+os.Args[0]+` walkthrough remove --id "Adipisci minima cum consequatur occaecati commodi laudantium."
 `, os.Args[0])
 }
 
@@ -577,8 +580,8 @@ Example:
       "baseURL": "http://www.google.com/",
       "id": "123abc",
       "name": "How to create a new process using the exception condition.",
-      "organization": "Consequatur reiciendis perferendis nihil ut aperiam.",
-      "publishedURL": "Animi dolores nisi cumque et.",
+      "organization": "Maxime ea qui molestiae adipisci sint aut.",
+      "publishedURL": "Aut et omnis.",
       "status": "draft | published"
    }'
 `, os.Args[0])
@@ -592,8 +595,8 @@ Rename Walkthrough with the given IDs.
 
 Example:
     `+os.Args[0]+` walkthrough rename --body '{
-      "id": "Debitis et dicta corporis est aut ea.",
-      "name": "Enim repudiandae dolores ratione perspiciatis."
+      "id": "Quod repudiandae sed dolor optio et architecto.",
+      "name": "Ab accusamus."
    }'
 `, os.Args[0])
 }
@@ -605,6 +608,6 @@ Publishes Walkthrough with the given IDs.
     -id STRING: ID of Walkthrough to be published
 
 Example:
-    `+os.Args[0]+` walkthrough publish --id "Est odit asperiores."
+    `+os.Args[0]+` walkthrough publish --id "Incidunt quo."
 `, os.Args[0])
 }

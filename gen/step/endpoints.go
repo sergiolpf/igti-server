@@ -57,8 +57,13 @@ func NewListEndpoint(s Service) goa.Endpoint {
 // service "step".
 func NewAddEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		p := req.(*Steps)
-		return s.Add(ctx, p)
+		p := req.(*AddStepPayload)
+		res, view, err := s.Add(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+		vres := NewViewedResultStep(res, view)
+		return vres, nil
 	}
 }
 
