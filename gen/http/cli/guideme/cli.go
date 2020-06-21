@@ -26,7 +26,7 @@ import (
 //
 func UsageCommands() string {
 	return `organization (list|show|add|remove|update)
-step (list|add)
+step (list|add|remove)
 walkthrough (list|show|add|remove|update|rename|publish)
 `
 }
@@ -34,8 +34,8 @@ walkthrough (list|show|add|remove|update|rename|publish)
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
 	return os.Args[0] + ` organization list` + "\n" +
-		os.Args[0] + ` step list --id "Ipsam praesentium."` + "\n" +
-		os.Args[0] + ` walkthrough list --id "Quas nemo et fuga dolorem illo nulla."` + "\n" +
+		os.Args[0] + ` step list --id "Quaerat aut."` + "\n" +
+		os.Args[0] + ` walkthrough list --id "Asperiores maxime."` + "\n" +
 		""
 }
 
@@ -74,6 +74,9 @@ func ParseEndpoint(
 		stepAddFlags    = flag.NewFlagSet("add", flag.ExitOnError)
 		stepAddBodyFlag = stepAddFlags.String("body", "REQUIRED", "")
 
+		stepRemoveFlags    = flag.NewFlagSet("remove", flag.ExitOnError)
+		stepRemoveBodyFlag = stepRemoveFlags.String("body", "REQUIRED", "")
+
 		walkthroughFlags = flag.NewFlagSet("walkthrough", flag.ContinueOnError)
 
 		walkthroughListFlags  = flag.NewFlagSet("list", flag.ExitOnError)
@@ -108,6 +111,7 @@ func ParseEndpoint(
 	stepFlags.Usage = stepUsage
 	stepListFlags.Usage = stepListUsage
 	stepAddFlags.Usage = stepAddUsage
+	stepRemoveFlags.Usage = stepRemoveUsage
 
 	walkthroughFlags.Usage = walkthroughUsage
 	walkthroughListFlags.Usage = walkthroughListUsage
@@ -180,6 +184,9 @@ func ParseEndpoint(
 
 			case "add":
 				epf = stepAddFlags
+
+			case "remove":
+				epf = stepRemoveFlags
 
 			}
 
@@ -256,6 +263,9 @@ func ParseEndpoint(
 			case "add":
 				endpoint = c.Add()
 				data, err = stepc.BuildAddPayload(*stepAddBodyFlag)
+			case "remove":
+				endpoint = c.Remove()
+				data, err = stepc.BuildRemovePayload(*stepRemoveBodyFlag)
 			}
 		case "walkthrough":
 			c := walkthroughc.NewClient(scheme, host, doer, enc, dec, restore)
@@ -327,7 +337,7 @@ Show Organization by ID
     -view STRING: 
 
 Example:
-    `+os.Args[0]+` organization show --id "Repudiandae molestias magnam." --view "tiny"
+    `+os.Args[0]+` organization show --id "Alias neque vero." --view "default"
 `, os.Args[0])
 }
 
@@ -352,7 +362,7 @@ Remove Organization from storage
     -id STRING: ID of Organization to remove
 
 Example:
-    `+os.Args[0]+` organization remove --id "Dolorem consectetur itaque quis et."
+    `+os.Args[0]+` organization remove --id "Est et excepturi velit."
 `, os.Args[0])
 }
 
@@ -380,6 +390,7 @@ Usage:
 COMMAND:
     list: List all stored Steps for a given walkthrough
     add: Add new Steps to walkthrough and return ID.
+    remove: Remove Steps from storage
 
 Additional help:
     %s step COMMAND --help
@@ -392,7 +403,7 @@ List all stored Steps for a given walkthrough
     -id STRING: ID of Walkthrough to search for steps 
 
 Example:
-    `+os.Args[0]+` step list --id "Ipsam praesentium."
+    `+os.Args[0]+` step list --id "Quaerat aut."
 `, os.Args[0])
 }
 
@@ -405,14 +416,28 @@ Add new Steps to walkthrough and return ID.
 Example:
     `+os.Args[0]+` step add --body '{
       "step": {
-         "action": "end",
+         "action": "next",
          "content": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'",
          "placement": "left",
-         "stepNumber": 1803879362,
-         "target": "Rem delectus.",
+         "stepNumber": 1411758952,
+         "target": "Aliquam non nostrum veniam et sapiente.",
          "title": "Click here to make it work!"
       },
-      "wtId": "Minus magni a eos non eum et."
+      "wtId": "Eos doloremque quo aut molestiae."
+   }'
+`, os.Args[0])
+}
+
+func stepRemoveUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] step remove -body JSON
+
+Remove Steps from storage
+    -body JSON: 
+
+Example:
+    `+os.Args[0]+` step remove --body '{
+      "id": "Tempore provident at fugit libero ut recusandae.",
+      "wtId": "Voluptatem est ipsa mollitia in atque."
    }'
 `, os.Args[0])
 }
@@ -444,7 +469,7 @@ List all stored walkthrough for a given organization
     -id STRING: ID of Organization to search for 
 
 Example:
-    `+os.Args[0]+` walkthrough list --id "Quas nemo et fuga dolorem illo nulla."
+    `+os.Args[0]+` walkthrough list --id "Asperiores maxime."
 `, os.Args[0])
 }
 
@@ -456,7 +481,7 @@ Show Walkthrough by ID
     -view STRING: 
 
 Example:
-    `+os.Args[0]+` walkthrough show --id "Non commodi asperiores." --view "default"
+    `+os.Args[0]+` walkthrough show --id "Minima itaque vitae." --view "default"
 `, os.Args[0])
 }
 
@@ -470,8 +495,8 @@ Example:
     `+os.Args[0]+` walkthrough add --body '{
       "baseURL": "http://www.google.com/",
       "name": "How to create a new process using the exception condition.",
-      "organization": "Debitis et dicta corporis est aut ea.",
-      "publishedURL": "Consequatur reiciendis perferendis nihil ut aperiam.",
+      "organization": "Ea accusamus enim repudiandae.",
+      "publishedURL": "Corporis est.",
       "status": "draft | published"
    }'
 `, os.Args[0])
@@ -484,7 +509,7 @@ Remove Walkthrough from storage
     -id STRING: ID of Walkthrough to remove
 
 Example:
-    `+os.Args[0]+` walkthrough remove --id "Et non quis neque sit non."
+    `+os.Args[0]+` walkthrough remove --id "Neque sit non unde."
 `, os.Args[0])
 }
 
@@ -500,7 +525,7 @@ Example:
       "id": "123abc",
       "name": "How to create a new process using the exception condition.",
       "organization": "Eos earum fugiat quia assumenda odit.",
-      "publishedURL": "Est odit asperiores.",
+      "publishedURL": "Odit asperiores.",
       "status": "draft | published"
    }'
 `, os.Args[0])

@@ -34,7 +34,7 @@ func BuildAddPayload(stepAddBody string) (*step.AddStepPayload, error) {
 	{
 		err = json.Unmarshal([]byte(stepAddBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"step\": {\n         \"action\": \"end\",\n         \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n         \"placement\": \"left\",\n         \"stepNumber\": 1803879362,\n         \"target\": \"Rem delectus.\",\n         \"title\": \"Click here to make it work!\"\n      },\n      \"wtId\": \"Minus magni a eos non eum et.\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"step\": {\n         \"action\": \"next\",\n         \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n         \"placement\": \"left\",\n         \"stepNumber\": 1411758952,\n         \"target\": \"Aliquam non nostrum veniam et sapiente.\",\n         \"title\": \"Click here to make it work!\"\n      },\n      \"wtId\": \"Eos doloremque quo aut molestiae.\"\n   }'")
 		}
 	}
 	v := &step.AddStepPayload{
@@ -42,6 +42,25 @@ func BuildAddPayload(stepAddBody string) (*step.AddStepPayload, error) {
 	}
 	if body.Step != nil {
 		v.Step = marshalStepRequestBodyToStepStep(body.Step)
+	}
+
+	return v, nil
+}
+
+// BuildRemovePayload builds the payload for the step remove endpoint from CLI
+// flags.
+func BuildRemovePayload(stepRemoveBody string) (*step.RemovePayload, error) {
+	var err error
+	var body RemoveRequestBody
+	{
+		err = json.Unmarshal([]byte(stepRemoveBody), &body)
+		if err != nil {
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"id\": \"Tempore provident at fugit libero ut recusandae.\",\n      \"wtId\": \"Voluptatem est ipsa mollitia in atque.\"\n   }'")
+		}
+	}
+	v := &step.RemovePayload{
+		WtID: body.WtID,
+		ID:   body.ID,
 	}
 
 	return v, nil

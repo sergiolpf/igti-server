@@ -79,3 +79,29 @@ func DecodeAddRequest(ctx context.Context, v interface{}, md metadata.MD) (inter
 	}
 	return payload, nil
 }
+
+// EncodeRemoveResponse encodes responses from the "step" service "remove"
+// endpoint.
+func EncodeRemoveResponse(ctx context.Context, v interface{}, hdr, trlr *metadata.MD) (interface{}, error) {
+	resp := NewRemoveResponse()
+	return resp, nil
+}
+
+// DecodeRemoveRequest decodes requests sent to "step" service "remove"
+// endpoint.
+func DecodeRemoveRequest(ctx context.Context, v interface{}, md metadata.MD) (interface{}, error) {
+	var (
+		message *steppb.RemoveRequest
+		ok      bool
+	)
+	{
+		if message, ok = v.(*steppb.RemoveRequest); !ok {
+			return nil, goagrpc.ErrInvalidType("step", "remove", "*steppb.RemoveRequest", v)
+		}
+	}
+	var payload *step.RemovePayload
+	{
+		payload = NewRemovePayload(message)
+	}
+	return payload, nil
+}

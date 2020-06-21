@@ -83,6 +83,16 @@ func NewAddResult(message *steppb.AddResponse) *stepviews.ResultStepView {
 	return result
 }
 
+// NewRemoveRequest builds the gRPC request type from the payload of the
+// "remove" endpoint of the "step" service.
+func NewRemoveRequest(payload *step.RemovePayload) *steppb.RemoveRequest {
+	message := &steppb.RemoveRequest{
+		WtId: payload.WtID,
+		Id:   payload.ID,
+	}
+	return message
+}
+
 // ValidateListResponse runs the validations defined on ListResponse.
 func ValidateListResponse(message *steppb.ListResponse) (err error) {
 	if message.Steps == nil {

@@ -92,6 +92,23 @@ func NewAddResponse(result *stepviews.ResultStepView) *steppb.AddResponse {
 	return message
 }
 
+// NewRemovePayload builds the payload of the "remove" endpoint of the "step"
+// service from the gRPC request type.
+func NewRemovePayload(message *steppb.RemoveRequest) *step.RemovePayload {
+	v := &step.RemovePayload{
+		WtID: message.WtId,
+		ID:   message.Id,
+	}
+	return v
+}
+
+// NewRemoveResponse builds the gRPC response type from the result of the
+// "remove" endpoint of the "step" service.
+func NewRemoveResponse() *steppb.RemoveResponse {
+	message := &steppb.RemoveResponse{}
+	return message
+}
+
 // ValidateAddRequest runs the validations defined on AddRequest.
 func ValidateAddRequest(message *steppb.AddRequest) (err error) {
 	if message.Step != nil {

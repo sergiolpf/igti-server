@@ -54,7 +54,6 @@ func (s *stepsrvc) Add(ctx context.Context, p *step.AddStepPayload) (res *step.R
 	res = &step.ResultStep{}
 	view = "default"
 	s.logger.Print("step.add")
-
 	res, err = s.db.SaveStep(p)
 
 	if err != nil {
@@ -62,4 +61,13 @@ func (s *stepsrvc) Add(ctx context.Context, p *step.AddStepPayload) (res *step.R
 		return res, view, err
 	}
 	return res, view, err
+}
+
+// Remove Steps from storage
+func (s *stepsrvc) Remove(ctx context.Context, p *step.RemovePayload) (err error) {
+	s.logger.Print("step.remove")
+
+	err = s.db.DeleteWalkthroughStep(p.WtID, p.ID)
+
+	return err
 }

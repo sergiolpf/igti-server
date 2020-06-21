@@ -103,3 +103,26 @@ func DecodeAddResponse(ctx context.Context, v interface{}, hdr, trlr metadata.MD
 	}
 	return step.NewResultStep(vres), nil
 }
+
+// BuildRemoveFunc builds the remote method to invoke for "step" service
+// "remove" endpoint.
+func BuildRemoveFunc(grpccli steppb.StepClient, cliopts ...grpc.CallOption) goagrpc.RemoteFunc {
+	return func(ctx context.Context, reqpb interface{}, opts ...grpc.CallOption) (interface{}, error) {
+		for _, opt := range cliopts {
+			opts = append(opts, opt)
+		}
+		if reqpb != nil {
+			return grpccli.Remove(ctx, reqpb.(*steppb.RemoveRequest), opts...)
+		}
+		return grpccli.Remove(ctx, &steppb.RemoveRequest{}, opts...)
+	}
+}
+
+// EncodeRemoveRequest encodes requests sent to step remove endpoint.
+func EncodeRemoveRequest(ctx context.Context, v interface{}, md *metadata.MD) (interface{}, error) {
+	payload, ok := v.(*step.RemovePayload)
+	if !ok {
+		return nil, goagrpc.ErrInvalidType("step", "remove", "*step.RemovePayload", v)
+	}
+	return NewRemoveRequest(payload), nil
+}

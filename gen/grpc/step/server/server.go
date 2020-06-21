@@ -18,8 +18,9 @@ import (
 
 // Server implements the steppb.StepServer interface.
 type Server struct {
-	ListH goagrpc.UnaryHandler
-	AddH  goagrpc.UnaryHandler
+	ListH   goagrpc.UnaryHandler
+	AddH    goagrpc.UnaryHandler
+	RemoveH goagrpc.UnaryHandler
 }
 
 // ErrorNamer is an interface implemented by generated error structs that
@@ -31,8 +32,9 @@ type ErrorNamer interface {
 // New instantiates the server struct with the step service endpoints.
 func New(e *step.Endpoints, uh goagrpc.UnaryHandler) *Server {
 	return &Server{
-		ListH: NewListHandler(e.List, uh),
-		AddH:  NewAddHandler(e.Add, uh),
+		ListH:   NewListHandler(e.List, uh),
+		AddH:    NewAddHandler(e.Add, uh),
+		RemoveH: NewRemoveHandler(e.Remove, uh),
 	}
 }
 
@@ -74,4 +76,24 @@ func (s *Server) Add(ctx context.Context, message *steppb.AddRequest) (*steppb.A
 		return nil, goagrpc.EncodeError(err)
 	}
 	return resp.(*steppb.AddResponse), nil
+}
+
+// NewRemoveHandler creates a gRPC handler which serves the "step" service
+// "remove" endpoint.
+func NewRemoveHandler(endpoint goa.Endpoint, h goagrpc.UnaryHandler) goagrpc.UnaryHandler {
+	if h == nil {
+		h = goagrpc.NewUnaryHandler(endpoint, DecodeRemoveRequest, EncodeRemoveResponse)
+	}
+	return h
+}
+
+// Remove implements the "Remove" method in steppb.StepServer interface.
+func (s *Server) Remove(ctx context.Context, message *steppb.RemoveRequest) (*steppb.RemoveResponse, error) {
+	ctx = context.WithValue(ctx, goa.MethodKey, "remove")
+	ctx = context.WithValue(ctx, goa.ServiceKey, "step")
+	resp, err := s.RemoveH.Handle(ctx, message)
+	if err != nil {
+		return nil, goagrpc.EncodeError(err)
+	}
+	return resp.(*steppb.RemoveResponse), nil
 }

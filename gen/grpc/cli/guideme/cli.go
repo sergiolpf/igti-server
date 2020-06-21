@@ -25,7 +25,7 @@ import (
 //
 func UsageCommands() string {
 	return `organization (list|show|add|remove|update)
-step (list|add)
+step (list|add|remove)
 walkthrough (list|show|add|remove|update|rename|publish)
 `
 }
@@ -37,7 +37,7 @@ func UsageExamples() string {
       "id": "Odit eos praesentium ad excepturi sequi dolor."
    }'` + "\n" +
 		os.Args[0] + ` walkthrough list --message '{
-      "id": "Fugiat et delectus quo quo animi illum."
+      "id": "Eum id vero iste voluptas facere."
    }'` + "\n" +
 		""
 }
@@ -70,6 +70,9 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 
 		stepAddFlags       = flag.NewFlagSet("add", flag.ExitOnError)
 		stepAddMessageFlag = stepAddFlags.String("message", "", "")
+
+		stepRemoveFlags       = flag.NewFlagSet("remove", flag.ExitOnError)
+		stepRemoveMessageFlag = stepRemoveFlags.String("message", "", "")
 
 		walkthroughFlags = flag.NewFlagSet("walkthrough", flag.ContinueOnError)
 
@@ -105,6 +108,7 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 	stepFlags.Usage = stepUsage
 	stepListFlags.Usage = stepListUsage
 	stepAddFlags.Usage = stepAddUsage
+	stepRemoveFlags.Usage = stepRemoveUsage
 
 	walkthroughFlags.Usage = walkthroughUsage
 	walkthroughListFlags.Usage = walkthroughListUsage
@@ -177,6 +181,9 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 
 			case "add":
 				epf = stepAddFlags
+
+			case "remove":
+				epf = stepRemoveFlags
 
 			}
 
@@ -253,6 +260,9 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 			case "add":
 				endpoint = c.Add()
 				data, err = stepc.BuildAddPayload(*stepAddMessageFlag)
+			case "remove":
+				endpoint = c.Remove()
+				data, err = stepc.BuildRemovePayload(*stepRemoveMessageFlag)
 			}
 		case "walkthrough":
 			c := walkthroughc.NewClient(cc, opts...)
@@ -381,6 +391,7 @@ Usage:
 COMMAND:
     list: List all stored Steps for a given walkthrough
     add: Add new Steps to walkthrough and return ID.
+    remove: Remove Steps from storage
 
 Additional help:
     %s step COMMAND --help
@@ -420,6 +431,20 @@ Example:
 `, os.Args[0])
 }
 
+func stepRemoveUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] step remove -message JSON
+
+Remove Steps from storage
+    -message JSON: 
+
+Example:
+    `+os.Args[0]+` step remove --message '{
+      "id": "Deleniti qui.",
+      "wtId": "Fugiat et delectus quo quo animi illum."
+   }'
+`, os.Args[0])
+}
+
 // walkthroughUsage displays the usage of the walkthrough command and its
 // subcommands.
 func walkthroughUsage() {
@@ -448,7 +473,7 @@ List all stored walkthrough for a given organization
 
 Example:
     `+os.Args[0]+` walkthrough list --message '{
-      "id": "Fugiat et delectus quo quo animi illum."
+      "id": "Eum id vero iste voluptas facere."
    }'
 `, os.Args[0])
 }
@@ -462,7 +487,7 @@ Show Walkthrough by ID
 
 Example:
     `+os.Args[0]+` walkthrough show --message '{
-      "id": "Id vero iste voluptas."
+      "id": "Rerum harum."
    }' --view "tiny"
 `, os.Args[0])
 }
@@ -477,8 +502,8 @@ Example:
     `+os.Args[0]+` walkthrough add --message '{
       "baseURL": "http://www.google.com/",
       "name": "How to create a new process using the exception condition.",
-      "organization": "Et consequuntur doloremque et.",
-      "publishedURL": "Rerum harum.",
+      "organization": "Optio ipsam similique.",
+      "publishedURL": "Assumenda quis laudantium.",
       "status": "draft | published"
    }'
 `, os.Args[0])
@@ -492,7 +517,7 @@ Remove Walkthrough from storage
 
 Example:
     `+os.Args[0]+` walkthrough remove --message '{
-      "id": "Optio ipsam similique."
+      "id": "Deserunt ad quo quod voluptatem beatae."
    }'
 `, os.Args[0])
 }
@@ -508,8 +533,8 @@ Example:
       "baseURL": "http://www.google.com/",
       "id": "123abc",
       "name": "How to create a new process using the exception condition.",
-      "organization": "Aut corrupti amet in et.",
-      "publishedURL": "Nihil beatae.",
+      "organization": "At exercitationem quia eaque odio.",
+      "publishedURL": "Labore porro eligendi ea non debitis eum.",
       "status": "draft | published"
    }'
 `, os.Args[0])
@@ -523,8 +548,8 @@ Rename Walkthrough with the given IDs.
 
 Example:
     `+os.Args[0]+` walkthrough rename --message '{
-      "id": "Deserunt ad quo quod voluptatem beatae.",
-      "name": "Labore porro eligendi ea non debitis eum."
+      "id": "Porro quis error in quia.",
+      "name": "Aliquam eligendi quis aut eum illo rem."
    }'
 `, os.Args[0])
 }
@@ -537,7 +562,7 @@ Publishes Walkthrough with the given IDs.
 
 Example:
     `+os.Args[0]+` walkthrough publish --message '{
-      "id": "Aliquam eligendi quis aut eum illo rem."
+      "id": "Id voluptatibus autem."
    }'
 `, os.Args[0])
 }

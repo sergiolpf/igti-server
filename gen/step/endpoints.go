@@ -15,15 +15,17 @@ import (
 
 // Endpoints wraps the "step" service endpoints.
 type Endpoints struct {
-	List goa.Endpoint
-	Add  goa.Endpoint
+	List   goa.Endpoint
+	Add    goa.Endpoint
+	Remove goa.Endpoint
 }
 
 // NewEndpoints wraps the methods of the "step" service with endpoints.
 func NewEndpoints(s Service) *Endpoints {
 	return &Endpoints{
-		List: NewListEndpoint(s),
-		Add:  NewAddEndpoint(s),
+		List:   NewListEndpoint(s),
+		Add:    NewAddEndpoint(s),
+		Remove: NewRemoveEndpoint(s),
 	}
 }
 
@@ -31,6 +33,7 @@ func NewEndpoints(s Service) *Endpoints {
 func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
 	e.List = m(e.List)
 	e.Add = m(e.Add)
+	e.Remove = m(e.Remove)
 }
 
 // NewListEndpoint returns an endpoint function that calls the method "list" of
@@ -58,5 +61,14 @@ func NewAddEndpoint(s Service) goa.Endpoint {
 		}
 		vres := NewViewedResultStep(res, view)
 		return vres, nil
+	}
+}
+
+// NewRemoveEndpoint returns an endpoint function that calls the method
+// "remove" of service "step".
+func NewRemoveEndpoint(s Service) goa.Endpoint {
+	return func(ctx context.Context, req interface{}) (interface{}, error) {
+		p := req.(*RemovePayload)
+		return nil, s.Remove(ctx, p)
 	}
 }

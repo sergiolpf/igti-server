@@ -20,3 +20,8 @@ func ListStepPath(id string) string {
 func AddStepPath() string {
 	return "/steps"
 }
+
+// RemoveStepPath returns the URL path to the step service remove HTTP endpoint.
+func RemoveStepPath() string {
+	return "/steps"
+}

@@ -57,3 +57,24 @@ func BuildAddPayload(stepAddMessage string) (*step.AddStepPayload, error) {
 
 	return v, nil
 }
+
+// BuildRemovePayload builds the payload for the step remove endpoint from CLI
+// flags.
+func BuildRemovePayload(stepRemoveMessage string) (*step.RemovePayload, error) {
+	var err error
+	var message steppb.RemoveRequest
+	{
+		if stepRemoveMessage != "" {
+			err = json.Unmarshal([]byte(stepRemoveMessage), &message)
+			if err != nil {
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Deleniti qui.\",\n      \"wtId\": \"Fugiat et delectus quo quo animi illum.\"\n   }'")
+			}
+		}
+	}
+	v := &step.RemovePayload{
+		WtID: message.WtId,
+		ID:   message.Id,
+	}
+
+	return v, nil
+}

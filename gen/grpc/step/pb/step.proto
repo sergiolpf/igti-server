@@ -18,6 +18,8 @@ service Step {
 	rpc List (ListRequest) returns (ListResponse);
 	// Add new Steps to walkthrough and return ID.
 	rpc Add (AddRequest) returns (AddResponse);
+	// Remove Steps from storage
+	rpc Remove (RemoveRequest) returns (RemoveResponse);
 }
 
 message ListRequest {
@@ -76,4 +78,14 @@ message AddResponse {
 	string wt_id = 1;
 	// Modified step
 	StoredStep step = 2;
+}
+
+message RemoveRequest {
+	// Id of the Walkthrough
+	string wt_id = 1;
+	// ID of the step to be remove
+	string id = 2;
+}
+
+message RemoveResponse {
 }

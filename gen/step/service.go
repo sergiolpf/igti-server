@@ -23,6 +23,8 @@ type Service interface {
 	//	- "default"
 	//	- "tiny"
 	Add(context.Context, *AddStepPayload) (res *ResultStep, view string, err error)
+	// Remove Steps from storage
+	Remove(context.Context, *RemovePayload) (err error)
 }
 
 // ServiceName is the name of the service as defined in the design. This is the
@@ -33,7 +35,7 @@ const ServiceName = "step"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [2]string{"list", "add"}
+var MethodNames = [3]string{"list", "add", "remove"}
 
 // ListPayload is the payload type of the step service list method.
 type ListPayload struct {
@@ -63,6 +65,14 @@ type ResultStep struct {
 	WtID string
 	// Modified step
 	Step *StoredStep
+}
+
+// RemovePayload is the payload type of the step service remove method.
+type RemovePayload struct {
+	// Id of the Walkthrough
+	WtID string
+	// ID of the step to be remove
+	ID string
 }
 
 // A StoredStep describes a step returned from the database.
@@ -97,6 +107,23 @@ type Step struct {
 	Content string
 	// What action should trigger the next step
 	Action string
+}
+
+type ElementNotFound struct {
+	// Message of error
+	Message string
+	// ID of missing element
+	ID string
+}
+
+// Error returns an error description.
+func (e *ElementNotFound) Error() string {
+	return ""
+}
+
+// ErrorName returns "ElementNotFound".
+func (e *ElementNotFound) ErrorName() string {
+	return e.Message
 }
 
 // NewStoredListOfSteps initializes result type StoredListOfSteps from viewed

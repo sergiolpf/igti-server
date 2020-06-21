@@ -15,15 +15,17 @@ import (
 
 // Client is the "step" service client.
 type Client struct {
-	ListEndpoint goa.Endpoint
-	AddEndpoint  goa.Endpoint
+	ListEndpoint   goa.Endpoint
+	AddEndpoint    goa.Endpoint
+	RemoveEndpoint goa.Endpoint
 }
 
 // NewClient initializes a "step" service client given the endpoints.
-func NewClient(list, add goa.Endpoint) *Client {
+func NewClient(list, add, remove goa.Endpoint) *Client {
 	return &Client{
-		ListEndpoint: list,
-		AddEndpoint:  add,
+		ListEndpoint:   list,
+		AddEndpoint:    add,
+		RemoveEndpoint: remove,
 	}
 }
 
@@ -45,4 +47,13 @@ func (c *Client) Add(ctx context.Context, p *AddStepPayload) (res *ResultStep, e
 		return
 	}
 	return ires.(*ResultStep), nil
+}
+
+// Remove calls the "remove" endpoint of the "step" service.
+// Remove may return the following errors:
+//	- "not_found" (type *ElementNotFound): Steps not found
+//	- error: internal error
+func (c *Client) Remove(ctx context.Context, p *RemovePayload) (err error) {
+	_, err = c.RemoveEndpoint(ctx, p)
+	return
 }

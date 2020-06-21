@@ -111,25 +111,35 @@ func (m *Mongo) LoadWalkthroughSteps(id string) (*step.StoredListOfSteps, error)
 	return &response, err
 }
 
-// func (m *Mongo) DeleteWalkthroughSteps(id string) error {
-// 	collection := m.getCollection(STEPS_COLLNAME)
+func (m *Mongo) DeleteWalkthroughStep(wtId string, id string) error {
+	collection := m.getCollection(STEPS_COLLNAME)
 
-// 	filterId, err := primitive.ObjectIDFromHex(id)
+	filterId, err := primitive.ObjectIDFromHex(wtId)
 
-// 	if err != nil {
-// 		log.Println(err)
-// 		return ErrNotFound
-// 	}
+	if err != nil {
+		log.Println(err)
+		return ErrNotFound
+	}
 
-// 	_, err = collection.DeleteOne(context.Background(), bson.M{"_id": filterId})
+	filter := bson.D{{"_id", filterId}}
+	update := bson.D{{"$pull", bson.D{{"steps", bson.D{{"id", id}}}}}}
 
-// 	if err != nil {
-// 		log.Println(err)
-// 		return ErrNotFound
-// 	}
-// 	return nil
+	result, err := collection.UpdateOne(context.Background(), filter, update)
 
-// }
+	if err != nil {
+		log.Println(err)
+		return ErrNotFound
+	}
+
+	if result.MatchedCount != 0 {
+		log.Println("matched and replaced an existing document")
+	} else {
+		log.Println("nothing happened!")
+	}
+
+	return nil
+
+}
 
 // func (m *Mongo) UpdateWalkthroughSteps(wtSteps step.StoredSteps) error {
 // 	collection := m.getCollection(STEPS_COLLNAME)

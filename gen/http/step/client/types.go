@@ -22,6 +22,15 @@ type AddRequestBody struct {
 	Step *StepRequestBody `form:"step,omitempty" json:"step,omitempty" xml:"step,omitempty"`
 }
 
+// RemoveRequestBody is the type of the "step" service "remove" endpoint HTTP
+// request body.
+type RemoveRequestBody struct {
+	// Id of the Walkthrough
+	WtID string `form:"wtId" json:"wtId" xml:"wtId"`
+	// ID of the step to be remove
+	ID string `form:"id" json:"id" xml:"id"`
+}
+
 // ListResponseBody is the type of the "step" service "list" endpoint HTTP
 // response body.
 type ListResponseBody struct {
@@ -82,6 +91,16 @@ func NewAddRequestBody(p *step.AddStepPayload) *AddRequestBody {
 	}
 	if p.Step != nil {
 		body.Step = marshalStepStepToStepRequestBody(p.Step)
+	}
+	return body
+}
+
+// NewRemoveRequestBody builds the HTTP request body from the payload of the
+// "remove" endpoint of the "step" service.
+func NewRemoveRequestBody(p *step.RemovePayload) *RemoveRequestBody {
+	body := &RemoveRequestBody{
+		WtID: p.WtID,
+		ID:   p.ID,
 	}
 	return body
 }

@@ -22,6 +22,15 @@ type AddRequestBody struct {
 	Step *StepRequestBody `form:"step,omitempty" json:"step,omitempty" xml:"step,omitempty"`
 }
 
+// RemoveRequestBody is the type of the "step" service "remove" endpoint HTTP
+// request body.
+type RemoveRequestBody struct {
+	// Id of the Walkthrough
+	WtID *string `form:"wtId,omitempty" json:"wtId,omitempty" xml:"wtId,omitempty"`
+	// ID of the step to be remove
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+}
+
 // ListResponseBody is the type of the "step" service "list" endpoint HTTP
 // response body.
 type ListResponseBody struct {
@@ -142,12 +151,33 @@ func NewAddStepPayload(body *AddRequestBody) *step.AddStepPayload {
 	return v
 }
 
+// NewRemovePayload builds a step service remove endpoint payload.
+func NewRemovePayload(body *RemoveRequestBody) *step.RemovePayload {
+	v := &step.RemovePayload{
+		WtID: *body.WtID,
+		ID:   *body.ID,
+	}
+
+	return v
+}
+
 // ValidateAddRequestBody runs the validations defined on AddRequestBody
 func ValidateAddRequestBody(body *AddRequestBody) (err error) {
 	if body.Step != nil {
 		if err2 := ValidateStepRequestBody(body.Step); err2 != nil {
 			err = goa.MergeErrors(err, err2)
 		}
+	}
+	return
+}
+
+// ValidateRemoveRequestBody runs the validations defined on RemoveRequestBody
+func ValidateRemoveRequestBody(body *RemoveRequestBody) (err error) {
+	if body.WtID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("wtId", "body"))
+	}
+	if body.ID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
 	}
 	return
 }
