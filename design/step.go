@@ -50,26 +50,29 @@ var _ = Service("step", func() {
 		})
 	})
 
-	// Method("remove", func() {
-	// 	Description("Remove Steps from storage")
+	Method("remove", func() {
+		Description("Remove Steps from storage")
 
-	// 	Payload(func() {
-	// 		Field(1, "id", String, "ID of Steps to remove")
-	// 		Required("id")
-	// 	})
+		Payload(func() {
+			Attribute("wtId", String, "Id of the Walkthrough", func() {
+				Meta("rpc:tag", "1")
+			})
+			Field(2, "id", String, "ID of the step to be remove")
+			Required("wtId", "id")
+		})
 
-	// 	Error("not_found", ElementNotFound, "Steps not found")
+		Error("not_found", ElementNotFound, "Steps not found")
 
-	// 	HTTP(func() {
-	// 		DELETE("/{id}")
-	// 		Response(StatusNoContent)
-	// 	})
+		HTTP(func() {
+			DELETE("/")
+			Response(StatusNoContent)
+		})
 
-	// 	GRPC(func() {
-	// 		Response(CodeOK)
-	// 	})
+		GRPC(func() {
+			Response(CodeOK)
+		})
 
-	// })
+	})
 
 	// Method("update", func() {
 	// 	Description("Update Steps with the given IDs.")
