@@ -59,8 +59,6 @@ func EncodeShowResponse(encoder func(context.Context, http.ResponseWriter) goaht
 			body = NewShowResponseBody(res.Projected)
 		case "tiny":
 			body = NewShowResponseBodyTiny(res.Projected)
-		case "rename":
-			body = NewShowResponseBodyRename(res.Projected)
 		}
 		w.WriteHeader(http.StatusOK)
 		return enc.Encode(body)
@@ -138,8 +136,6 @@ func EncodeAddResponse(encoder func(context.Context, http.ResponseWriter) goahtt
 			body = NewAddResponseBody(res.Projected)
 		case "tiny":
 			body = NewAddResponseBodyTiny(res.Projected)
-		case "rename":
-			body = NewAddResponseBodyRename(res.Projected)
 		}
 		w.WriteHeader(http.StatusCreated)
 		return enc.Encode(body)

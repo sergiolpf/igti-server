@@ -17,13 +17,14 @@ import (
 // Walkthrough.
 type Service interface {
 	// List all stored Steps for a given walkthrough
-	List(context.Context, *ListPayload) (res *StoredSteps, err error)
+	List(context.Context, *ListPayload) (res *StoredListOfSteps, err error)
 	// Add new Steps to walkthrough and return ID.
-	Add(context.Context, *Steps) (res string, err error)
+	// The "view" return value must have one of the following views
+	//	- "default"
+	//	- "tiny"
+	Add(context.Context, *AddStepPayload) (res *ResultStep, view string, err error)
 	// Remove Steps from storage
 	Remove(context.Context, *RemovePayload) (err error)
-	// Update Steps with the given IDs.
-	Update(context.Context, *StoredSteps) (err error)
 }
 
 // ServiceName is the name of the service as defined in the design. This is the
@@ -34,7 +35,7 @@ const ServiceName = "step"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [4]string{"list", "add", "remove", "update"}
+var MethodNames = [3]string{"list", "add", "remove"}
 
 // ListPayload is the payload type of the step service list method.
 type ListPayload struct {
@@ -42,40 +43,68 @@ type ListPayload struct {
 	ID string
 }
 
-// StoredSteps is the result type of the step service list method.
-type StoredSteps struct {
-	// ID is the unique id of the Step.
-	ID string
-	// The id of the Walkthrough those steps belong to.
+// StoredListOfSteps is the result type of the step service list method.
+type StoredListOfSteps struct {
+	// ID is the unique id of the Walkthrough.
 	WtID string
-	// List of steps for a given walkthrough.
-	Steps []*Step
+	// List of Stored steps
+	Steps []*StoredStep
 }
 
-// Steps is the payload type of the step service add method.
-type Steps struct {
-	// The id of the Walkthrough those steps belong to.
+// AddStepPayload is the payload type of the step service add method.
+type AddStepPayload struct {
+	// Id of the walkthrough to have a step added to
 	WtID *string
-	// List of steps for a given walkthrough.
-	Steps []*Step
+	// step to be added
+	Step *Step
+}
+
+// ResultStep is the result type of the step service add method.
+type ResultStep struct {
+	// Id of the walkthrough to have a step added to
+	WtID string
+	// Modified step
+	Step *StoredStep
 }
 
 // RemovePayload is the payload type of the step service remove method.
 type RemovePayload struct {
-	// ID of Steps to remove
+	// Id of the Walkthrough
+	WtID string
+	// ID of the step to be remove
 	ID string
+}
+
+// A StoredStep describes a step returned from the database.
+type StoredStep struct {
+	// Unique id to this step
+	ID string
+	// Title for the given step
+	Title string
+	// Unique html if for the target
+	Target string
+	// The number in the sequence that the step belongs to
+	StepNumber int32
+	// Where the popup will be anchored, left, right, top or buttom.
+	Placement string
+	// The content of the message to be displayed
+	Content string
+	// What action should trigger the next step
+	Action string
 }
 
 // Step describes the basic details of your tutorials.
 type Step struct {
-	// A string representing the HTML ID of an element
-	Targetid string
-	// The type of step to be used
-	Type string
+	// Title for the given step
+	Title string
+	// Unique html if for the target
+	Target string
+	// The number in the sequence that the step belongs to
+	StepNumber int32
+	// Where the popup will be anchored, left, right, top or buttom.
+	Placement string
 	// The content of the message to be displayed
-	Value string
-	// The number in the sequence that the step belongs to.
-	Sequence int32
+	Content string
 	// What action should trigger the next step
 	Action string
 }
@@ -97,130 +126,250 @@ func (e *ElementNotFound) ErrorName() string {
 	return e.Message
 }
 
-// NewStoredSteps initializes result type StoredSteps from viewed result type
-// StoredSteps.
-func NewStoredSteps(vres *stepviews.StoredSteps) *StoredSteps {
-	var res *StoredSteps
+// NewStoredListOfSteps initializes result type StoredListOfSteps from viewed
+// result type StoredListOfSteps.
+func NewStoredListOfSteps(vres *stepviews.StoredListOfSteps) *StoredListOfSteps {
+	return newStoredListOfSteps(vres.Projected)
+}
+
+// NewViewedStoredListOfSteps initializes viewed result type StoredListOfSteps
+// from result type StoredListOfSteps using the given view.
+func NewViewedStoredListOfSteps(res *StoredListOfSteps, view string) *stepviews.StoredListOfSteps {
+	p := newStoredListOfStepsView(res)
+	return &stepviews.StoredListOfSteps{Projected: p, View: "default"}
+}
+
+// NewResultStep initializes result type ResultStep from viewed result type
+// ResultStep.
+func NewResultStep(vres *stepviews.ResultStep) *ResultStep {
+	var res *ResultStep
 	switch vres.View {
 	case "default", "":
-		res = newStoredSteps(vres.Projected)
+		res = newResultStep(vres.Projected)
 	case "tiny":
-		res = newStoredStepsTiny(vres.Projected)
+		res = newResultStepTiny(vres.Projected)
 	}
 	return res
 }
 
-// NewViewedStoredSteps initializes viewed result type StoredSteps from result
-// type StoredSteps using the given view.
-func NewViewedStoredSteps(res *StoredSteps, view string) *stepviews.StoredSteps {
-	var vres *stepviews.StoredSteps
+// NewViewedResultStep initializes viewed result type ResultStep from result
+// type ResultStep using the given view.
+func NewViewedResultStep(res *ResultStep, view string) *stepviews.ResultStep {
+	var vres *stepviews.ResultStep
 	switch view {
 	case "default", "":
-		p := newStoredStepsView(res)
-		vres = &stepviews.StoredSteps{Projected: p, View: "default"}
+		p := newResultStepView(res)
+		vres = &stepviews.ResultStep{Projected: p, View: "default"}
 	case "tiny":
-		p := newStoredStepsViewTiny(res)
-		vres = &stepviews.StoredSteps{Projected: p, View: "tiny"}
+		p := newResultStepViewTiny(res)
+		vres = &stepviews.ResultStep{Projected: p, View: "tiny"}
 	}
 	return vres
 }
 
-// newStoredSteps converts projected type StoredSteps to service type
-// StoredSteps.
-func newStoredSteps(vres *stepviews.StoredStepsView) *StoredSteps {
-	res := &StoredSteps{}
-	if vres.ID != nil {
-		res.ID = *vres.ID
-	}
+// newStoredListOfSteps converts projected type StoredListOfSteps to service
+// type StoredListOfSteps.
+func newStoredListOfSteps(vres *stepviews.StoredListOfStepsView) *StoredListOfSteps {
+	res := &StoredListOfSteps{}
 	if vres.WtID != nil {
 		res.WtID = *vres.WtID
 	}
 	if vres.Steps != nil {
-		res.Steps = make([]*Step, len(vres.Steps))
+		res.Steps = make([]*StoredStep, len(vres.Steps))
 		for i, val := range vres.Steps {
-			res.Steps[i] = transformStepviewsStepViewToStep(val)
+			res.Steps[i] = transformStepviewsStoredStepViewToStoredStep(val)
 		}
 	}
 	return res
 }
 
-// newStoredStepsTiny converts projected type StoredSteps to service type
-// StoredSteps.
-func newStoredStepsTiny(vres *stepviews.StoredStepsView) *StoredSteps {
-	res := &StoredSteps{}
+// newStoredListOfStepsView projects result type StoredListOfSteps to projected
+// type StoredListOfStepsView using the "default" view.
+func newStoredListOfStepsView(res *StoredListOfSteps) *stepviews.StoredListOfStepsView {
+	vres := &stepviews.StoredListOfStepsView{
+		WtID: &res.WtID,
+	}
+	if res.Steps != nil {
+		vres.Steps = make([]*stepviews.StoredStepView, len(res.Steps))
+		for i, val := range res.Steps {
+			vres.Steps[i] = transformStoredStepToStepviewsStoredStepView(val)
+		}
+	}
+	return vres
+}
+
+// newStoredStep converts projected type StoredStep to service type StoredStep.
+func newStoredStep(vres *stepviews.StoredStepView) *StoredStep {
+	res := &StoredStep{}
 	if vres.ID != nil {
 		res.ID = *vres.ID
 	}
-	if vres.WtID != nil {
-		res.WtID = *vres.WtID
+	if vres.Title != nil {
+		res.Title = *vres.Title
 	}
-	if vres.Steps != nil {
-		res.Steps = make([]*Step, len(vres.Steps))
-		for i, val := range vres.Steps {
-			res.Steps[i] = transformStepviewsStepViewToStep(val)
-		}
+	if vres.Target != nil {
+		res.Target = *vres.Target
+	}
+	if vres.StepNumber != nil {
+		res.StepNumber = *vres.StepNumber
+	}
+	if vres.Placement != nil {
+		res.Placement = *vres.Placement
+	}
+	if vres.Content != nil {
+		res.Content = *vres.Content
+	}
+	if vres.Action != nil {
+		res.Action = *vres.Action
+	}
+	if vres.Placement == nil {
+		res.Placement = "right"
+	}
+	if vres.Action == nil {
+		res.Action = "next"
 	}
 	return res
 }
 
-// newStoredStepsView projects result type StoredSteps to projected type
-// StoredStepsView using the "default" view.
-func newStoredStepsView(res *StoredSteps) *stepviews.StoredStepsView {
-	vres := &stepviews.StoredStepsView{
-		ID:   &res.ID,
-		WtID: &res.WtID,
+// newStoredStepTiny converts projected type StoredStep to service type
+// StoredStep.
+func newStoredStepTiny(vres *stepviews.StoredStepView) *StoredStep {
+	res := &StoredStep{}
+	if vres.ID != nil {
+		res.ID = *vres.ID
 	}
-	if res.Steps != nil {
-		vres.Steps = make([]*stepviews.StepView, len(res.Steps))
-		for i, val := range res.Steps {
-			vres.Steps[i] = transformStepToStepviewsStepView(val)
-		}
+	if vres.Title != nil {
+		res.Title = *vres.Title
+	}
+	if vres.Target != nil {
+		res.Target = *vres.Target
+	}
+	if vres.StepNumber != nil {
+		res.StepNumber = *vres.StepNumber
+	}
+	if vres.Content != nil {
+		res.Content = *vres.Content
+	}
+	return res
+}
+
+// newStoredStepView projects result type StoredStep to projected type
+// StoredStepView using the "default" view.
+func newStoredStepView(res *StoredStep) *stepviews.StoredStepView {
+	vres := &stepviews.StoredStepView{
+		ID:         &res.ID,
+		Title:      &res.Title,
+		Target:     &res.Target,
+		StepNumber: &res.StepNumber,
+		Placement:  &res.Placement,
+		Content:    &res.Content,
+		Action:     &res.Action,
 	}
 	return vres
 }
 
-// newStoredStepsViewTiny projects result type StoredSteps to projected type
-// StoredStepsView using the "tiny" view.
-func newStoredStepsViewTiny(res *StoredSteps) *stepviews.StoredStepsView {
-	vres := &stepviews.StoredStepsView{
-		ID:   &res.ID,
-		WtID: &res.WtID,
-	}
-	if res.Steps != nil {
-		vres.Steps = make([]*stepviews.StepView, len(res.Steps))
-		for i, val := range res.Steps {
-			vres.Steps[i] = transformStepToStepviewsStepView(val)
-		}
+// newStoredStepViewTiny projects result type StoredStep to projected type
+// StoredStepView using the "tiny" view.
+func newStoredStepViewTiny(res *StoredStep) *stepviews.StoredStepView {
+	vres := &stepviews.StoredStepView{
+		ID:         &res.ID,
+		Title:      &res.Title,
+		Target:     &res.Target,
+		StepNumber: &res.StepNumber,
+		Content:    &res.Content,
 	}
 	return vres
 }
 
-// transformStepviewsStepViewToStep builds a value of type *Step from a value
-// of type *stepviews.StepView.
-func transformStepviewsStepViewToStep(v *stepviews.StepView) *Step {
+// newResultStep converts projected type ResultStep to service type ResultStep.
+func newResultStep(vres *stepviews.ResultStepView) *ResultStep {
+	res := &ResultStep{}
+	if vres.WtID != nil {
+		res.WtID = *vres.WtID
+	}
+	if vres.Step != nil {
+		res.Step = newStoredStep(vres.Step)
+	}
+	return res
+}
+
+// newResultStepTiny converts projected type ResultStep to service type
+// ResultStep.
+func newResultStepTiny(vres *stepviews.ResultStepView) *ResultStep {
+	res := &ResultStep{}
+	if vres.WtID != nil {
+		res.WtID = *vres.WtID
+	}
+	if vres.Step != nil {
+		res.Step = newStoredStep(vres.Step)
+	}
+	return res
+}
+
+// newResultStepView projects result type ResultStep to projected type
+// ResultStepView using the "default" view.
+func newResultStepView(res *ResultStep) *stepviews.ResultStepView {
+	vres := &stepviews.ResultStepView{
+		WtID: &res.WtID,
+	}
+	if res.Step != nil {
+		vres.Step = newStoredStepView(res.Step)
+	}
+	return vres
+}
+
+// newResultStepViewTiny projects result type ResultStep to projected type
+// ResultStepView using the "tiny" view.
+func newResultStepViewTiny(res *ResultStep) *stepviews.ResultStepView {
+	vres := &stepviews.ResultStepView{
+		WtID: &res.WtID,
+	}
+	if res.Step != nil {
+		vres.Step = newStoredStepView(res.Step)
+	}
+	return vres
+}
+
+// transformStepviewsStoredStepViewToStoredStep builds a value of type
+// *StoredStep from a value of type *stepviews.StoredStepView.
+func transformStepviewsStoredStepViewToStoredStep(v *stepviews.StoredStepView) *StoredStep {
 	if v == nil {
 		return nil
 	}
-	res := &Step{
-		Targetid: *v.Targetid,
-		Type:     *v.Type,
-		Value:    *v.Value,
-		Sequence: *v.Sequence,
-		Action:   *v.Action,
+	res := &StoredStep{
+		ID:         *v.ID,
+		Title:      *v.Title,
+		Target:     *v.Target,
+		StepNumber: *v.StepNumber,
+		Content:    *v.Content,
+	}
+	if v.Placement != nil {
+		res.Placement = *v.Placement
+	}
+	if v.Action != nil {
+		res.Action = *v.Action
+	}
+	if v.Placement == nil {
+		res.Placement = "right"
+	}
+	if v.Action == nil {
+		res.Action = "next"
 	}
 
 	return res
 }
 
-// transformStepToStepviewsStepView builds a value of type *stepviews.StepView
-// from a value of type *Step.
-func transformStepToStepviewsStepView(v *Step) *stepviews.StepView {
-	res := &stepviews.StepView{
-		Targetid: &v.Targetid,
-		Type:     &v.Type,
-		Value:    &v.Value,
-		Sequence: &v.Sequence,
-		Action:   &v.Action,
+// transformStoredStepToStepviewsStoredStepView builds a value of type
+// *stepviews.StoredStepView from a value of type *StoredStep.
+func transformStoredStepToStepviewsStoredStepView(v *StoredStep) *stepviews.StoredStepView {
+	res := &stepviews.StoredStepView{
+		ID:         &v.ID,
+		Title:      &v.Title,
+		Target:     &v.Target,
+		StepNumber: &v.StepNumber,
+		Placement:  &v.Placement,
+		Content:    &v.Content,
+		Action:     &v.Action,
 	}
 
 	return res

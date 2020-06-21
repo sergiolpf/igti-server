@@ -108,3 +108,48 @@ var _ = Service("organization", func() {
 	})
 
 })
+
+var StoredOrganization = ResultType("application/vnd.goa.guide.me.stored-organization", func() {
+	Description("A StoredOrganization describes an Organization retrieved by the Organization service.")
+	Reference(Organization)
+	TypeName("StoredOrganization")
+
+	Attributes(func() {
+		Attribute("id", String, "ID is the unique id of the Organization.", func() {
+			Example("123abc")
+			Meta("rpc:tag", "1")
+
+		})
+		Field(2, "name")
+		Field(3, "url")
+
+	})
+	View("default", func() {
+		Attribute("id")
+		Attribute("name")
+		Attribute("url")
+	})
+	View("tiny", func() {
+		Attribute("id")
+		Attribute("name")
+
+	})
+	Required("id", "name", "url")
+})
+
+var Organization = Type("Organization", func() {
+	Description("Organization describes an Organization to be stored.")
+	Attribute("name", String, "Name of Organization", func() {
+		MaxLength(200)
+		Example("Creating a new request in netflix!")
+		Meta("rpc:tag", "1")
+	})
+	Attribute("url", String, "Company website URL", func() {
+		Pattern(`(?i)^(https?|ftp)://[^\s/$.?#].[^\s]*$`)
+		Example("http://www.google.com/")
+		Meta("rpc:tag", "2")
+	})
+
+	Required("name", "url")
+
+})

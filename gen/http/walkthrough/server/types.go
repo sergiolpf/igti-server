@@ -90,15 +90,6 @@ type ShowResponseBodyTiny struct {
 	Organization string `form:"organization" json:"organization" xml:"organization"`
 }
 
-// ShowResponseBodyRename is the type of the "walkthrough" service "show"
-// endpoint HTTP response body.
-type ShowResponseBodyRename struct {
-	// ID is the unique id of the Walkthrough.
-	ID string `form:"id" json:"id" xml:"id"`
-	// Name of the Tutorial
-	Name string `form:"name" json:"name" xml:"name"`
-}
-
 // AddResponseBody is the type of the "walkthrough" service "add" endpoint HTTP
 // response body.
 type AddResponseBody struct {
@@ -127,15 +118,6 @@ type AddResponseBodyTiny struct {
 	BaseURL string `form:"baseURL" json:"baseURL" xml:"baseURL"`
 	// ID of the organization this tutorial belongs to
 	Organization string `form:"organization" json:"organization" xml:"organization"`
-}
-
-// AddResponseBodyRename is the type of the "walkthrough" service "add"
-// endpoint HTTP response body.
-type AddResponseBodyRename struct {
-	// ID is the unique id of the Walkthrough.
-	ID string `form:"id" json:"id" xml:"id"`
-	// Name of the Tutorial
-	Name string `form:"name" json:"name" xml:"name"`
 }
 
 // RenameResponseBodyTiny is the type of the "walkthrough" service "rename"
@@ -214,16 +196,6 @@ func NewShowResponseBodyTiny(res *walkthroughviews.StoredWalkthroughView) *ShowR
 	return body
 }
 
-// NewShowResponseBodyRename builds the HTTP response body from the result of
-// the "show" endpoint of the "walkthrough" service.
-func NewShowResponseBodyRename(res *walkthroughviews.StoredWalkthroughView) *ShowResponseBodyRename {
-	body := &ShowResponseBodyRename{
-		ID:   *res.ID,
-		Name: *res.Name,
-	}
-	return body
-}
-
 // NewAddResponseBody builds the HTTP response body from the result of the
 // "add" endpoint of the "walkthrough" service.
 func NewAddResponseBody(res *walkthroughviews.StoredWalkthroughView) *AddResponseBody {
@@ -251,16 +223,6 @@ func NewAddResponseBodyTiny(res *walkthroughviews.StoredWalkthroughView) *AddRes
 		Name:         *res.Name,
 		BaseURL:      *res.BaseURL,
 		Organization: *res.Organization,
-	}
-	return body
-}
-
-// NewAddResponseBodyRename builds the HTTP response body from the result of
-// the "add" endpoint of the "walkthrough" service.
-func NewAddResponseBodyRename(res *walkthroughviews.StoredWalkthroughView) *AddResponseBodyRename {
-	body := &AddResponseBodyRename{
-		ID:   *res.ID,
-		Name: *res.Name,
 	}
 	return body
 }

@@ -11,7 +11,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	goa "goa.design/goa/v3/pkg"
 	step "guide.me/gen/step"
 )
 
@@ -29,23 +28,20 @@ func BuildListPayload(stepListID string) (*step.ListPayload, error) {
 }
 
 // BuildAddPayload builds the payload for the step add endpoint from CLI flags.
-func BuildAddPayload(stepAddBody string) (*step.Steps, error) {
+func BuildAddPayload(stepAddBody string) (*step.AddStepPayload, error) {
 	var err error
 	var body AddRequestBody
 	{
 		err = json.Unmarshal([]byte(stepAddBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"steps\": [\n         {\n            \"action\": \"next\",\n            \"sequence\": 2114057729,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"next\",\n            \"sequence\": 2114057729,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         }\n      ],\n      \"wtId\": \"abc234235\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"step\": {\n         \"action\": \"next\",\n         \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n         \"placement\": \"left\",\n         \"stepNumber\": 1411758952,\n         \"target\": \"Aliquam non nostrum veniam et sapiente.\",\n         \"title\": \"Click here to make it work!\"\n      },\n      \"wtId\": \"Eos doloremque quo aut molestiae.\"\n   }'")
 		}
 	}
-	v := &step.Steps{
+	v := &step.AddStepPayload{
 		WtID: body.WtID,
 	}
-	if body.Steps != nil {
-		v.Steps = make([]*step.Step, len(body.Steps))
-		for i, val := range body.Steps {
-			v.Steps[i] = marshalStepRequestBodyToStepStep(val)
-		}
+	if body.Step != nil {
+		v.Step = marshalStepRequestBodyToStepStep(body.Step)
 	}
 
 	return v, nil
@@ -53,50 +49,18 @@ func BuildAddPayload(stepAddBody string) (*step.Steps, error) {
 
 // BuildRemovePayload builds the payload for the step remove endpoint from CLI
 // flags.
-func BuildRemovePayload(stepRemoveID string) (*step.RemovePayload, error) {
-	var id string
-	{
-		id = stepRemoveID
-	}
-	v := &step.RemovePayload{}
-	v.ID = id
-
-	return v, nil
-}
-
-// BuildUpdatePayload builds the payload for the step update endpoint from CLI
-// flags.
-func BuildUpdatePayload(stepUpdateBody string) (*step.StoredSteps, error) {
+func BuildRemovePayload(stepRemoveBody string) (*step.RemovePayload, error) {
 	var err error
-	var body UpdateRequestBody
+	var body RemoveRequestBody
 	{
-		err = json.Unmarshal([]byte(stepUpdateBody), &body)
+		err = json.Unmarshal([]byte(stepRemoveBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"id\": \"123abc\",\n      \"steps\": [\n         {\n            \"action\": \"next\",\n            \"sequence\": 2114057729,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"next\",\n            \"sequence\": 2114057729,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         },\n         {\n            \"action\": \"next\",\n            \"sequence\": 2114057729,\n            \"targetid\": \"\",\n            \"type\": \"text\",\n            \"value\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\"\n         }\n      ],\n      \"wtId\": \"abc234235\"\n   }'")
-		}
-		if body.Steps == nil {
-			err = goa.MergeErrors(err, goa.MissingFieldError("steps", "body"))
-		}
-		for _, e := range body.Steps {
-			if e != nil {
-				if err2 := ValidateStepRequestBody(e); err2 != nil {
-					err = goa.MergeErrors(err, err2)
-				}
-			}
-		}
-		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"id\": \"Tempore provident at fugit libero ut recusandae.\",\n      \"wtId\": \"Voluptatem est ipsa mollitia in atque.\"\n   }'")
 		}
 	}
-	v := &step.StoredSteps{
-		ID:   body.ID,
+	v := &step.RemovePayload{
 		WtID: body.WtID,
-	}
-	if body.Steps != nil {
-		v.Steps = make([]*step.Step, len(body.Steps))
-		for i, val := range body.Steps {
-			v.Steps[i] = marshalStepRequestBodyToStepStep(val)
-		}
+		ID:   body.ID,
 	}
 
 	return v, nil

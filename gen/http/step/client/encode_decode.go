@@ -71,13 +71,13 @@ func DecodeListResponse(decoder func(*http.Response) goahttp.Decoder, restoreBod
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("step", "list", err)
 			}
-			p := NewListStoredStepsOK(&body)
+			p := NewListStoredListOfStepsOK(&body)
 			view := "default"
-			vres := &stepviews.StoredSteps{Projected: p, View: view}
-			if err = stepviews.ValidateStoredSteps(vres); err != nil {
+			vres := &stepviews.StoredListOfSteps{Projected: p, View: view}
+			if err = stepviews.ValidateStoredListOfSteps(vres); err != nil {
 				return nil, goahttp.ErrValidationError("step", "list", err)
 			}
-			res := step.NewStoredSteps(vres)
+			res := step.NewStoredListOfSteps(vres)
 			return res, nil
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
@@ -104,9 +104,9 @@ func (c *Client) BuildAddRequest(ctx context.Context, v interface{}) (*http.Requ
 // EncodeAddRequest returns an encoder for requests sent to the step add server.
 func EncodeAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
 	return func(req *http.Request, v interface{}) error {
-		p, ok := v.(*step.Steps)
+		p, ok := v.(*step.AddStepPayload)
 		if !ok {
-			return goahttp.ErrInvalidType("step", "add", "*step.Steps", v)
+			return goahttp.ErrInvalidType("step", "add", "*step.AddStepPayload", v)
 		}
 		body := NewAddRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
@@ -136,14 +136,21 @@ func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody
 		switch resp.StatusCode {
 		case http.StatusCreated:
 			var (
-				body string
+				body AddResponseBody
 				err  error
 			)
 			err = decoder(resp).Decode(&body)
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("step", "add", err)
 			}
-			return body, nil
+			p := NewAddResultStepCreated(&body)
+			view := resp.Header.Get("goa-view")
+			vres := &stepviews.ResultStep{Projected: p, View: view}
+			if err = stepviews.ValidateResultStep(vres); err != nil {
+				return nil, goahttp.ErrValidationError("step", "add", err)
+			}
+			res := step.NewResultStep(vres)
+			return res, nil
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("step", "add", resp.StatusCode, string(body))
@@ -154,17 +161,7 @@ func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody
 // BuildRemoveRequest instantiates a HTTP request object with method and path
 // set to call the "step" service "remove" endpoint
 func (c *Client) BuildRemoveRequest(ctx context.Context, v interface{}) (*http.Request, error) {
-	var (
-		id string
-	)
-	{
-		p, ok := v.(*step.RemovePayload)
-		if !ok {
-			return nil, goahttp.ErrInvalidType("step", "remove", "*step.RemovePayload", v)
-		}
-		id = p.ID
-	}
-	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: RemoveStepPath(id)}
+	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: RemoveStepPath()}
 	req, err := http.NewRequest("DELETE", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("step", "remove", u.String(), err)
@@ -174,6 +171,22 @@ func (c *Client) BuildRemoveRequest(ctx context.Context, v interface{}) (*http.R
 	}
 
 	return req, nil
+}
+
+// EncodeRemoveRequest returns an encoder for requests sent to the step remove
+// server.
+func EncodeRemoveRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	return func(req *http.Request, v interface{}) error {
+		p, ok := v.(*step.RemovePayload)
+		if !ok {
+			return goahttp.ErrInvalidType("step", "remove", "*step.RemovePayload", v)
+		}
+		body := NewRemoveRequestBody(p)
+		if err := encoder(req).Encode(&body); err != nil {
+			return goahttp.ErrEncodingError("step", "remove", err)
+		}
+		return nil
+	}
 }
 
 // DecodeRemoveResponse returns a decoder for responses returned by the step
@@ -203,73 +216,25 @@ func DecodeRemoveResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 	}
 }
 
-// BuildUpdateRequest instantiates a HTTP request object with method and path
-// set to call the "step" service "update" endpoint
-func (c *Client) BuildUpdateRequest(ctx context.Context, v interface{}) (*http.Request, error) {
-	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: UpdateStepPath()}
-	req, err := http.NewRequest("PUT", u.String(), nil)
-	if err != nil {
-		return nil, goahttp.ErrInvalidURL("step", "update", u.String(), err)
+// unmarshalStoredStepResponseBodyToStepviewsStoredStepView builds a value of
+// type *stepviews.StoredStepView from a value of type *StoredStepResponseBody.
+func unmarshalStoredStepResponseBodyToStepviewsStoredStepView(v *StoredStepResponseBody) *stepviews.StoredStepView {
+	res := &stepviews.StoredStepView{
+		ID:         v.ID,
+		Title:      v.Title,
+		Target:     v.Target,
+		StepNumber: v.StepNumber,
+		Placement:  v.Placement,
+		Content:    v.Content,
+		Action:     v.Action,
 	}
-	if ctx != nil {
-		req = req.WithContext(ctx)
+	if v.Placement == nil {
+		var tmp string = "right"
+		res.Placement = &tmp
 	}
-
-	return req, nil
-}
-
-// EncodeUpdateRequest returns an encoder for requests sent to the step update
-// server.
-func EncodeUpdateRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
-	return func(req *http.Request, v interface{}) error {
-		p, ok := v.(*step.StoredSteps)
-		if !ok {
-			return goahttp.ErrInvalidType("step", "update", "*step.StoredSteps", v)
-		}
-		body := NewUpdateRequestBody(p)
-		if err := encoder(req).Encode(&body); err != nil {
-			return goahttp.ErrEncodingError("step", "update", err)
-		}
-		return nil
-	}
-}
-
-// DecodeUpdateResponse returns a decoder for responses returned by the step
-// update endpoint. restoreBody controls whether the response body should be
-// restored after having been read.
-func DecodeUpdateResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
-	return func(resp *http.Response) (interface{}, error) {
-		if restoreBody {
-			b, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-			resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
-			defer func() {
-				resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
-			}()
-		} else {
-			defer resp.Body.Close()
-		}
-		switch resp.StatusCode {
-		case http.StatusNoContent:
-			return nil, nil
-		default:
-			body, _ := ioutil.ReadAll(resp.Body)
-			return nil, goahttp.ErrInvalidResponse("step", "update", resp.StatusCode, string(body))
-		}
-	}
-}
-
-// unmarshalStepResponseBodyToStepviewsStepView builds a value of type
-// *stepviews.StepView from a value of type *StepResponseBody.
-func unmarshalStepResponseBodyToStepviewsStepView(v *StepResponseBody) *stepviews.StepView {
-	res := &stepviews.StepView{
-		Targetid: v.Targetid,
-		Type:     v.Type,
-		Value:    v.Value,
-		Sequence: v.Sequence,
-		Action:   v.Action,
+	if v.Action == nil {
+		var tmp string = "next"
+		res.Action = &tmp
 	}
 
 	return res
@@ -282,11 +247,12 @@ func marshalStepStepToStepRequestBody(v *step.Step) *StepRequestBody {
 		return nil
 	}
 	res := &StepRequestBody{
-		Targetid: v.Targetid,
-		Type:     v.Type,
-		Value:    v.Value,
-		Sequence: v.Sequence,
-		Action:   v.Action,
+		Title:      v.Title,
+		Target:     v.Target,
+		StepNumber: v.StepNumber,
+		Placement:  v.Placement,
+		Content:    v.Content,
+		Action:     v.Action,
 	}
 
 	return res
@@ -299,11 +265,12 @@ func marshalStepRequestBodyToStepStep(v *StepRequestBody) *step.Step {
 		return nil
 	}
 	res := &step.Step{
-		Targetid: v.Targetid,
-		Type:     v.Type,
-		Value:    v.Value,
-		Sequence: v.Sequence,
-		Action:   v.Action,
+		Title:      v.Title,
+		Target:     v.Target,
+		StepNumber: v.StepNumber,
+		Placement:  v.Placement,
+		Content:    v.Content,
+		Action:     v.Action,
 	}
 
 	return res

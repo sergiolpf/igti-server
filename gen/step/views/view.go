@@ -11,75 +11,129 @@ import (
 	goa "goa.design/goa/v3/pkg"
 )
 
-// StoredSteps is the viewed result type that is projected based on a view.
-type StoredSteps struct {
+// StoredListOfSteps is the viewed result type that is projected based on a
+// view.
+type StoredListOfSteps struct {
 	// Type to project
-	Projected *StoredStepsView
+	Projected *StoredListOfStepsView
 	// View to render
 	View string
 }
 
-// StoredStepsView is a type that runs validations on a projected type.
-type StoredStepsView struct {
-	// ID is the unique id of the Step.
-	ID *string
-	// The id of the Walkthrough those steps belong to.
-	WtID *string
-	// List of steps for a given walkthrough.
-	Steps []*StepView
+// ResultStep is the viewed result type that is projected based on a view.
+type ResultStep struct {
+	// Type to project
+	Projected *ResultStepView
+	// View to render
+	View string
 }
 
-// StepView is a type that runs validations on a projected type.
-type StepView struct {
-	// A string representing the HTML ID of an element
-	Targetid *string
-	// The type of step to be used
-	Type *string
+// StoredListOfStepsView is a type that runs validations on a projected type.
+type StoredListOfStepsView struct {
+	// ID is the unique id of the Walkthrough.
+	WtID *string
+	// List of Stored steps
+	Steps []*StoredStepView
+}
+
+// StoredStepView is a type that runs validations on a projected type.
+type StoredStepView struct {
+	// Unique id to this step
+	ID *string
+	// Title for the given step
+	Title *string
+	// Unique html if for the target
+	Target *string
+	// The number in the sequence that the step belongs to
+	StepNumber *int32
+	// Where the popup will be anchored, left, right, top or buttom.
+	Placement *string
 	// The content of the message to be displayed
-	Value *string
-	// The number in the sequence that the step belongs to.
-	Sequence *int32
+	Content *string
 	// What action should trigger the next step
 	Action *string
 }
 
+// ResultStepView is a type that runs validations on a projected type.
+type ResultStepView struct {
+	// Id of the walkthrough to have a step added to
+	WtID *string
+	// Modified step
+	Step *StoredStepView
+}
+
 var (
-	// StoredStepsMap is a map of attribute names in result type StoredSteps
-	// indexed by view name.
-	StoredStepsMap = map[string][]string{
+	// StoredListOfStepsMap is a map of attribute names in result type
+	// StoredListOfSteps indexed by view name.
+	StoredListOfStepsMap = map[string][]string{
 		"default": []string{
-			"id",
-			"wtId",
-			"steps",
-		},
-		"tiny": []string{
-			"id",
 			"wtId",
 			"steps",
 		},
 	}
+	// ResultStepMap is a map of attribute names in result type ResultStep indexed
+	// by view name.
+	ResultStepMap = map[string][]string{
+		"default": []string{
+			"wtId",
+			"step",
+		},
+		"tiny": []string{
+			"wtId",
+			"step",
+		},
+	}
+	// StoredStepMap is a map of attribute names in result type StoredStep indexed
+	// by view name.
+	StoredStepMap = map[string][]string{
+		"default": []string{
+			"id",
+			"title",
+			"target",
+			"stepNumber",
+			"placement",
+			"content",
+			"action",
+		},
+		"tiny": []string{
+			"id",
+			"title",
+			"target",
+			"stepNumber",
+			"content",
+		},
+	}
 )
 
-// ValidateStoredSteps runs the validations defined on the viewed result type
-// StoredSteps.
-func ValidateStoredSteps(result *StoredSteps) (err error) {
+// ValidateStoredListOfSteps runs the validations defined on the viewed result
+// type StoredListOfSteps.
+func ValidateStoredListOfSteps(result *StoredListOfSteps) (err error) {
 	switch result.View {
 	case "default", "":
-		err = ValidateStoredStepsView(result.Projected)
+		err = ValidateStoredListOfStepsView(result.Projected)
+	default:
+		err = goa.InvalidEnumValueError("view", result.View, []interface{}{"default"})
+	}
+	return
+}
+
+// ValidateResultStep runs the validations defined on the viewed result type
+// ResultStep.
+func ValidateResultStep(result *ResultStep) (err error) {
+	switch result.View {
+	case "default", "":
+		err = ValidateResultStepView(result.Projected)
 	case "tiny":
-		err = ValidateStoredStepsViewTiny(result.Projected)
+		err = ValidateResultStepViewTiny(result.Projected)
 	default:
 		err = goa.InvalidEnumValueError("view", result.View, []interface{}{"default", "tiny"})
 	}
 	return
 }
 
-// ValidateStoredStepsView runs the validations defined on StoredStepsView
-// using the "default" view.
-func ValidateStoredStepsView(result *StoredStepsView) (err error) {
-	if result.ID == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("id", "result"))
-	}
+// ValidateStoredListOfStepsView runs the validations defined on
+// StoredListOfStepsView using the "default" view.
+func ValidateStoredListOfStepsView(result *StoredListOfStepsView) (err error) {
 	if result.WtID == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("wtId", "result"))
 	}
@@ -88,7 +142,7 @@ func ValidateStoredStepsView(result *StoredStepsView) (err error) {
 	}
 	for _, e := range result.Steps {
 		if e != nil {
-			if err2 := ValidateStepView(e); err2 != nil {
+			if err2 := ValidateStoredStepView(e); err2 != nil {
 				err = goa.MergeErrors(err, err2)
 			}
 		}
@@ -96,53 +150,81 @@ func ValidateStoredStepsView(result *StoredStepsView) (err error) {
 	return
 }
 
-// ValidateStoredStepsViewTiny runs the validations defined on StoredStepsView
-// using the "tiny" view.
-func ValidateStoredStepsViewTiny(result *StoredStepsView) (err error) {
+// ValidateStoredStepView runs the validations defined on StoredStepView using
+// the "default" view.
+func ValidateStoredStepView(result *StoredStepView) (err error) {
 	if result.ID == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("id", "result"))
 	}
-	if result.WtID == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("wtId", "result"))
+	if result.Title == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("title", "result"))
 	}
-	if result.Steps == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("steps", "result"))
+	if result.Target == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("target", "result"))
 	}
-	for _, e := range result.Steps {
-		if e != nil {
-			if err2 := ValidateStepView(e); err2 != nil {
-				err = goa.MergeErrors(err, err2)
-			}
-		}
+	if result.StepNumber == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("stepNumber", "result"))
 	}
-	return
-}
-
-// ValidateStepView runs the validations defined on StepView.
-func ValidateStepView(result *StepView) (err error) {
-	if result.Targetid == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("targetid", "result"))
+	if result.Content == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("content", "result"))
 	}
-	if result.Type == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("type", "result"))
-	}
-	if result.Value == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("value", "result"))
-	}
-	if result.Sequence == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("sequence", "result"))
-	}
-	if result.Action == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("action", "result"))
-	}
-	if result.Type != nil {
-		if !(*result.Type == "text" || *result.Type == "picture") {
-			err = goa.MergeErrors(err, goa.InvalidEnumValueError("result.type", *result.Type, []interface{}{"text", "picture"}))
+	if result.Placement != nil {
+		if !(*result.Placement == "left" || *result.Placement == "right" || *result.Placement == "top" || *result.Placement == "buttom") {
+			err = goa.MergeErrors(err, goa.InvalidEnumValueError("result.placement", *result.Placement, []interface{}{"left", "right", "top", "buttom"}))
 		}
 	}
 	if result.Action != nil {
 		if !(*result.Action == "click" || *result.Action == "next" || *result.Action == "end") {
 			err = goa.MergeErrors(err, goa.InvalidEnumValueError("result.action", *result.Action, []interface{}{"click", "next", "end"}))
+		}
+	}
+	return
+}
+
+// ValidateStoredStepViewTiny runs the validations defined on StoredStepView
+// using the "tiny" view.
+func ValidateStoredStepViewTiny(result *StoredStepView) (err error) {
+	if result.ID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("id", "result"))
+	}
+	if result.Title == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("title", "result"))
+	}
+	if result.Target == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("target", "result"))
+	}
+	if result.StepNumber == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("stepNumber", "result"))
+	}
+	if result.Content == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("content", "result"))
+	}
+	return
+}
+
+// ValidateResultStepView runs the validations defined on ResultStepView using
+// the "default" view.
+func ValidateResultStepView(result *ResultStepView) (err error) {
+	if result.WtID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("wtId", "result"))
+	}
+	if result.Step != nil {
+		if err2 := ValidateStoredStepView(result.Step); err2 != nil {
+			err = goa.MergeErrors(err, err2)
+		}
+	}
+	return
+}
+
+// ValidateResultStepViewTiny runs the validations defined on ResultStepView
+// using the "tiny" view.
+func ValidateResultStepViewTiny(result *ResultStepView) (err error) {
+	if result.WtID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("wtId", "result"))
+	}
+	if result.Step != nil {
+		if err2 := ValidateStoredStepView(result.Step); err2 != nil {
+			err = goa.MergeErrors(err, err2)
 		}
 	}
 	return

@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -60,4 +62,15 @@ func (m *Mongo) getCollection(collectionName string) *mongo.Collection {
 	collection := m.db.Collection(collectionName)
 
 	return collection
+}
+
+func convertIdToString(id primitive.ObjectID) string {
+
+	newId, err := id.MarshalJSON()
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	stringId := strings.Replace(string(newId), "\"", "", -1)
+	return stringId
 }

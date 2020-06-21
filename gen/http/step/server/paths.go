@@ -22,11 +22,6 @@ func AddStepPath() string {
 }
 
 // RemoveStepPath returns the URL path to the step service remove HTTP endpoint.
-func RemoveStepPath(id string) string {
-	return fmt.Sprintf("/steps/%v", id)
-}
-
-// UpdateStepPath returns the URL path to the step service update HTTP endpoint.
-func UpdateStepPath() string {
-	return "/steps/update"
+func RemoveStepPath() string {
+	return "/steps"
 }

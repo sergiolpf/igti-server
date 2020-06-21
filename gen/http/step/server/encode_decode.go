@@ -22,7 +22,7 @@ import (
 // list endpoint.
 func EncodeListResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(*stepviews.StoredSteps)
+		res := v.(*stepviews.StoredListOfSteps)
 		enc := encoder(ctx, w)
 		body := NewListResponseBody(res.Projected)
 		w.WriteHeader(http.StatusOK)
@@ -50,9 +50,16 @@ func DecodeListRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.De
 // endpoint.
 func EncodeAddResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(string)
+		res := v.(*stepviews.ResultStep)
+		w.Header().Set("goa-view", res.View)
 		enc := encoder(ctx, w)
-		body := res
+		var body interface{}
+		switch res.View {
+		case "default", "":
+			body = NewAddResponseBody(res.Projected)
+		case "tiny":
+			body = NewAddResponseBodyTiny(res.Projected)
+		}
 		w.WriteHeader(http.StatusCreated)
 		return enc.Encode(body)
 	}
@@ -77,7 +84,7 @@ func DecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Dec
 		if err != nil {
 			return nil, err
 		}
-		payload := NewAddSteps(&body)
+		payload := NewAddStepPayload(&body)
 
 		return payload, nil
 	}
@@ -97,32 +104,7 @@ func EncodeRemoveResponse(encoder func(context.Context, http.ResponseWriter) goa
 func DecodeRemoveRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
 	return func(r *http.Request) (interface{}, error) {
 		var (
-			id string
-
-			params = mux.Vars(r)
-		)
-		id = params["id"]
-		payload := NewRemovePayload(id)
-
-		return payload, nil
-	}
-}
-
-// EncodeUpdateResponse returns an encoder for responses returned by the step
-// update endpoint.
-func EncodeUpdateResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
-	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		w.WriteHeader(http.StatusNoContent)
-		return nil
-	}
-}
-
-// DecodeUpdateRequest returns a decoder for requests sent to the step update
-// endpoint.
-func DecodeUpdateRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
-	return func(r *http.Request) (interface{}, error) {
-		var (
-			body UpdateRequestBody
+			body RemoveRequestBody
 			err  error
 		)
 		err = decoder(r).Decode(&body)
@@ -132,25 +114,37 @@ func DecodeUpdateRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 			}
 			return nil, goa.DecodePayloadError(err.Error())
 		}
-		err = ValidateUpdateRequestBody(&body)
+		err = ValidateRemoveRequestBody(&body)
 		if err != nil {
 			return nil, err
 		}
-		payload := NewUpdateStoredSteps(&body)
+		payload := NewRemovePayload(&body)
 
 		return payload, nil
 	}
 }
 
-// marshalStepviewsStepViewToStepResponseBody builds a value of type
-// *StepResponseBody from a value of type *stepviews.StepView.
-func marshalStepviewsStepViewToStepResponseBody(v *stepviews.StepView) *StepResponseBody {
-	res := &StepResponseBody{
-		Targetid: *v.Targetid,
-		Type:     *v.Type,
-		Value:    *v.Value,
-		Sequence: *v.Sequence,
-		Action:   *v.Action,
+// marshalStepviewsStoredStepViewToStoredStepResponseBody builds a value of
+// type *StoredStepResponseBody from a value of type *stepviews.StoredStepView.
+func marshalStepviewsStoredStepViewToStoredStepResponseBody(v *stepviews.StoredStepView) *StoredStepResponseBody {
+	res := &StoredStepResponseBody{
+		ID:         *v.ID,
+		Title:      *v.Title,
+		Target:     *v.Target,
+		StepNumber: *v.StepNumber,
+		Content:    *v.Content,
+	}
+	if v.Placement != nil {
+		res.Placement = *v.Placement
+	}
+	if v.Action != nil {
+		res.Action = *v.Action
+	}
+	if v.Placement == nil {
+		res.Placement = "right"
+	}
+	if v.Action == nil {
+		res.Action = "next"
 	}
 
 	return res
@@ -163,11 +157,12 @@ func unmarshalStepRequestBodyToStepStep(v *StepRequestBody) *step.Step {
 		return nil
 	}
 	res := &step.Step{
-		Targetid: *v.Targetid,
-		Type:     *v.Type,
-		Value:    *v.Value,
-		Sequence: *v.Sequence,
-		Action:   *v.Action,
+		Title:      *v.Title,
+		Target:     *v.Target,
+		StepNumber: *v.StepNumber,
+		Placement:  *v.Placement,
+		Content:    *v.Content,
+		Action:     *v.Action,
 	}
 
 	return res

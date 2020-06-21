@@ -18,37 +18,35 @@ type Client struct {
 	ListEndpoint   goa.Endpoint
 	AddEndpoint    goa.Endpoint
 	RemoveEndpoint goa.Endpoint
-	UpdateEndpoint goa.Endpoint
 }
 
 // NewClient initializes a "step" service client given the endpoints.
-func NewClient(list, add, remove, update goa.Endpoint) *Client {
+func NewClient(list, add, remove goa.Endpoint) *Client {
 	return &Client{
 		ListEndpoint:   list,
 		AddEndpoint:    add,
 		RemoveEndpoint: remove,
-		UpdateEndpoint: update,
 	}
 }
 
 // List calls the "list" endpoint of the "step" service.
-func (c *Client) List(ctx context.Context, p *ListPayload) (res *StoredSteps, err error) {
+func (c *Client) List(ctx context.Context, p *ListPayload) (res *StoredListOfSteps, err error) {
 	var ires interface{}
 	ires, err = c.ListEndpoint(ctx, p)
 	if err != nil {
 		return
 	}
-	return ires.(*StoredSteps), nil
+	return ires.(*StoredListOfSteps), nil
 }
 
 // Add calls the "add" endpoint of the "step" service.
-func (c *Client) Add(ctx context.Context, p *Steps) (res string, err error) {
+func (c *Client) Add(ctx context.Context, p *AddStepPayload) (res *ResultStep, err error) {
 	var ires interface{}
 	ires, err = c.AddEndpoint(ctx, p)
 	if err != nil {
 		return
 	}
-	return ires.(string), nil
+	return ires.(*ResultStep), nil
 }
 
 // Remove calls the "remove" endpoint of the "step" service.
@@ -57,11 +55,5 @@ func (c *Client) Add(ctx context.Context, p *Steps) (res string, err error) {
 //	- error: internal error
 func (c *Client) Remove(ctx context.Context, p *RemovePayload) (err error) {
 	_, err = c.RemoveEndpoint(ctx, p)
-	return
-}
-
-// Update calls the "update" endpoint of the "step" service.
-func (c *Client) Update(ctx context.Context, p *StoredSteps) (err error) {
-	_, err = c.UpdateEndpoint(ctx, p)
 	return
 }

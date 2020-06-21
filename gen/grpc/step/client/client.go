@@ -74,18 +74,3 @@ func (c *Client) Remove() goa.Endpoint {
 		return res, nil
 	}
 }
-
-// Update calls the "Update" function in steppb.StepClient interface.
-func (c *Client) Update() goa.Endpoint {
-	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		inv := goagrpc.NewInvoker(
-			BuildUpdateFunc(c.grpccli, c.opts...),
-			EncodeUpdateRequest,
-			nil)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			return nil, goa.Fault(err.Error())
-		}
-		return res, nil
-	}
-}

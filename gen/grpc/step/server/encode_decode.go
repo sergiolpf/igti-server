@@ -19,9 +19,9 @@ import (
 
 // EncodeListResponse encodes responses from the "step" service "list" endpoint.
 func EncodeListResponse(ctx context.Context, v interface{}, hdr, trlr *metadata.MD) (interface{}, error) {
-	vres, ok := v.(*stepviews.StoredSteps)
+	vres, ok := v.(*stepviews.StoredListOfSteps)
 	if !ok {
-		return nil, goagrpc.ErrInvalidType("step", "list", "*stepviews.StoredSteps", v)
+		return nil, goagrpc.ErrInvalidType("step", "list", "*stepviews.StoredListOfSteps", v)
 	}
 	result := vres.Projected
 	(*hdr).Append("goa-view", vres.View)
@@ -49,10 +49,12 @@ func DecodeListRequest(ctx context.Context, v interface{}, md metadata.MD) (inte
 
 // EncodeAddResponse encodes responses from the "step" service "add" endpoint.
 func EncodeAddResponse(ctx context.Context, v interface{}, hdr, trlr *metadata.MD) (interface{}, error) {
-	result, ok := v.(string)
+	vres, ok := v.(*stepviews.ResultStep)
 	if !ok {
-		return nil, goagrpc.ErrInvalidType("step", "add", "string", v)
+		return nil, goagrpc.ErrInvalidType("step", "add", "*stepviews.ResultStep", v)
 	}
+	result := vres.Projected
+	(*hdr).Append("goa-view", vres.View)
 	resp := NewAddResponse(result)
 	return resp, nil
 }
@@ -71,7 +73,7 @@ func DecodeAddRequest(ctx context.Context, v interface{}, md metadata.MD) (inter
 			return nil, err
 		}
 	}
-	var payload *step.Steps
+	var payload *step.AddStepPayload
 	{
 		payload = NewAddPayload(message)
 	}
@@ -100,35 +102,6 @@ func DecodeRemoveRequest(ctx context.Context, v interface{}, md metadata.MD) (in
 	var payload *step.RemovePayload
 	{
 		payload = NewRemovePayload(message)
-	}
-	return payload, nil
-}
-
-// EncodeUpdateResponse encodes responses from the "step" service "update"
-// endpoint.
-func EncodeUpdateResponse(ctx context.Context, v interface{}, hdr, trlr *metadata.MD) (interface{}, error) {
-	resp := NewUpdateResponse()
-	return resp, nil
-}
-
-// DecodeUpdateRequest decodes requests sent to "step" service "update"
-// endpoint.
-func DecodeUpdateRequest(ctx context.Context, v interface{}, md metadata.MD) (interface{}, error) {
-	var (
-		message *steppb.UpdateRequest
-		ok      bool
-	)
-	{
-		if message, ok = v.(*steppb.UpdateRequest); !ok {
-			return nil, goagrpc.ErrInvalidType("step", "update", "*steppb.UpdateRequest", v)
-		}
-		if err := ValidateUpdateRequest(message); err != nil {
-			return nil, err
-		}
-	}
-	var payload *step.StoredSteps
-	{
-		payload = NewUpdatePayload(message)
 	}
 	return payload, nil
 }
