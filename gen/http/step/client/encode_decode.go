@@ -216,6 +216,64 @@ func DecodeRemoveResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 	}
 }
 
+// BuildUpdateRequest instantiates a HTTP request object with method and path
+// set to call the "step" service "update" endpoint
+func (c *Client) BuildUpdateRequest(ctx context.Context, v interface{}) (*http.Request, error) {
+	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: UpdateStepPath()}
+	req, err := http.NewRequest("PUT", u.String(), nil)
+	if err != nil {
+		return nil, goahttp.ErrInvalidURL("step", "update", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
+
+	return req, nil
+}
+
+// EncodeUpdateRequest returns an encoder for requests sent to the step update
+// server.
+func EncodeUpdateRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	return func(req *http.Request, v interface{}) error {
+		p, ok := v.(*step.StoredListOfSteps)
+		if !ok {
+			return goahttp.ErrInvalidType("step", "update", "*step.StoredListOfSteps", v)
+		}
+		body := NewUpdateRequestBody(p)
+		if err := encoder(req).Encode(&body); err != nil {
+			return goahttp.ErrEncodingError("step", "update", err)
+		}
+		return nil
+	}
+}
+
+// DecodeUpdateResponse returns a decoder for responses returned by the step
+// update endpoint. restoreBody controls whether the response body should be
+// restored after having been read.
+func DecodeUpdateResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
+	return func(resp *http.Response) (interface{}, error) {
+		if restoreBody {
+			b, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return nil, err
+			}
+			resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
+			defer func() {
+				resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
+			}()
+		} else {
+			defer resp.Body.Close()
+		}
+		switch resp.StatusCode {
+		case http.StatusNoContent:
+			return nil, nil
+		default:
+			body, _ := ioutil.ReadAll(resp.Body)
+			return nil, goahttp.ErrInvalidResponse("step", "update", resp.StatusCode, string(body))
+		}
+	}
+}
+
 // unmarshalStoredStepResponseBodyToStepviewsStoredStepView builds a value of
 // type *stepviews.StoredStepView from a value of type *StoredStepResponseBody.
 func unmarshalStoredStepResponseBodyToStepviewsStoredStepView(v *StoredStepResponseBody) *stepviews.StoredStepView {
@@ -265,6 +323,38 @@ func marshalStepRequestBodyToStepStep(v *StepRequestBody) *step.Step {
 		return nil
 	}
 	res := &step.Step{
+		Title:      v.Title,
+		Target:     v.Target,
+		StepNumber: v.StepNumber,
+		Placement:  v.Placement,
+		Content:    v.Content,
+		Action:     v.Action,
+	}
+
+	return res
+}
+
+// marshalStepStoredStepToStoredStepRequestBody builds a value of type
+// *StoredStepRequestBody from a value of type *step.StoredStep.
+func marshalStepStoredStepToStoredStepRequestBody(v *step.StoredStep) *StoredStepRequestBody {
+	res := &StoredStepRequestBody{
+		ID:         v.ID,
+		Title:      v.Title,
+		Target:     v.Target,
+		StepNumber: v.StepNumber,
+		Placement:  v.Placement,
+		Content:    v.Content,
+		Action:     v.Action,
+	}
+
+	return res
+}
+
+// marshalStoredStepRequestBodyToStepStoredStep builds a value of type
+// *step.StoredStep from a value of type *StoredStepRequestBody.
+func marshalStoredStepRequestBodyToStepStoredStep(v *StoredStepRequestBody) *step.StoredStep {
+	res := &step.StoredStep{
+		ID:         v.ID,
 		Title:      v.Title,
 		Target:     v.Target,
 		StepNumber: v.StepNumber,

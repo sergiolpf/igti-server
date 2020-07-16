@@ -141,6 +141,38 @@ func (m *Mongo) DeleteWalkthroughStep(wtId string, id string) error {
 
 }
 
+func (m *Mongo) UpdateOneStep(wtSteps step.StoredListOfSteps) error {
+	collection := m.getCollection(STEPS_COLLNAME)
+
+	//update an Organization
+	id, err := primitive.ObjectIDFromHex(wtSteps.WtID)
+
+	if err != nil {
+		log.Println(err)
+		return ErrNotFound
+	}
+
+	filter := bson.D{{"_id", id}, {"steps.id", wtSteps.Steps[0].ID}}
+	update := bson.D{{"$set", bson.D{
+		{"steps.$.title", wtSteps.Steps[0].Title},
+		{"steps.$.action", wtSteps.Steps[0].Action},
+		{"steps.$.content", wtSteps.Steps[0].Content},
+		{"steps.$.placement", wtSteps.Steps[0].Placement},
+		{"steps.$.stepnumber", wtSteps.Steps[0].StepNumber},
+		{"steps.$.target", wtSteps.Steps[0].Target}}}}
+
+	result, err := collection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Println(err)
+		return ErrNotFound
+	}
+
+	if result.MatchedCount != 0 {
+		log.Println("matched and replaced an existing document")
+	}
+	return nil
+}
+
 // func (m *Mongo) UpdateWalkthroughSteps(wtSteps step.StoredSteps) error {
 // 	collection := m.getCollection(STEPS_COLLNAME)
 

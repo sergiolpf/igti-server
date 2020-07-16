@@ -20,6 +20,8 @@ service Step {
 	rpc Add (AddRequest) returns (AddResponse);
 	// Remove Steps from storage
 	rpc Remove (RemoveRequest) returns (RemoveResponse);
+	// Update Step with the given ID.
+	rpc Update (UpdateRequest) returns (UpdateResponse);
 }
 
 message ListRequest {
@@ -88,4 +90,14 @@ message RemoveRequest {
 }
 
 message RemoveResponse {
+}
+
+message UpdateRequest {
+	// ID is the unique id of the Walkthrough.
+	string wt_id = 1;
+	// List of Stored steps
+	repeated StoredStep steps = 2;
+}
+
+message UpdateResponse {
 }

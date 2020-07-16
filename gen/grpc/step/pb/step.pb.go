@@ -547,6 +547,101 @@ func (*RemoveResponse) Descriptor() ([]byte, []int) {
 	return file_step_proto_rawDescGZIP(), []int{7}
 }
 
+type UpdateRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// ID is the unique id of the Walkthrough.
+	WtId string `protobuf:"bytes,1,opt,name=wt_id,json=wtId,proto3" json:"wt_id,omitempty"`
+	// List of Stored steps
+	Steps []*StoredStep `protobuf:"bytes,2,rep,name=steps,proto3" json:"steps,omitempty"`
+}
+
+func (x *UpdateRequest) Reset() {
+	*x = UpdateRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_step_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateRequest) ProtoMessage() {}
+
+func (x *UpdateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_step_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateRequest.ProtoReflect.Descriptor instead.
+func (*UpdateRequest) Descriptor() ([]byte, []int) {
+	return file_step_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *UpdateRequest) GetWtId() string {
+	if x != nil {
+		return x.WtId
+	}
+	return ""
+}
+
+func (x *UpdateRequest) GetSteps() []*StoredStep {
+	if x != nil {
+		return x.Steps
+	}
+	return nil
+}
+
+type UpdateResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *UpdateResponse) Reset() {
+	*x = UpdateResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_step_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateResponse) ProtoMessage() {}
+
+func (x *UpdateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_step_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateResponse.ProtoReflect.Descriptor instead.
+func (*UpdateResponse) Descriptor() ([]byte, []int) {
+	return file_step_proto_rawDescGZIP(), []int{9}
+}
+
 var File_step_proto protoreflect.FileDescriptor
 
 var file_step_proto_rawDesc = []byte{
@@ -593,7 +688,13 @@ var file_step_proto_rawDesc = []byte{
 	0x75, 0x65, 0x73, 0x74, 0x12, 0x13, 0x0a, 0x05, 0x77, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
 	0x01, 0x28, 0x09, 0x52, 0x04, 0x77, 0x74, 0x49, 0x64, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18,
 	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x10, 0x0a, 0x0e, 0x52, 0x65, 0x6d,
-	0x6f, 0x76, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0x96, 0x01, 0x0a, 0x04,
+	0x6f, 0x76, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x4c, 0x0a, 0x0d, 0x55,
+	0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x13, 0x0a, 0x05,
+	0x77, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x77, 0x74, 0x49,
+	0x64, 0x12, 0x26, 0x0a, 0x05, 0x73, 0x74, 0x65, 0x70, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x10, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x53, 0x74,
+	0x65, 0x70, 0x52, 0x05, 0x73, 0x74, 0x65, 0x70, 0x73, 0x22, 0x10, 0x0a, 0x0e, 0x55, 0x70, 0x64,
+	0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0xcb, 0x01, 0x0a, 0x04,
 	0x53, 0x74, 0x65, 0x70, 0x12, 0x2d, 0x0a, 0x04, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x11, 0x2e, 0x73,
 	0x74, 0x65, 0x70, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
 	0x12, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f,
@@ -603,8 +704,11 @@ var file_step_proto_rawDesc = []byte{
 	0x33, 0x0a, 0x06, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x12, 0x13, 0x2e, 0x73, 0x74, 0x65, 0x70,
 	0x2e, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x14,
 	0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x42, 0x08, 0x5a, 0x06, 0x73, 0x74, 0x65, 0x70, 0x70, 0x62, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x33, 0x0a, 0x06, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x12, 0x13,
+	0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x14, 0x2e, 0x73, 0x74, 0x65, 0x70, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74,
+	0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x08, 0x5a, 0x06, 0x73, 0x74, 0x65,
+	0x70, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -619,7 +723,7 @@ func file_step_proto_rawDescGZIP() []byte {
 	return file_step_proto_rawDescData
 }
 
-var file_step_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_step_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_step_proto_goTypes = []interface{}{
 	(*ListRequest)(nil),    // 0: step.ListRequest
 	(*ListResponse)(nil),   // 1: step.ListResponse
@@ -629,22 +733,27 @@ var file_step_proto_goTypes = []interface{}{
 	(*AddResponse)(nil),    // 5: step.AddResponse
 	(*RemoveRequest)(nil),  // 6: step.RemoveRequest
 	(*RemoveResponse)(nil), // 7: step.RemoveResponse
+	(*UpdateRequest)(nil),  // 8: step.UpdateRequest
+	(*UpdateResponse)(nil), // 9: step.UpdateResponse
 }
 var file_step_proto_depIdxs = []int32{
 	2, // 0: step.ListResponse.steps:type_name -> step.StoredStep
 	4, // 1: step.AddRequest.step:type_name -> step.Step1
 	2, // 2: step.AddResponse.step:type_name -> step.StoredStep
-	0, // 3: step.Step.List:input_type -> step.ListRequest
-	3, // 4: step.Step.Add:input_type -> step.AddRequest
-	6, // 5: step.Step.Remove:input_type -> step.RemoveRequest
-	1, // 6: step.Step.List:output_type -> step.ListResponse
-	5, // 7: step.Step.Add:output_type -> step.AddResponse
-	7, // 8: step.Step.Remove:output_type -> step.RemoveResponse
-	6, // [6:9] is the sub-list for method output_type
-	3, // [3:6] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	2, // 3: step.UpdateRequest.steps:type_name -> step.StoredStep
+	0, // 4: step.Step.List:input_type -> step.ListRequest
+	3, // 5: step.Step.Add:input_type -> step.AddRequest
+	6, // 6: step.Step.Remove:input_type -> step.RemoveRequest
+	8, // 7: step.Step.Update:input_type -> step.UpdateRequest
+	1, // 8: step.Step.List:output_type -> step.ListResponse
+	5, // 9: step.Step.Add:output_type -> step.AddResponse
+	7, // 10: step.Step.Remove:output_type -> step.RemoveResponse
+	9, // 11: step.Step.Update:output_type -> step.UpdateResponse
+	8, // [8:12] is the sub-list for method output_type
+	4, // [4:8] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_step_proto_init() }
@@ -749,6 +858,30 @@ func file_step_proto_init() {
 				return nil
 			}
 		}
+		file_step_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UpdateRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_step_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UpdateResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -756,7 +889,7 @@ func file_step_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_step_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -788,6 +921,8 @@ type StepClient interface {
 	Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*AddResponse, error)
 	// Remove Steps from storage
 	Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveResponse, error)
+	// Update Step with the given ID.
+	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error)
 }
 
 type stepClient struct {
@@ -825,6 +960,15 @@ func (c *stepClient) Remove(ctx context.Context, in *RemoveRequest, opts ...grpc
 	return out, nil
 }
 
+func (c *stepClient) Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error) {
+	out := new(UpdateResponse)
+	err := c.cc.Invoke(ctx, "/step.Step/Update", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StepServer is the server API for Step service.
 type StepServer interface {
 	// List all stored Steps for a given walkthrough
@@ -833,6 +977,8 @@ type StepServer interface {
 	Add(context.Context, *AddRequest) (*AddResponse, error)
 	// Remove Steps from storage
 	Remove(context.Context, *RemoveRequest) (*RemoveResponse, error)
+	// Update Step with the given ID.
+	Update(context.Context, *UpdateRequest) (*UpdateResponse, error)
 }
 
 // UnimplementedStepServer can be embedded to have forward compatible implementations.
@@ -847,6 +993,9 @@ func (*UnimplementedStepServer) Add(context.Context, *AddRequest) (*AddResponse,
 }
 func (*UnimplementedStepServer) Remove(context.Context, *RemoveRequest) (*RemoveResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
+}
+func (*UnimplementedStepServer) Update(context.Context, *UpdateRequest) (*UpdateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
 
 func RegisterStepServer(s *grpc.Server, srv StepServer) {
@@ -907,6 +1056,24 @@ func _Step_Remove_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Step_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StepServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/step.Step/Update",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StepServer).Update(ctx, req.(*UpdateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Step_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "step.Step",
 	HandlerType: (*StepServer)(nil),
@@ -922,6 +1089,10 @@ var _Step_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Remove",
 			Handler:    _Step_Remove_Handler,
+		},
+		{
+			MethodName: "Update",
+			Handler:    _Step_Update_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

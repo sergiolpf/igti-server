@@ -21,6 +21,7 @@ type Server struct {
 	ListH   goagrpc.UnaryHandler
 	AddH    goagrpc.UnaryHandler
 	RemoveH goagrpc.UnaryHandler
+	UpdateH goagrpc.UnaryHandler
 }
 
 // ErrorNamer is an interface implemented by generated error structs that
@@ -35,6 +36,7 @@ func New(e *step.Endpoints, uh goagrpc.UnaryHandler) *Server {
 		ListH:   NewListHandler(e.List, uh),
 		AddH:    NewAddHandler(e.Add, uh),
 		RemoveH: NewRemoveHandler(e.Remove, uh),
+		UpdateH: NewUpdateHandler(e.Update, uh),
 	}
 }
 
@@ -96,4 +98,24 @@ func (s *Server) Remove(ctx context.Context, message *steppb.RemoveRequest) (*st
 		return nil, goagrpc.EncodeError(err)
 	}
 	return resp.(*steppb.RemoveResponse), nil
+}
+
+// NewUpdateHandler creates a gRPC handler which serves the "step" service
+// "update" endpoint.
+func NewUpdateHandler(endpoint goa.Endpoint, h goagrpc.UnaryHandler) goagrpc.UnaryHandler {
+	if h == nil {
+		h = goagrpc.NewUnaryHandler(endpoint, DecodeUpdateRequest, EncodeUpdateResponse)
+	}
+	return h
+}
+
+// Update implements the "Update" method in steppb.StepServer interface.
+func (s *Server) Update(ctx context.Context, message *steppb.UpdateRequest) (*steppb.UpdateResponse, error) {
+	ctx = context.WithValue(ctx, goa.MethodKey, "update")
+	ctx = context.WithValue(ctx, goa.ServiceKey, "step")
+	resp, err := s.UpdateH.Handle(ctx, message)
+	if err != nil {
+		return nil, goagrpc.EncodeError(err)
+	}
+	return resp.(*steppb.UpdateResponse), nil
 }

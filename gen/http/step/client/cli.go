@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	goa "goa.design/goa/v3/pkg"
 	step "guide.me/gen/step"
 )
 
@@ -61,6 +62,43 @@ func BuildRemovePayload(stepRemoveBody string) (*step.RemovePayload, error) {
 	v := &step.RemovePayload{
 		WtID: body.WtID,
 		ID:   body.ID,
+	}
+
+	return v, nil
+}
+
+// BuildUpdatePayload builds the payload for the step update endpoint from CLI
+// flags.
+func BuildUpdatePayload(stepUpdateBody string) (*step.StoredListOfSteps, error) {
+	var err error
+	var body UpdateRequestBody
+	{
+		err = json.Unmarshal([]byte(stepUpdateBody), &body)
+		if err != nil {
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"steps\": [\n         {\n            \"action\": \"next\",\n            \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n            \"id\": \"Sed et sit dolor aut voluptas.\",\n            \"placement\": \"top\",\n            \"stepNumber\": 68608253,\n            \"target\": \"Impedit voluptatem dolor et voluptatem.\",\n            \"title\": \"Click here to make it work!\"\n         },\n         {\n            \"action\": \"next\",\n            \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n            \"id\": \"Sed et sit dolor aut voluptas.\",\n            \"placement\": \"top\",\n            \"stepNumber\": 68608253,\n            \"target\": \"Impedit voluptatem dolor et voluptatem.\",\n            \"title\": \"Click here to make it work!\"\n         },\n         {\n            \"action\": \"next\",\n            \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n            \"id\": \"Sed et sit dolor aut voluptas.\",\n            \"placement\": \"top\",\n            \"stepNumber\": 68608253,\n            \"target\": \"Impedit voluptatem dolor et voluptatem.\",\n            \"title\": \"Click here to make it work!\"\n         },\n         {\n            \"action\": \"next\",\n            \"content\": \"This dropdown contains values from the list of status, for our scenario we want to chose \\'active\\'\",\n            \"id\": \"Sed et sit dolor aut voluptas.\",\n            \"placement\": \"top\",\n            \"stepNumber\": 68608253,\n            \"target\": \"Impedit voluptatem dolor et voluptatem.\",\n            \"title\": \"Click here to make it work!\"\n         }\n      ],\n      \"wtId\": \"123abc\"\n   }'")
+		}
+		if body.Steps == nil {
+			err = goa.MergeErrors(err, goa.MissingFieldError("steps", "body"))
+		}
+		for _, e := range body.Steps {
+			if e != nil {
+				if err2 := ValidateStoredStepRequestBody(e); err2 != nil {
+					err = goa.MergeErrors(err, err2)
+				}
+			}
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+	v := &step.StoredListOfSteps{
+		WtID: body.WtID,
+	}
+	if body.Steps != nil {
+		v.Steps = make([]*step.StoredStep, len(body.Steps))
+		for i, val := range body.Steps {
+			v.Steps[i] = marshalStoredStepRequestBodyToStepStoredStep(val)
+		}
 	}
 
 	return v, nil

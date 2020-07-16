@@ -18,14 +18,16 @@ type Client struct {
 	ListEndpoint   goa.Endpoint
 	AddEndpoint    goa.Endpoint
 	RemoveEndpoint goa.Endpoint
+	UpdateEndpoint goa.Endpoint
 }
 
 // NewClient initializes a "step" service client given the endpoints.
-func NewClient(list, add, remove goa.Endpoint) *Client {
+func NewClient(list, add, remove, update goa.Endpoint) *Client {
 	return &Client{
 		ListEndpoint:   list,
 		AddEndpoint:    add,
 		RemoveEndpoint: remove,
+		UpdateEndpoint: update,
 	}
 }
 
@@ -55,5 +57,11 @@ func (c *Client) Add(ctx context.Context, p *AddStepPayload) (res *ResultStep, e
 //	- error: internal error
 func (c *Client) Remove(ctx context.Context, p *RemovePayload) (err error) {
 	_, err = c.RemoveEndpoint(ctx, p)
+	return
+}
+
+// Update calls the "update" endpoint of the "step" service.
+func (c *Client) Update(ctx context.Context, p *StoredListOfSteps) (err error) {
+	_, err = c.UpdateEndpoint(ctx, p)
 	return
 }

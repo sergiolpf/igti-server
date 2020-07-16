@@ -25,3 +25,8 @@ func AddStepPath() string {
 func RemoveStepPath() string {
 	return "/steps"
 }
+
+// UpdateStepPath returns the URL path to the step service update HTTP endpoint.
+func UpdateStepPath() string {
+	return "/steps/update"
+}

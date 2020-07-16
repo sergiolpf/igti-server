@@ -93,6 +93,29 @@ func NewRemoveRequest(payload *step.RemovePayload) *steppb.RemoveRequest {
 	return message
 }
 
+// NewUpdateRequest builds the gRPC request type from the payload of the
+// "update" endpoint of the "step" service.
+func NewUpdateRequest(payload *step.StoredListOfSteps) *steppb.UpdateRequest {
+	message := &steppb.UpdateRequest{
+		WtId: payload.WtID,
+	}
+	if payload.Steps != nil {
+		message.Steps = make([]*steppb.StoredStep, len(payload.Steps))
+		for i, val := range payload.Steps {
+			message.Steps[i] = &steppb.StoredStep{
+				Id:         val.ID,
+				Title:      val.Title,
+				Target:     val.Target,
+				StepNumber: val.StepNumber,
+				Placement:  val.Placement,
+				Content:    val.Content,
+				Action:     val.Action,
+			}
+		}
+	}
+	return message
+}
+
 // ValidateListResponse runs the validations defined on ListResponse.
 func ValidateListResponse(message *steppb.ListResponse) (err error) {
 	if message.Steps == nil {

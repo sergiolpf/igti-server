@@ -25,6 +25,8 @@ type Service interface {
 	Add(context.Context, *AddStepPayload) (res *ResultStep, view string, err error)
 	// Remove Steps from storage
 	Remove(context.Context, *RemovePayload) (err error)
+	// Update Step with the given ID.
+	Update(context.Context, *StoredListOfSteps) (err error)
 }
 
 // ServiceName is the name of the service as defined in the design. This is the
@@ -35,7 +37,7 @@ const ServiceName = "step"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [3]string{"list", "add", "remove"}
+var MethodNames = [4]string{"list", "add", "remove", "update"}
 
 // ListPayload is the payload type of the step service list method.
 type ListPayload struct {

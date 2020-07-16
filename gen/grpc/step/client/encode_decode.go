@@ -126,3 +126,26 @@ func EncodeRemoveRequest(ctx context.Context, v interface{}, md *metadata.MD) (i
 	}
 	return NewRemoveRequest(payload), nil
 }
+
+// BuildUpdateFunc builds the remote method to invoke for "step" service
+// "update" endpoint.
+func BuildUpdateFunc(grpccli steppb.StepClient, cliopts ...grpc.CallOption) goagrpc.RemoteFunc {
+	return func(ctx context.Context, reqpb interface{}, opts ...grpc.CallOption) (interface{}, error) {
+		for _, opt := range cliopts {
+			opts = append(opts, opt)
+		}
+		if reqpb != nil {
+			return grpccli.Update(ctx, reqpb.(*steppb.UpdateRequest), opts...)
+		}
+		return grpccli.Update(ctx, &steppb.UpdateRequest{}, opts...)
+	}
+}
+
+// EncodeUpdateRequest encodes requests sent to step update endpoint.
+func EncodeUpdateRequest(ctx context.Context, v interface{}, md *metadata.MD) (interface{}, error) {
+	payload, ok := v.(*step.StoredListOfSteps)
+	if !ok {
+		return nil, goagrpc.ErrInvalidType("step", "update", "*step.StoredListOfSteps", v)
+	}
+	return NewUpdateRequest(payload), nil
+}

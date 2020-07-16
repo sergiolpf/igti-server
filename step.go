@@ -71,3 +71,12 @@ func (s *stepsrvc) Remove(ctx context.Context, p *step.RemovePayload) (err error
 
 	return err
 }
+
+// Update Step with the given ID.
+func (s *stepsrvc) Update(ctx context.Context, p *step.StoredListOfSteps) (err error) {
+	s.logger.Print("step.update")
+
+	err = s.db.UpdateOneStep(*p)
+
+	return err
+}
