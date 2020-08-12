@@ -124,6 +124,40 @@ func DecodeRemoveRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 	}
 }
 
+// EncodeUpdateResponse returns an encoder for responses returned by the step
+// update endpoint.
+func EncodeUpdateResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
+	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
+		w.WriteHeader(http.StatusNoContent)
+		return nil
+	}
+}
+
+// DecodeUpdateRequest returns a decoder for requests sent to the step update
+// endpoint.
+func DecodeUpdateRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			body UpdateRequestBody
+			err  error
+		)
+		err = decoder(r).Decode(&body)
+		if err != nil {
+			if err == io.EOF {
+				return nil, goa.MissingPayloadError()
+			}
+			return nil, goa.DecodePayloadError(err.Error())
+		}
+		err = ValidateUpdateRequestBody(&body)
+		if err != nil {
+			return nil, err
+		}
+		payload := NewUpdateStoredListOfSteps(&body)
+
+		return payload, nil
+	}
+}
+
 // marshalStepviewsStoredStepViewToStoredStepResponseBody builds a value of
 // type *StoredStepResponseBody from a value of type *stepviews.StoredStepView.
 func marshalStepviewsStoredStepViewToStoredStepResponseBody(v *stepviews.StoredStepView) *StoredStepResponseBody {
@@ -157,6 +191,22 @@ func unmarshalStepRequestBodyToStepStep(v *StepRequestBody) *step.Step {
 		return nil
 	}
 	res := &step.Step{
+		Title:      *v.Title,
+		Target:     *v.Target,
+		StepNumber: *v.StepNumber,
+		Placement:  *v.Placement,
+		Content:    *v.Content,
+		Action:     *v.Action,
+	}
+
+	return res
+}
+
+// unmarshalStoredStepRequestBodyToStepStoredStep builds a value of type
+// *step.StoredStep from a value of type *StoredStepRequestBody.
+func unmarshalStoredStepRequestBodyToStepStoredStep(v *StoredStepRequestBody) *step.StoredStep {
+	res := &step.StoredStep{
+		ID:         *v.ID,
 		Title:      *v.Title,
 		Target:     *v.Target,
 		StepNumber: *v.StepNumber,

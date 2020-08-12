@@ -109,6 +109,51 @@ func NewRemoveResponse() *steppb.RemoveResponse {
 	return message
 }
 
+// NewUpdatePayload builds the payload of the "update" endpoint of the "step"
+// service from the gRPC request type.
+func NewUpdatePayload(message *steppb.UpdateRequest) *step.StoredListOfSteps {
+	v := &step.StoredListOfSteps{
+		WtID: message.WtId,
+	}
+	if message.Steps != nil {
+		v.Steps = make([]*step.StoredStep, len(message.Steps))
+		for i, val := range message.Steps {
+			v.Steps[i] = &step.StoredStep{
+				ID:         val.Id,
+				Title:      val.Title,
+				Target:     val.Target,
+				StepNumber: val.StepNumber,
+				Placement:  val.Placement,
+				Content:    val.Content,
+				Action:     val.Action,
+			}
+		}
+	}
+	return v
+}
+
+// NewUpdateResponse builds the gRPC response type from the result of the
+// "update" endpoint of the "step" service.
+func NewUpdateResponse() *steppb.UpdateResponse {
+	message := &steppb.UpdateResponse{}
+	return message
+}
+
+// ValidateStoredStep runs the validations defined on StoredStep.
+func ValidateStoredStep(message *steppb.StoredStep) (err error) {
+	if message.Placement != "" {
+		if !(message.Placement == "left" || message.Placement == "right" || message.Placement == "top" || message.Placement == "buttom") {
+			err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.placement", message.Placement, []interface{}{"left", "right", "top", "buttom"}))
+		}
+	}
+	if message.Action != "" {
+		if !(message.Action == "click" || message.Action == "next" || message.Action == "end") {
+			err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.action", message.Action, []interface{}{"click", "next", "end"}))
+		}
+	}
+	return
+}
+
 // ValidateAddRequest runs the validations defined on AddRequest.
 func ValidateAddRequest(message *steppb.AddRequest) (err error) {
 	if message.Step != nil {
@@ -126,6 +171,21 @@ func ValidateStep1(message *steppb.Step1) (err error) {
 	}
 	if !(message.Action == "click" || message.Action == "next" || message.Action == "end") {
 		err = goa.MergeErrors(err, goa.InvalidEnumValueError("message.action", message.Action, []interface{}{"click", "next", "end"}))
+	}
+	return
+}
+
+// ValidateUpdateRequest runs the validations defined on UpdateRequest.
+func ValidateUpdateRequest(message *steppb.UpdateRequest) (err error) {
+	if message.Steps == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("steps", "message"))
+	}
+	for _, e := range message.Steps {
+		if e != nil {
+			if err2 := ValidateStoredStep(e); err2 != nil {
+				err = goa.MergeErrors(err, err2)
+			}
+		}
 	}
 	return
 }

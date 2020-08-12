@@ -18,6 +18,7 @@ type Endpoints struct {
 	List   goa.Endpoint
 	Add    goa.Endpoint
 	Remove goa.Endpoint
+	Update goa.Endpoint
 }
 
 // NewEndpoints wraps the methods of the "step" service with endpoints.
@@ -26,6 +27,7 @@ func NewEndpoints(s Service) *Endpoints {
 		List:   NewListEndpoint(s),
 		Add:    NewAddEndpoint(s),
 		Remove: NewRemoveEndpoint(s),
+		Update: NewUpdateEndpoint(s),
 	}
 }
 
@@ -34,6 +36,7 @@ func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
 	e.List = m(e.List)
 	e.Add = m(e.Add)
 	e.Remove = m(e.Remove)
+	e.Update = m(e.Update)
 }
 
 // NewListEndpoint returns an endpoint function that calls the method "list" of
@@ -70,5 +73,14 @@ func NewRemoveEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*RemovePayload)
 		return nil, s.Remove(ctx, p)
+	}
+}
+
+// NewUpdateEndpoint returns an endpoint function that calls the method
+// "update" of service "step".
+func NewUpdateEndpoint(s Service) goa.Endpoint {
+	return func(ctx context.Context, req interface{}) (interface{}, error) {
+		p := req.(*StoredListOfSteps)
+		return nil, s.Update(ctx, p)
 	}
 }

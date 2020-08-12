@@ -25,7 +25,7 @@ func BuildListPayload(walkthroughListMessage string) (*walkthrough.ListPayload, 
 		if walkthroughListMessage != "" {
 			err = json.Unmarshal([]byte(walkthroughListMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Eum id vero iste voluptas facere.\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Consequuntur doloremque et dolor qui.\"\n   }'")
 			}
 		}
 	}
@@ -45,7 +45,7 @@ func BuildShowPayload(walkthroughShowMessage string, walkthroughShowView string)
 		if walkthroughShowMessage != "" {
 			err = json.Unmarshal([]byte(walkthroughShowMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Rerum harum.\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Assumenda quis laudantium.\"\n   }'")
 			}
 		}
 	}
@@ -80,7 +80,7 @@ func BuildAddPayload(walkthroughAddMessage string) (*walkthrough.Walkthrough, er
 		if walkthroughAddMessage != "" {
 			err = json.Unmarshal([]byte(walkthroughAddMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Optio ipsam similique.\",\n      \"publishedURL\": \"Assumenda quis laudantium.\",\n      \"status\": \"draft | published\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Deserunt ad quo quod voluptatem beatae.\",\n      \"publishedURL\": \"Aut corrupti amet in et.\",\n      \"status\": \"draft | published\"\n   }'")
 			}
 		}
 	}
@@ -109,7 +109,7 @@ func BuildRemovePayload(walkthroughRemoveMessage string) (*walkthrough.RemovePay
 		if walkthroughRemoveMessage != "" {
 			err = json.Unmarshal([]byte(walkthroughRemoveMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Deserunt ad quo quod voluptatem beatae.\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Porro quis error in quia.\"\n   }'")
 			}
 		}
 	}
@@ -129,7 +129,7 @@ func BuildUpdatePayload(walkthroughUpdateMessage string) (*walkthrough.StoredWal
 		if walkthroughUpdateMessage != "" {
 			err = json.Unmarshal([]byte(walkthroughUpdateMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"id\": \"123abc\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"At exercitationem quia eaque odio.\",\n      \"publishedURL\": \"Labore porro eligendi ea non debitis eum.\",\n      \"status\": \"draft | published\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"id\": \"123abc\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Odio quia temporibus optio quasi eum aut.\",\n      \"publishedURL\": \"Aliquam eligendi quis aut eum illo rem.\",\n      \"status\": \"draft | published\"\n   }'")
 			}
 		}
 	}
@@ -159,7 +159,7 @@ func BuildRenamePayload(walkthroughRenameMessage string) (*walkthrough.RenamePay
 		if walkthroughRenameMessage != "" {
 			err = json.Unmarshal([]byte(walkthroughRenameMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Porro quis error in quia.\",\n      \"name\": \"Aliquam eligendi quis aut eum illo rem.\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Eum alias adipisci iste autem.\",\n      \"name\": \"Id voluptatibus autem.\"\n   }'")
 			}
 		}
 	}
@@ -180,7 +180,7 @@ func BuildPublishPayload(walkthroughPublishMessage string) (*walkthrough.Publish
 		if walkthroughPublishMessage != "" {
 			err = json.Unmarshal([]byte(walkthroughPublishMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Id voluptatibus autem.\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, example of valid JSON:\n%s", "'{\n      \"id\": \"Ipsum vitae et ut libero animi.\"\n   }'")
 			}
 		}
 	}

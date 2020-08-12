@@ -74,18 +74,18 @@ var _ = Service("step", func() {
 
 	})
 
-	// Method("update", func() {
-	// 	Description("Update Steps with the given IDs.")
-	// 	Payload(StoredSteps)
+	Method("update", func() {
+		Description("Update Step with the given ID.")
+		Payload(StoredListOfSteps)
 
-	// 	HTTP(func() {
-	// 		PUT("/update")
-	// 		Response(StatusNoContent)
-	// 	})
-	// 	GRPC(func() {
-	// 		Response(CodeOK)
-	// 	})
-	// })
+		HTTP(func() {
+			PUT("/update")
+			Response(StatusNoContent)
+		})
+		GRPC(func() {
+			Response(CodeOK)
+		})
+	})
 })
 
 var Step = Type("Step", func() {

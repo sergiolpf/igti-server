@@ -183,6 +183,34 @@ paths:
             $ref: '#/definitions/StepListResponseBody'
       schemes:
       - http
+  /steps/update:
+    put:
+      tags:
+      - step
+      summary: update step
+      description: Update Step with the given ID.
+      operationId: step#update
+      parameters:
+      - name: UpdateRequestBody
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/StepUpdateRequestBody'
+          required:
+          - wtId
+          - steps
+          - id
+          - title
+          - target
+          - stepNumber
+          - content
+          - placement
+          - action
+      responses:
+        "204":
+          description: No Content response.
+      schemes:
+      - http
   /swagger/swagger.json:
     get:
       tags:
@@ -385,14 +413,14 @@ definitions:
       id:
         type: string
         description: ID of missing element
-        example: Quo laborum enim.
+        example: Ea eaque et explicabo repellat.
       message:
         type: string
         description: Message of error
         example: Element 1 not found
     description: Organization not found
     example:
-      id: Adipisci sed.
+      id: Fuga eos placeat exercitationem et unde optio.
       message: Element 1 not found
     required:
     - message
@@ -440,6 +468,9 @@ definitions:
     - id: 123abc
       name: Creating a new request in netflix!
       url: http://www.google.com/
+    - id: 123abc
+      name: Creating a new request in netflix!
+      url: http://www.google.com/
   OrganizationUpdateRequestBody:
     title: OrganizationUpdateRequestBody
     type: object
@@ -475,7 +506,7 @@ definitions:
       wtId:
         type: string
         description: Id of the walkthrough to have a step added to
-        example: Et quasi aspernatur et a aperiam molestiae.
+        example: Quidem iusto aut minima.
     example:
       step:
         action: next
@@ -485,7 +516,7 @@ definitions:
         stepNumber: 1411758952
         target: Aliquam non nostrum veniam et sapiente.
         title: Click here to make it work!
-      wtId: Et possimus.
+      wtId: Quisquam error doloremque sint.
   StepAddResponseBody:
     title: 'Mediatype identifier: application/vnd.goa.guide.me.result-steps; view=default'
     type: object
@@ -495,7 +526,7 @@ definitions:
       wtId:
         type: string
         description: Id of the walkthrough to have a step added to
-        example: Provident et repellat nemo eius inventore saepe.
+        example: Rerum officiis deserunt.
     description: AddResponseBody result type (default view)
     example:
       step:
@@ -507,7 +538,7 @@ definitions:
         stepNumber: 1787033151
         target: A eos non eum et cum rem.
         title: Click here to make it work!
-      wtId: Ratione sunt consequuntur quia exercitationem.
+      wtId: Reiciendis et possimus rerum quo.
     required:
     - wtId
     - step
@@ -522,14 +553,6 @@ definitions:
           $ref: '#/definitions/StoredStepResponseBody'
         description: List of Stored steps
         example:
-        - action: next
-          content: This dropdown contains values from the list of status, for our
-            scenario we want to chose 'active'
-          id: Modi ullam minus.
-          placement: left
-          stepNumber: 1787033151
-          target: A eos non eum et cum rem.
-          title: Click here to make it work!
         - action: next
           content: This dropdown contains values from the list of status, for our
             scenario we want to chose 'active'
@@ -569,6 +592,14 @@ definitions:
         stepNumber: 1787033151
         target: A eos non eum et cum rem.
         title: Click here to make it work!
+      - action: next
+        content: This dropdown contains values from the list of status, for our scenario
+          we want to chose 'active'
+        id: Modi ullam minus.
+        placement: left
+        stepNumber: 1787033151
+        target: A eos non eum et cum rem.
+        title: Click here to make it work!
       wtId: 123abc
     required:
     - wtId
@@ -580,14 +611,14 @@ definitions:
       id:
         type: string
         description: ID of the step to be remove
-        example: Iste et amet perspiciatis et nam.
+        example: Rem laboriosam nihil sint fugiat consequatur quibusdam.
       wtId:
         type: string
         description: Id of the Walkthrough
-        example: Quo magnam quidem iusto aut minima.
+        example: Et quasi tenetur dolores rerum.
     example:
-      id: Quis quaerat.
-      wtId: Et sint eos.
+      id: Explicabo dolorem.
+      wtId: Libero repudiandae autem officiis aperiam amet iusto.
     required:
     - wtId
     - id
@@ -599,7 +630,7 @@ definitions:
         type: string
         description: What action should trigger the next step
         default: next
-        example: next
+        example: click
         enum:
         - click
         - next
@@ -613,7 +644,7 @@ definitions:
         type: string
         description: Where the popup will be anchored, left, right, top or buttom.
         default: right
-        example: right
+        example: top
         enum:
         - left
         - right
@@ -622,12 +653,12 @@ definitions:
       stepNumber:
         type: integer
         description: The number in the sequence that the step belongs to
-        example: 940944427
+        example: 1156575505
         format: int32
       target:
         type: string
         description: Unique html if for the target
-        example: Excepturi omnis sed tenetur et quos et.
+        example: Iste et amet perspiciatis et nam.
       title:
         type: string
         description: Title for the given step
@@ -637,9 +668,9 @@ definitions:
       action: next
       content: This dropdown contains values from the list of status, for our scenario
         we want to chose 'active'
-      placement: right
-      stepNumber: 1097931106
-      target: Dolor officiis rerum.
+      placement: top
+      stepNumber: 1047576841
+      target: Et quis quaerat.
       title: Click here to make it work!
     required:
     - title
@@ -647,6 +678,65 @@ definitions:
     - stepNumber
     - placement
     - content
+    - action
+  StepUpdateRequestBody:
+    title: StepUpdateRequestBody
+    type: object
+    properties:
+      steps:
+        type: array
+        items:
+          $ref: '#/definitions/StoredStepRequestBody'
+        description: List of Stored steps
+        example:
+        - action: next
+          content: This dropdown contains values from the list of status, for our
+            scenario we want to chose 'active'
+          id: Sed et sit dolor aut voluptas.
+          placement: top
+          stepNumber: 68608253
+          target: Impedit voluptatem dolor et voluptatem.
+          title: Click here to make it work!
+        - action: next
+          content: This dropdown contains values from the list of status, for our
+            scenario we want to chose 'active'
+          id: Sed et sit dolor aut voluptas.
+          placement: top
+          stepNumber: 68608253
+          target: Impedit voluptatem dolor et voluptatem.
+          title: Click here to make it work!
+      wtId:
+        type: string
+        description: ID is the unique id of the Walkthrough.
+        example: 123abc
+    example:
+      steps:
+      - action: next
+        content: This dropdown contains values from the list of status, for our scenario
+          we want to chose 'active'
+        id: Sed et sit dolor aut voluptas.
+        placement: top
+        stepNumber: 68608253
+        target: Impedit voluptatem dolor et voluptatem.
+        title: Click here to make it work!
+      - action: next
+        content: This dropdown contains values from the list of status, for our scenario
+          we want to chose 'active'
+        id: Sed et sit dolor aut voluptas.
+        placement: top
+        stepNumber: 68608253
+        target: Impedit voluptatem dolor et voluptatem.
+        title: Click here to make it work!
+      wtId: 123abc
+    required:
+    - wtId
+    - steps
+    - id
+    - title
+    - target
+    - stepNumber
+    - content
+    - placement
     - action
   StoredOrganizationResponseTiny:
     title: 'Mediatype identifier: application/vnd.goa.guide.me.stored-organization;
@@ -670,7 +760,7 @@ definitions:
     required:
     - id
     - name
-  StoredStepResponseBody:
+  StoredStepRequestBody:
     title: 'Mediatype identifier: application/vnd.goa.guide.me.stored-step; view=default'
     type: object
     properties:
@@ -691,7 +781,71 @@ definitions:
       id:
         type: string
         description: Unique id to this step
-        example: Dolor ducimus perspiciatis aut a suscipit amet.
+        example: Aut dolore quo veritatis.
+      placement:
+        type: string
+        description: Where the popup will be anchored, left, right, top or buttom.
+        default: right
+        example: buttom
+        enum:
+        - left
+        - right
+        - top
+        - buttom
+      stepNumber:
+        type: integer
+        description: The number in the sequence that the step belongs to
+        example: 1166370656
+        format: int32
+      target:
+        type: string
+        description: Unique html if for the target
+        example: Impedit sit.
+      title:
+        type: string
+        description: Title for the given step
+        example: Click here to make it work!
+    description: A StoredStep describes a step returned from the database. (default
+      view)
+    example:
+      action: next
+      content: This dropdown contains values from the list of status, for our scenario
+        we want to chose 'active'
+      id: Recusandae inventore fuga ab amet.
+      placement: right
+      stepNumber: 1595440144
+      target: Delectus non pariatur deleniti.
+      title: Click here to make it work!
+    required:
+    - id
+    - title
+    - target
+    - stepNumber
+    - content
+    - placement
+    - action
+  StoredStepResponseBody:
+    title: 'Mediatype identifier: application/vnd.goa.guide.me.stored-step; view=default'
+    type: object
+    properties:
+      action:
+        type: string
+        description: What action should trigger the next step
+        default: next
+        example: end
+        enum:
+        - click
+        - next
+        - end
+      content:
+        type: string
+        description: The content of the message to be displayed
+        example: This dropdown contains values from the list of status, for our scenario
+          we want to chose 'active'
+      id:
+        type: string
+        description: Unique id to this step
+        example: Ipsum ut explicabo error provident et repellat.
       placement:
         type: string
         description: Where the popup will be anchored, left, right, top or buttom.
@@ -705,25 +859,25 @@ definitions:
       stepNumber:
         type: integer
         description: The number in the sequence that the step belongs to
-        example: 692044508
+        example: 1009777201
         format: int32
       target:
         type: string
         description: Unique html if for the target
-        example: Ipsum vitae et ut libero animi.
+        example: Eius inventore saepe tenetur ratione sunt.
       title:
         type: string
         description: Title for the given step
         example: Click here to make it work!
     description: A StoredStep describes a step returned from the database.
     example:
-      action: end
+      action: next
       content: This dropdown contains values from the list of status, for our scenario
         we want to chose 'active'
-      id: Et explicabo.
-      placement: left
-      stepNumber: 881933024
-      target: Assumenda fuga eos placeat exercitationem et unde.
+      id: Et quasi aspernatur et a aperiam molestiae.
+      placement: right
+      stepNumber: 940944427
+      target: Excepturi omnis sed tenetur et quos et.
       title: Click here to make it work!
     required:
     - id
@@ -753,14 +907,14 @@ definitions:
       organization:
         type: string
         description: ID of the organization this tutorial belongs to
-        example: Quae in quis.
+        example: Velit assumenda architecto sit et vitae.
     description: A StoredWalkthrough describes a Walkthrough retrieved by the Walkthrough
       service. (tiny view) (default view)
     example:
       baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Error doloremque sint dolores.
+      organization: Debitis corrupti corporis soluta aperiam.
     required:
     - id
     - name
@@ -783,11 +937,11 @@ definitions:
       organization:
         type: string
         description: ID of the organization this tutorial belongs to
-        example: Sit et.
+        example: Consequatur quisquam vitae dolorem architecto.
       publishedURL:
         type: string
         description: Code to be added into an existing page to make it visible locally
-        example: Sit velit assumenda.
+        example: Qui rem sed enim.
       status:
         type: string
         description: 'Status of the walkthrough [draft|published] '
@@ -800,8 +954,8 @@ definitions:
     example:
       baseURL: http://www.google.com/
       name: How to create a new process using the exception condition.
-      organization: Aperiam similique dolor et assumenda voluptate.
-      publishedURL: Nesciunt debitis corrupti corporis.
+      organization: Placeat sed.
+      publishedURL: Natus aut molestias.
       status: draft | published
     required:
     - name
@@ -829,11 +983,11 @@ definitions:
       organization:
         type: string
         description: ID of the organization this tutorial belongs to
-        example: Reprehenderit iste voluptas recusandae.
+        example: Minima dicta consequuntur sunt quo porro.
       publishedURL:
         type: string
         description: Code to be added into an existing page to make it visible locally
-        example: Impedit sit.
+        example: Molestias ullam.
       status:
         type: string
         description: 'Status of the walkthrough [draft|published] '
@@ -848,8 +1002,8 @@ definitions:
       baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Eos sapiente quas rerum.
-      publishedURL: Fuga ab amet eum delectus non pariatur.
+      organization: Quo illo esse itaque quae.
+      publishedURL: Hic maxime et laborum atque ea voluptate.
       status: draft | published
     required:
     - id
@@ -863,14 +1017,14 @@ definitions:
       id:
         type: string
         description: ID of Walkthrough to be renamed
-        example: Minima dicta consequuntur sunt quo porro.
+        example: Aperiam quisquam dolorem.
       name:
         type: string
         description: New Name to the walkthrough
-        example: Hic maxime et laborum atque ea voluptate.
+        example: Quia eligendi reiciendis.
     example:
-      id: Quo illo esse itaque quae.
-      name: Qui rem sed enim.
+      id: Accusamus quas.
+      name: Ea eos reprehenderit rem officiis mollitia omnis.
     required:
     - id
     - name
@@ -896,13 +1050,13 @@ definitions:
       organization:
         type: string
         description: ID of the organization this tutorial belongs to
-        example: Voluptates architecto nisi.
+        example: Animi hic error sed expedita facere quia.
     description: RenameResponseBody result type (tiny view) (default view)
     example:
       baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Molestias ullam.
+      organization: Rem hic saepe ut deleniti.
     required:
     - id
     - name
@@ -915,14 +1069,14 @@ definitions:
       id:
         type: string
         description: ID of missing element
-        example: Explicabo dolorem.
+        example: Aut ut ipsa velit recusandae dolores.
       message:
         type: string
         description: Message of error
         example: Element 1 not found
     description: Walkthrough not found
     example:
-      id: Aut dolore quo veritatis.
+      id: Voluptates architecto nisi.
       message: Element 1 not found
     required:
     - message
@@ -949,11 +1103,11 @@ definitions:
       organization:
         type: string
         description: ID of the organization this tutorial belongs to
-        example: Laboriosam nihil.
+        example: Dignissimos porro assumenda dicta.
       publishedURL:
         type: string
         description: Code to be added into an existing page to make it visible locally
-        example: Tenetur dolores rerum dolor.
+        example: Et assumenda voluptate molestias.
       status:
         type: string
         description: 'Status of the walkthrough [draft|published] '
@@ -968,8 +1122,8 @@ definitions:
       baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Repudiandae autem officiis aperiam amet iusto.
-      publishedURL: Fugiat consequatur quibusdam non.
+      organization: Laboriosam soluta in aliquid et.
+      publishedURL: Cupiditate ducimus non porro.
       status: draft | published
     required:
     - id
@@ -988,20 +1142,14 @@ definitions:
     - baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Debitis consequatur.
-      publishedURL: Alias distinctio.
+      organization: Consequatur reiciendis perferendis nihil ut aperiam.
+      publishedURL: Animi dolores nisi cumque et.
       status: draft | published
     - baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Debitis consequatur.
-      publishedURL: Alias distinctio.
-      status: draft | published
-    - baseURL: http://www.google.com/
-      id: 123abc
-      name: How to create a new process using the exception condition.
-      organization: Debitis consequatur.
-      publishedURL: Alias distinctio.
+      organization: Consequatur reiciendis perferendis nihil ut aperiam.
+      publishedURL: Animi dolores nisi cumque et.
       status: draft | published
   WalkthroughUpdateRequestBody:
     title: WalkthroughUpdateRequestBody
@@ -1024,11 +1172,11 @@ definitions:
       organization:
         type: string
         description: ID of the organization this tutorial belongs to
-        example: Cupiditate ducimus non porro.
+        example: Aut reprehenderit autem.
       publishedURL:
         type: string
         description: Code to be added into an existing page to make it visible locally
-        example: Quisquam dignissimos porro assumenda dicta.
+        example: Et numquam cumque enim.
       status:
         type: string
         description: 'Status of the walkthrough [draft|published] '
@@ -1042,8 +1190,8 @@ definitions:
       baseURL: http://www.google.com/
       id: 123abc
       name: How to create a new process using the exception condition.
-      organization: Aut ut ipsa velit recusandae dolores.
-      publishedURL: Laboriosam soluta in aliquid et.
+      organization: Nemo et et illo eveniet id.
+      publishedURL: Commodi minus alias excepturi.
       status: draft | published
     required:
     - id

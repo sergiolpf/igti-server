@@ -25,7 +25,7 @@ import (
 //
 func UsageCommands() string {
 	return `organization (list|show|add|remove|update)
-step (list|add|remove)
+step (list|add|remove|update)
 walkthrough (list|show|add|remove|update|rename|publish)
 `
 }
@@ -34,10 +34,10 @@ walkthrough (list|show|add|remove|update|rename|publish)
 func UsageExamples() string {
 	return os.Args[0] + ` organization list` + "\n" +
 		os.Args[0] + ` step list --message '{
-      "id": "Odit eos praesentium ad excepturi sequi dolor."
+      "id": "Deleniti qui."
    }'` + "\n" +
 		os.Args[0] + ` walkthrough list --message '{
-      "id": "Eum id vero iste voluptas facere."
+      "id": "Consequuntur doloremque et dolor qui."
    }'` + "\n" +
 		""
 }
@@ -74,6 +74,9 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 		stepRemoveFlags       = flag.NewFlagSet("remove", flag.ExitOnError)
 		stepRemoveMessageFlag = stepRemoveFlags.String("message", "", "")
 
+		stepUpdateFlags       = flag.NewFlagSet("update", flag.ExitOnError)
+		stepUpdateMessageFlag = stepUpdateFlags.String("message", "", "")
+
 		walkthroughFlags = flag.NewFlagSet("walkthrough", flag.ContinueOnError)
 
 		walkthroughListFlags       = flag.NewFlagSet("list", flag.ExitOnError)
@@ -109,6 +112,7 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 	stepListFlags.Usage = stepListUsage
 	stepAddFlags.Usage = stepAddUsage
 	stepRemoveFlags.Usage = stepRemoveUsage
+	stepUpdateFlags.Usage = stepUpdateUsage
 
 	walkthroughFlags.Usage = walkthroughUsage
 	walkthroughListFlags.Usage = walkthroughListUsage
@@ -184,6 +188,9 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 
 			case "remove":
 				epf = stepRemoveFlags
+
+			case "update":
+				epf = stepUpdateFlags
 
 			}
 
@@ -263,6 +270,9 @@ func ParseEndpoint(cc *grpc.ClientConn, opts ...grpc.CallOption) (goa.Endpoint, 
 			case "remove":
 				endpoint = c.Remove()
 				data, err = stepc.BuildRemovePayload(*stepRemoveMessageFlag)
+			case "update":
+				endpoint = c.Update()
+				data, err = stepc.BuildUpdatePayload(*stepUpdateMessageFlag)
 			}
 		case "walkthrough":
 			c := walkthroughc.NewClient(cc, opts...)
@@ -335,8 +345,8 @@ Show Organization by ID
 
 Example:
     `+os.Args[0]+` organization show --message '{
-      "id": "Deserunt esse facere non et explicabo."
-   }' --view "tiny"
+      "id": "Eos praesentium ad excepturi."
+   }' --view "default"
 `, os.Args[0])
 }
 
@@ -362,7 +372,7 @@ Remove Organization from storage
 
 Example:
     `+os.Args[0]+` organization remove --message '{
-      "id": "Ipsa ipsum ratione eum tenetur."
+      "id": "Fugiat et delectus quo quo animi illum."
    }'
 `, os.Args[0])
 }
@@ -392,6 +402,7 @@ COMMAND:
     list: List all stored Steps for a given walkthrough
     add: Add new Steps to walkthrough and return ID.
     remove: Remove Steps from storage
+    update: Update Step with the given ID.
 
 Additional help:
     %s step COMMAND --help
@@ -405,7 +416,7 @@ List all stored Steps for a given walkthrough
 
 Example:
     `+os.Args[0]+` step list --message '{
-      "id": "Odit eos praesentium ad excepturi sequi dolor."
+      "id": "Deleniti qui."
    }'
 `, os.Args[0])
 }
@@ -426,7 +437,7 @@ Example:
          "target": "Ullam minima ut et aspernatur impedit iste.",
          "title": "Click here to make it work!"
       },
-      "wtId": "Debitis debitis modi voluptates."
+      "wtId": "Id vero iste voluptas."
    }'
 `, os.Args[0])
 }
@@ -439,8 +450,59 @@ Remove Steps from storage
 
 Example:
     `+os.Args[0]+` step remove --message '{
-      "id": "Deleniti qui.",
-      "wtId": "Fugiat et delectus quo quo animi illum."
+      "id": "Rerum harum.",
+      "wtId": "Dolor incidunt."
+   }'
+`, os.Args[0])
+}
+
+func stepUpdateUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] step update -message JSON
+
+Update Step with the given ID.
+    -message JSON: 
+
+Example:
+    `+os.Args[0]+` step update --message '{
+      "steps": [
+         {
+            "action": "next",
+            "content": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'",
+            "id": "Sed et sit dolor aut voluptas.",
+            "placement": "top",
+            "stepNumber": 68608253,
+            "target": "Impedit voluptatem dolor et voluptatem.",
+            "title": "Click here to make it work!"
+         },
+         {
+            "action": "next",
+            "content": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'",
+            "id": "Sed et sit dolor aut voluptas.",
+            "placement": "top",
+            "stepNumber": 68608253,
+            "target": "Impedit voluptatem dolor et voluptatem.",
+            "title": "Click here to make it work!"
+         },
+         {
+            "action": "next",
+            "content": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'",
+            "id": "Sed et sit dolor aut voluptas.",
+            "placement": "top",
+            "stepNumber": 68608253,
+            "target": "Impedit voluptatem dolor et voluptatem.",
+            "title": "Click here to make it work!"
+         },
+         {
+            "action": "next",
+            "content": "This dropdown contains values from the list of status, for our scenario we want to chose \'active\'",
+            "id": "Sed et sit dolor aut voluptas.",
+            "placement": "top",
+            "stepNumber": 68608253,
+            "target": "Impedit voluptatem dolor et voluptatem.",
+            "title": "Click here to make it work!"
+         }
+      ],
+      "wtId": "123abc"
    }'
 `, os.Args[0])
 }
@@ -473,7 +535,7 @@ List all stored walkthrough for a given organization
 
 Example:
     `+os.Args[0]+` walkthrough list --message '{
-      "id": "Eum id vero iste voluptas facere."
+      "id": "Consequuntur doloremque et dolor qui."
    }'
 `, os.Args[0])
 }
@@ -487,8 +549,8 @@ Show Walkthrough by ID
 
 Example:
     `+os.Args[0]+` walkthrough show --message '{
-      "id": "Rerum harum."
-   }' --view "tiny"
+      "id": "Assumenda quis laudantium."
+   }' --view "default"
 `, os.Args[0])
 }
 
@@ -502,8 +564,8 @@ Example:
     `+os.Args[0]+` walkthrough add --message '{
       "baseURL": "http://www.google.com/",
       "name": "How to create a new process using the exception condition.",
-      "organization": "Optio ipsam similique.",
-      "publishedURL": "Assumenda quis laudantium.",
+      "organization": "Deserunt ad quo quod voluptatem beatae.",
+      "publishedURL": "Aut corrupti amet in et.",
       "status": "draft | published"
    }'
 `, os.Args[0])
@@ -517,7 +579,7 @@ Remove Walkthrough from storage
 
 Example:
     `+os.Args[0]+` walkthrough remove --message '{
-      "id": "Deserunt ad quo quod voluptatem beatae."
+      "id": "Porro quis error in quia."
    }'
 `, os.Args[0])
 }
@@ -533,8 +595,8 @@ Example:
       "baseURL": "http://www.google.com/",
       "id": "123abc",
       "name": "How to create a new process using the exception condition.",
-      "organization": "At exercitationem quia eaque odio.",
-      "publishedURL": "Labore porro eligendi ea non debitis eum.",
+      "organization": "Odio quia temporibus optio quasi eum aut.",
+      "publishedURL": "Aliquam eligendi quis aut eum illo rem.",
       "status": "draft | published"
    }'
 `, os.Args[0])
@@ -548,8 +610,8 @@ Rename Walkthrough with the given IDs.
 
 Example:
     `+os.Args[0]+` walkthrough rename --message '{
-      "id": "Porro quis error in quia.",
-      "name": "Aliquam eligendi quis aut eum illo rem."
+      "id": "Eum alias adipisci iste autem.",
+      "name": "Id voluptatibus autem."
    }'
 `, os.Args[0])
 }
@@ -562,7 +624,7 @@ Publishes Walkthrough with the given IDs.
 
 Example:
     `+os.Args[0]+` walkthrough publish --message '{
-      "id": "Id voluptatibus autem."
+      "id": "Ipsum vitae et ut libero animi."
    }'
 `, os.Args[0])
 }

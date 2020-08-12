@@ -66,7 +66,7 @@ func BuildAddPayload(walkthroughAddBody string) (*walkthrough.Walkthrough, error
 	{
 		err = json.Unmarshal([]byte(walkthroughAddBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Ea accusamus enim repudiandae.\",\n      \"publishedURL\": \"Corporis est.\",\n      \"status\": \"draft | published\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Et non quis neque sit non.\",\n      \"publishedURL\": \"Quas aut quia dolores.\",\n      \"status\": \"draft | published\"\n   }'")
 		}
 		if utf8.RuneCountInString(body.Name) > 100 {
 			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", body.Name, utf8.RuneCountInString(body.Name), 100, false))
@@ -111,7 +111,7 @@ func BuildUpdatePayload(walkthroughUpdateBody string) (*walkthrough.StoredWalkth
 	{
 		err = json.Unmarshal([]byte(walkthroughUpdateBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"id\": \"123abc\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Eos earum fugiat quia assumenda odit.\",\n      \"publishedURL\": \"Odit asperiores.\",\n      \"status\": \"draft | published\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"baseURL\": \"http://www.google.com/\",\n      \"id\": \"123abc\",\n      \"name\": \"How to create a new process using the exception condition.\",\n      \"organization\": \"Quod repudiandae sed dolor optio et architecto.\",\n      \"publishedURL\": \"Maxime ea qui molestiae adipisci sint aut.\",\n      \"status\": \"draft | published\"\n   }'")
 		}
 		if utf8.RuneCountInString(body.Name) > 100 {
 			err = goa.MergeErrors(err, goa.InvalidLengthError("body.name", body.Name, utf8.RuneCountInString(body.Name), 100, false))
@@ -144,7 +144,7 @@ func BuildRenamePayload(walkthroughRenameBody string) (*walkthrough.RenamePayloa
 	{
 		err = json.Unmarshal([]byte(walkthroughRenameBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"id\": \"Adipisci minima cum consequatur occaecati commodi laudantium.\",\n      \"name\": \"Aut et omnis.\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"id\": \"Ab accusamus.\",\n      \"name\": \"Veniam cupiditate quia aperiam illo enim.\"\n   }'")
 		}
 	}
 	v := &walkthrough.RenamePayload{

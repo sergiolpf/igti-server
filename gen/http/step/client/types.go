@@ -31,6 +31,15 @@ type RemoveRequestBody struct {
 	ID string `form:"id" json:"id" xml:"id"`
 }
 
+// UpdateRequestBody is the type of the "step" service "update" endpoint HTTP
+// request body.
+type UpdateRequestBody struct {
+	// ID is the unique id of the Walkthrough.
+	WtID string `form:"wtId" json:"wtId" xml:"wtId"`
+	// List of Stored steps
+	Steps []*StoredStepRequestBody `form:"steps" json:"steps" xml:"steps"`
+}
+
 // ListResponseBody is the type of the "step" service "list" endpoint HTTP
 // response body.
 type ListResponseBody struct {
@@ -83,6 +92,24 @@ type StepRequestBody struct {
 	Action string `form:"action" json:"action" xml:"action"`
 }
 
+// StoredStepRequestBody is used to define fields on request body types.
+type StoredStepRequestBody struct {
+	// Unique id to this step
+	ID string `form:"id" json:"id" xml:"id"`
+	// Title for the given step
+	Title string `form:"title" json:"title" xml:"title"`
+	// Unique html if for the target
+	Target string `form:"target" json:"target" xml:"target"`
+	// The number in the sequence that the step belongs to
+	StepNumber int32 `form:"stepNumber" json:"stepNumber" xml:"stepNumber"`
+	// Where the popup will be anchored, left, right, top or buttom.
+	Placement string `form:"placement" json:"placement" xml:"placement"`
+	// The content of the message to be displayed
+	Content string `form:"content" json:"content" xml:"content"`
+	// What action should trigger the next step
+	Action string `form:"action" json:"action" xml:"action"`
+}
+
 // NewAddRequestBody builds the HTTP request body from the payload of the "add"
 // endpoint of the "step" service.
 func NewAddRequestBody(p *step.AddStepPayload) *AddRequestBody {
@@ -101,6 +128,21 @@ func NewRemoveRequestBody(p *step.RemovePayload) *RemoveRequestBody {
 	body := &RemoveRequestBody{
 		WtID: p.WtID,
 		ID:   p.ID,
+	}
+	return body
+}
+
+// NewUpdateRequestBody builds the HTTP request body from the payload of the
+// "update" endpoint of the "step" service.
+func NewUpdateRequestBody(p *step.StoredListOfSteps) *UpdateRequestBody {
+	body := &UpdateRequestBody{
+		WtID: p.WtID,
+	}
+	if p.Steps != nil {
+		body.Steps = make([]*StoredStepRequestBody, len(p.Steps))
+		for i, val := range p.Steps {
+			body.Steps[i] = marshalStepStoredStepToStoredStepRequestBody(val)
+		}
 	}
 	return body
 }
@@ -163,6 +205,18 @@ func ValidateStoredStepResponseBody(body *StoredStepResponseBody) (err error) {
 
 // ValidateStepRequestBody runs the validations defined on StepRequestBody
 func ValidateStepRequestBody(body *StepRequestBody) (err error) {
+	if !(body.Placement == "left" || body.Placement == "right" || body.Placement == "top" || body.Placement == "buttom") {
+		err = goa.MergeErrors(err, goa.InvalidEnumValueError("body.placement", body.Placement, []interface{}{"left", "right", "top", "buttom"}))
+	}
+	if !(body.Action == "click" || body.Action == "next" || body.Action == "end") {
+		err = goa.MergeErrors(err, goa.InvalidEnumValueError("body.action", body.Action, []interface{}{"click", "next", "end"}))
+	}
+	return
+}
+
+// ValidateStoredStepRequestBody runs the validations defined on
+// StoredStepRequestBody
+func ValidateStoredStepRequestBody(body *StoredStepRequestBody) (err error) {
 	if !(body.Placement == "left" || body.Placement == "right" || body.Placement == "top" || body.Placement == "buttom") {
 		err = goa.MergeErrors(err, goa.InvalidEnumValueError("body.placement", body.Placement, []interface{}{"left", "right", "top", "buttom"}))
 	}
